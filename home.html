@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/header.css">
+    <link rel="stylesheet" href="styles/body.css">
+    <link rel="stylesheet" href="styles/popup.css">
+    <link rel="stylesheet" href="styles/body2.css">
+    <link rel="stylesheet" href="styles/general.css">
+    <link rel="stylesheet" href="styles/body3.css">
+    <link rel="stylesheet" href="styles/footer.css">
+    
+</head>
+<body>
+    <div class="header">
+        <div class="left-section">
+            <img class="logo" src="images/Blur.svg" alt="logo">
+            <img class="logo1" src="images/LifeDrop.svg" alt="logo1">
+        </div>
+        <div class="middle-section">
+            <a href="home.html" class="taps">Home</a>
+            <a href="map.html" class="taps">Map</a>
+            <a href="donate.html" class="taps">Donate</a>
+        </div>
+        <div class="right-section">
+           <button class="login" id="log-in">Log in</button>
+           <button class="join" id="openModal">Join</button> 
+        </div>
+    </div>
+    <div class="body">
+        <div class="text">
+            <p class="textstyle">
+                Today you can be someone's <span>LIFELINE</span>
+            </p>
+         </div>
+         <div class="short">
+            <p class="shorttext">
+                    give a drop give a life
+            </p>
+        </div>
+        <div class="dropimg">
+            <img src="images/Gemini_Generated_Image_ni24r9ni24r9ni24 1.svg" alt="mainpicture">
+        </div>
+    </div>
+    <div class="modal" id="modal">
+        <div class="modal-inner">
+            <div class="joindiv">
+                 <p class="jointext">How would you like to join?</p> 
+                 <button onclick="" class="close-modal" id="closeModel">×</button>
+            </div>
+           
+            <div class="donor">  
+                <div class="heart">
+                    <img class="heartpic" src="images/ri_heart-add-fill.svg" alt="heart">
+                </div>
+                <div class="donortxt">
+                    <p class="request">I Want To Give</p>
+                    <p class="help">help others by giving them blood</p>
+                    <button id="closeModal1" class="donorbtn">Become a Donor</button>
+                </div> 
+            </div>
+            <div class="searcher">
+                <div class="hand">
+                    <img class="handpic" src="images/solar_hand-heart-linear.svg" alt="need help">
+                </div>
+                <div class="searchertxt">
+                    <p class="request">I Need help</p>
+                    <p class="help">help others by giving them blood</p>
+                    <button id="closeModal2" class="searcherbtn">Request Help </button>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+    <div class="second-part">
+    <div class="background-section">
+        </div>
+    <div class="text-2">
+        <p class="main-text">Our life-changing impact</p>
+        <p class="life-drop-text">How LifeDrop is making a difference</p>
+    </div>
+    <div class="statistics-div"> 
+      <div class="statistics">
+        <img class="statistics-img" src="images/Group 51.svg" alt="heart">
+        <p class="statistics-num">42,378</p>
+        <p class="statistics-p">Lives saved</p>
+      </div>
+      <div class="statistics">
+        <img class="statistics-img" src="images/Group 52.svg" alt="drop" >
+        <p class="statistics-num">19,824</p>
+        <p class="statistics-p">Donors connected</p>
+      </div>
+       <div class="statistics">
+        <img class="statistics-img" src="images/Group 54.svg" alt="heart">
+        <p class="statistics-num">58,370+</p>
+        <p class="statistics-p">Total donations</p>
+      </div> 
+    </div>
+    <div class="text-2">
+        <p class="grow-text">And we're still growing!</p>
+        <button class="donor-btn1" id="donor1">Become a donor </button>
+    </div>
+    </div>
+   
+
+
+
+
+
+ <div class="third-part">
+<div class="eligibility-section">
+    <div class="eligibility-header">
+        <h2>Can you donate blood?</h2>
+        <p>Check if you're eligible to save a life</p>
+    </div>
+
+ <div class="eligibility-container">
+     <div class="card can-card">
+        <div class="card-status status-yes">
+            <div class="icon-circle">
+            <img src="images\Done.svg" alt="check" class="list-icon">
+            </div>
+            <span class="status-text">You can donate if...</span>
+        </div>
+        <ul class="eligibility-list">
+            <li>
+                <div class="icon-circle">
+                <img src="images\Done.svg" class="list-icon">
+                </div>
+                <p class="list_text"> are <b>18 years or older </b></p>
+            </li>
+            <li>
+                <div class="icon-circle">
+                <img src="images\Done.svg" class="list-icon">
+                </div>
+                <p class="list_text">You weigh <b>at least 50 kg</b> </p>
+            </li>
+            <li>
+                <div class="icon-circle">
+                <img src="images\Done.svg" class="list-icon">
+                </div>
+                <p class="list_text">You are in <b>good general health</b> and feeling well</p>
+            </li>
+            <li>
+                <div class="icon-circle">
+                <img src="images\Done.svg" class="list-icon">
+                </div>
+                <p class="list_text">It has been <b>8 weeks</b> since last blood donation</p>
+            </li>
+            <li>
+                <div class="icon-circle">
+                <img src="images\Done.svg" class="list-icon">
+                </div>
+                <p class="list_text">Your <b>blood pressure and iron levels </b> are within normal range</p>
+            </li>
+        </ul>
+    </div>
+
+    <div class="card cannot-card">
+        <div class="card-status status-no">
+            <div class="icon-circle">
+            <img src="images\Multiply.svg" alt="x" class="list-icon">
+            </div>
+            <span class="status-text">You cannot donate if...</span>
+        </div>
+        <ul class="eligibility-list">
+            <li>
+                <div class="icon-circle">
+                <img src="images\Multiply.svg" class="list-icon">
+                </div>
+                <p class="list_text">You have a <b>cold, flu, or fever </b>in the past 48 hours</p>
+            </li>
+            <li>
+                <div class="icon-circle">
+                <img src="images\Multiply.svg" class="list-icon">
+                </div>
+                <p class="list_text">You are <b> pregnant or breastfeeding </b></p>
+            </li>
+            <li>
+                <div class="icon-circle">
+                <img src="images\Multiply.svg" class="list-icon">
+                </div>
+                <p class="list_text">You have taken <b> antibiotics </b> in the past 24 hours</p>
+            </li>
+            <li>
+                <div class="icon-circle">
+                <img src="images\Multiply.svg" class="list-icon">
+                </div>
+                <p class="list_text">You have certain <b> chronic conditions </b></p>
+
+                </li>
+            <li>
+                <div class="icon-circle">
+                <img src="images\Multiply.svg" class="list-icon">
+                </div>
+                <p class="list_text">You have had <b> hepatitis or certain infections </b></p>
+            </li>
+        </ul>
+    </div>
+ </div>
+</div>
+
+
+
+
+
+
+    </div>
+    <div class="footer-div">
+        <div class="background-section1">
+        </div>
+        <div class="content-row">
+         <img src="images/Frame 12.svg" alt="logo" class="logo2">
+    <div class="all-elm-div">
+    <div class="elm-div">
+        <p class="title3">Platform</p>
+        <a  class="elm" href="http://127.0.0.1:5500/home.html">Home</a>
+        <a  class="elm" href="">Find Donors</a>
+        <a  class="elm" href="">Donate Blood</a>
+    </div>
+    <div class="elm-div">
+        <p class="title3">Resources</p>
+        <a  class="elm" href="">Eligibility</a>
+        <a  class="elm" href="">F&Q</a>
+        <a  class="elm" href="">Contact Us</a>
+    </div>
+    <div class="elm-div">
+        <p class="title3">Legal</p>
+        <a class="elm" href="">Privacy Policy</a>
+        <a class="elm" href="">Terms of services</a>
+    </div>
+    </div>
+    </div>
+    <div class="last-div">
+        <p class="last-p">© 2026 LifeDrop. All rights reserved.</p>
+        <div class="sm-div">
+        <a href="#">
+            <img src="images/Vector9.svg" alt="" class="sm-img">
+        </a>
+         <a href="#">
+            <img src="images/Vector8.svg" alt="" class="sm-img">
+        </a>
+         <a href="#">
+            <img src="images/Vector7.svg" alt="" class="sm-img">
+        </a>
+         <a href="#">
+            <img src="images/mdi_linkedin.svg" alt="" class="sm-img">
+        </a>
+        </div>
+    
+   </div>
+</body>
+<script src="scripts/home.js"></script>
+</html>

@@ -1,0 +1,159 @@
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    align-items: center;
+    justify-content: center;
+    display: none; 
+}
+
+.modal.open {
+    display: flex; 
+}
+
+.modal-inner { 
+    position: relative; 
+    padding: 30px;
+    max-width: 600px;
+    height: 474px;
+    width: 100%;
+    text-align: center;
+    border-radius: 15px;
+    /*box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);*/
+
+}
+.close-modal {
+    position: absolute;
+    top: 35px;
+    right: -20px;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    background-color: white;
+    border: none;
+    font-size:20px ;
+}
+
+.joindiv{
+    width: 600px;
+    height: 65px;
+    display: flex;
+    justify-content: center;
+    border-top-right-radius: 16px;
+    border-top-left-radius: 16px;
+    background-color: white;;
+}
+.jointext{
+    color: black;
+    width: 310px;
+    height: 29px;
+    top: 18px;
+    left: 145px;
+    font-weight: 500;
+    font-style: Medium;
+    font-size: 24px;
+    line-height: 100%;
+    letter-spacing: 0%;
+}
+.donor{
+    display: flex;
+    align-items: center;
+    width: 600px;
+    height: 200px;
+    top: 59px;
+    border-bottom-right-radius: 16px;
+    border-bottom-left-radius: 16px;
+    background-color: #FFE9E9;
+    margin-bottom: 10px;
+}
+
+.searcher{
+    display:flex;
+    align-items: center;
+    width: 600px;
+    height: 200px;
+    top: 274px;
+    border-radius: 16px;
+    background-color: #E8F6F0;
+}
+.heart,.hand{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 124px;
+    height: 124px;
+    border-radius: 10px;
+    margin: 40px;
+    padding: 0px;
+}
+.heartpic,.handpic{
+    width: 76px;
+}
+.heart{
+    background-color: #F8D4D4;
+}
+.hand{
+    background-color: #D1ECDF;
+}
+.donortxt,.searchertxt{
+    display: flex;
+    flex-direction: column;  
+    align-items: flex-start; 
+    justify-content: center;
+    
+}
+.request{
+    font-family: Inter;
+    font-weight: 600;
+    font-style: Semi Bold;
+    font-size: 20px;
+    line-height: 100%;
+    margin-top: 25px;
+}
+.help{
+    font-family: Inter;
+    font-weight: 200;
+    font-style: Extra Light;
+    font-size: 15px;
+    line-height: 100%;
+    margin-top: -8px;
+}
+.donorbtn,.searcherbtn{
+    width: 178px;
+    height: 35px;
+    top: 205px;
+    left: 214px;
+    border-radius: 105px;
+    gap: 10px;
+    font-family: Inter;
+    font-weight: 400;
+    font-style: Regular;
+    font-size: 15px;
+    line-height: 100%;
+    color: #FFFFFF;
+    border: none;
+    margin-top: 50px;
+}
+.donorbtn{
+    background: #F24822;
+}
+.searcherbtn{
+    background: #008770;
+}
+
+.close-modal:hover {
+    background-color: #f0f0f0;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.donorbtn:hover,
+.searcherbtn:hover {
+    opacity: 0.9;
+    transform: scale(1.02);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
