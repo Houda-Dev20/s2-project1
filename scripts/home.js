@@ -71,26 +71,57 @@ donor1.addEventListener("click", () => {
 
 
 
-    document.addEventListener('DOMContentLoaded', function() {
-        const images = document.querySelectorAll('.sm-img');
-        const hoverImages = [
-            'images/Vector11.svg',
-            'images/Vector19.svg', 
-            'images/Vector12.svg',
-            'images/Vector15.svg'
-        ];
-        
-        images.forEach((img, index) => {
-            const original = img.src;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const sm1Img = document.querySelector('.sm1-img');
+    const sm2Img = document.querySelector('.sm2-img');
+    const sm3Img = document.querySelector('.sm3-img');
+    const sm4Img = document.querySelector('.sm4-img');
+    
+    if (sm1Img) {// Check if the image exists on the page
+        const originalSrc1 = sm1Img.src;
+        sm1Img.addEventListener('mouseenter', () => {
+            sm1Img.src = 'images/Vector23.svg';
             
-            img.addEventListener('mouseenter', () => {
-                img.src = hoverImages[index];
-                 img.style.transform = 'scale(0.9)';
-            });
-            
-            img.addEventListener('mouseleave', () => {
-                img.src = original;
-                img.style.transform = 'scale(1)'
-            });
         });
-    });
+        
+        sm1Img.addEventListener('mouseleave', () => {
+            sm1Img.src = originalSrc1;
+            
+        });
+    }
+    
+    if (sm2Img) {
+        const originalSrc2 = sm2Img.src;
+        sm2Img.addEventListener('mouseenter', () => {
+            sm2Img.src = 'images/Vector20.svg';
+        });
+        
+        sm2Img.addEventListener('mouseleave', () => {
+            sm2Img.src = originalSrc2;
+            
+        });
+    }
+    
+    if (sm3Img) {
+        const originalSrc3 = sm3Img.src;
+        sm3Img.addEventListener('mouseenter', () => {
+            sm3Img.src = 'images/Vector22.svg';
+        });
+        
+        sm3Img.addEventListener('mouseleave', () => {
+            sm3Img.src = originalSrc3;
+        });
+    }
+    if (sm4Img) {
+        const originalSrc4 = sm4Img.src;
+        sm4Img.addEventListener('mouseenter', () => {
+            sm4Img.src = 'images/Vector21.svg';
+            
+        });
+        
+        sm4Img.addEventListener('mouseleave', () => {
+            sm4Img.src = originalSrc4;
+        });
+    }
+});
