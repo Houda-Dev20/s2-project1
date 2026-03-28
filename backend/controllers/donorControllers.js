@@ -199,6 +199,8 @@ donors: result
 const loginDonor = (req, res) => {
 
     const { email, password } = req.body;
+console.log(email, password);
+
     const sql = "SELECT * FROM donors WHERE email = ?";
 
     db.query(sql, [email], async (err, result) => {

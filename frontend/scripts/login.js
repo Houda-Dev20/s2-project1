@@ -1,4 +1,4 @@
-
+document.addEventListener("DOMContentLoaded", () => {
 const google=document.getElementById("google");
 google.addEventListener("click", () => {
      window.location.href = ""
@@ -33,4 +33,39 @@ searcher.addEventListener("click", () => {
 });
 closeBtn.addEventListener("click",()=>{
  modal.classList.remove("open");
+});
+
+//api
+
+const form = document.getElementById("login-form");
+
+form.addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password-input").value;
+
+    fetch("http://localhost:3000/donors/login", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            email: email,
+            password: password
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        console.log(data);
+
+        if (data.success) {
+       localStorage.setItem("donor", JSON.stringify(data.donor));
+         alert("Login successful");
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(err => console.log(err));
+});
 });
