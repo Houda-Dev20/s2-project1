@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+
 const google=document.getElementById("google");
 google.addEventListener("click", () => {
      window.location.href = ""
@@ -36,36 +37,54 @@ closeBtn.addEventListener("click",()=>{
 });
 
 //api
-
 const form = document.getElementById("login-form");
 
-form.addEventListener("submit", function(e) {
+form.addEventListener("submit", async function(e) {
     e.preventDefault();
 
     const email = document.getElementById("email").value;
     const password = document.getElementById("password-input").value;
 
-    fetch("http://localhost:3000/donors/login", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            email: email,
-            password: password
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        console.log(data);
+    try {
+
+        let response = await fetch("http://localhost:3000/donors/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ email, password })
+        });
+
+        let data = await response.json();
 
         if (data.success) {
-       localStorage.setItem("donor", JSON.stringify(data.donor));
-         alert("Login successful");
-        } else {
-            alert(data.message);
+            localStorage.setItem("user", JSON.stringify(data.donor));
+            alert("Login successful (donor)");
+            return;
         }
-    })
-    .catch(err => console.log(err));
-});
+
+        response = await fetch("http://localhost:3000/searchers/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ email, password })
+        });
+
+        data = await response.json();
+
+        if (data.success) {
+            localStorage.setItem("user", JSON.stringify(data.searcher));
+            alert("Login successful (searcher)");
+        } else {
+                    console.log(err);
+            alert("Invalid email or password");
+        }
+
+    } catch (err) {
+        console.log(err);
+        alert("Server error");
+    }
+}); 
+
 });
