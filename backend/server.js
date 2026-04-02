@@ -15,6 +15,9 @@ app.use("/donors", donorRoutes);
 const searcherRoutes = require("./routes/searcherRoutes");
 app.use("/searchers", searcherRoutes);
 
+const adminRoutes = require("./routes/adminRoutes");
+app.use("/admin", adminRoutes);
+
 app.listen(3000, () => {
 console.log("Server running on port 3000");
 });
