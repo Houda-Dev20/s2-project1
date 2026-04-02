@@ -34,17 +34,17 @@
             <div class="signup-card">
                 <h2>Sign up</h2>
 
-                <form>
+                <form id="signupFormSearcher">
                     <div class="input-group">
                         <img src="images/boxicons_user-filled.svg" class="input-icon" alt="user">
-                        <input type="text" placeholder="Enter your full name" required minlength="3">
+                        <input type="text" id="full_name_s" placeholder="Enter your full name" required minlength="3">
                         <small class="error-msg" style="color: red; display: none; font-size: 11px;
                         position: absolute;bottom: -18px; left: 10px;"></small>
                     </div>
 
                     <div class="input-group">
                         <img src="images/Group 14.svg" class="input-icon" alt="date">
-                        <input type="date" placeholder="DD / MM / YYYY" required pattern="\d{2}/\d{2}/\d{4}">
+                        <input type="date" id="date_of_birth_s" placeholder="DD / MM / YYYY" required pattern="\d{2}/\d{2}/\d{4}">
                         <small class="error-msg" style="color: red; display: none; font-size: 11px;
                         position: absolute;bottom: -18px; left: 10px;"></small>
                     </div>
@@ -52,7 +52,7 @@
                     <div class="input-group">
                         <img src="images/Vector1.svg" class="input-icon" alt="location">
 
-                        <input type="text" placeholder="Enter Wilaya, Baladiya" required>
+                        <input type="text" id="location_s" placeholder="Enter Wilaya, Baladiya" required>
                         <small class="error-msg" style="color: red; display: none; font-size: 11px;
                         position: absolute;bottom: -18px; left: 10px;"></small>
                     </div>
@@ -67,7 +67,7 @@
 
                         <div class="container-dropdown-simple">
                             <div class="input-box" onclick="toggleDropdown()">
-                                <input type="text" id="bloodInput" placeholder="blood type research" readonly
+                                <input type="text" id="bloodInput_s" placeholder="blood type research" readonly
                                     required>
                                 <span id="arrow-icon">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280"
@@ -105,21 +105,21 @@
 
                     <div class="input-group">
                         <img src="images/Vector3.svg" class="input-icon" alt="phone">
-                        <input type="tel" placeholder="Enter your phone number" required pattern="\d{2}/\d{2}/\d{4}">
+                        <input type="tel" id="telephon_s" placeholder="Enter your phone number" required pattern="^0(5|6|7)[0-9]{8}$">
                         <small class="error-msg" style="color: red; display: none; font-size: 11px;
                         position: absolute;bottom: -18px; left: 10px;"></small>
                     </div>
 
                     <div class="input-group">
                         <img src="images/Group 55.svg" class="input-icon" alt="email">
-                        <input type="email" placeholder="Enter your email" required>
+                        <input type="email" id="email_s" placeholder="Enter your email" required>
                         <small class="error-msg" style="color: red; display: none; font-size: 11px;
                         position: absolute;bottom: -18px; left: 10px;"></small>
                     </div>
 
                     <div class="input-group">
                         <img src="images/arcticons1_password.svg" class="icon-left" alt="lock">
-                        <input type="password" placeholder="Enter your password" required minlength="8">
+                        <input type="password" id="password_s" placeholder="Enter your password" required minlength="8">
                         <img src="images/basil_eye-closed-outline.svg" class="icon-right" id="toggleEye"
                             alt="toggle password">
                         <small class="error-msg" style="color: red; display: none; font-size: 11px;

@@ -34,7 +34,7 @@ function toggleDropdown() {
  
  
 function selectBlood(element, value) {
-    const input = document.getElementById('bloodInput');
+    const input = document.getElementById('bloodInput_s');
     const dropdown = document.getElementById('dropdown');
     const arrow = document.querySelector('#arrow-icon');
     
@@ -68,31 +68,58 @@ window.onclick = function(event) {
 
 //api
 
-document.getElementById("signupForm").addEventListener("submit", async function(e){
+const donorForm = document.getElementById("signupForm");
+if (donorForm) {
+    donorForm.addEventListener("submit", async function(e) {
+        e.preventDefault();
 
-e.preventDefault();
+        const donorData = {
+            full_name: document.getElementById("full_name").value,
+            date_of_birth: document.getElementById("date_of_birth").value,
+            location: document.getElementById("location").value,
+            blood_type: document.getElementById("bloodInput").value,
+            telephon: document.getElementById("telephon").value,
+            email: document.getElementById("email").value,
+            password: document.getElementById("password").value,
+            available: true
+        };
 
-const donor = {
-full_name: document.getElementById("full_name").value,
-date_of_birth: document.getElementById("date_of_birth").value,
-location: document.getElementById("location").value,
-blood_type: document.getElementById("bloodInput").value,
-telephon: document.getElementById("telephon").value,
-email: document.getElementById("email").value,
-password: document.getElementById("password").value,
-available: true
-};
+        await sendData("http://localhost:3000/donors/add", donorData);
+    });
+}
 
-const response = await fetch("http://localhost:3000/donors/add",{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify(donor)
-});
+const searcherForm = document.getElementById("signupFormSearcher");
+if (searcherForm) {
+    searcherForm.addEventListener("submit", async function(e) {
+        e.preventDefault();
 
-const data = await response.json();
+        const searcherData = {
+            full_name: document.getElementById("full_name_s").value,
+            date_of_birth: document.getElementById("date_of_birth_s").value,
+            location: document.getElementById("location_s").value,
+            blood_type: document.getElementById("bloodInput_s").value,
+            telephon: document.getElementById("telephon_s").value,
+            email: document.getElementById("email_s").value,
+            password: document.getElementById("password_s").value
+        };
 
-alert(data.message);
+        await sendData("http://localhost:3000/searchers/add", searcherData);
+    });
+}
 
-});
+async function sendData(url, dataObject) {
+    try {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(dataObject)
+        });
+
+        const result = await response.json();
+        alert(result.message);
+        
+    } catch (error) {
+        console.error("Error:", error);
+        alert("error connecting to server");
+    }
+}
