@@ -101,13 +101,14 @@ const updateDonor = async (req, res) => {
 };
 
 
-function deleteDonor(req, res) {
+function deactivateAccount(req, res) {
     const donorId = req.params.id;
 
-    const sql = "DELETE FROM donors WHERE id = ?";
+    const sql = "UPDATE donors SET is_active = 0 WHERE id = ?";
 
     db.query(sql, [donorId], (err, result) => {
         if (err) {
+            console.error(err);
             return res.status(500).json({ message: "Server error" });
         }
 
@@ -115,7 +116,7 @@ function deleteDonor(req, res) {
             return res.status(404).json({ message: "Donor not found" });
         }
 
-        return res.json({ message: "Account deleted successfully" });
+        return res.json({ message: "Account deactivated successfully" });
     });
 }
 
@@ -261,4 +262,4 @@ const logoutDonor = (req, res) => {
 
 };
 
-module.exports = { deleteDonor, addDonor, updateDonor , verifyEmail, searchDonors, getAllDonors, loginDonor, logoutDonor };
+module.exports = { deactivateAccount, addDonor, updateDonor , verifyEmail, searchDonors, getAllDonors, loginDonor, logoutDonor };
