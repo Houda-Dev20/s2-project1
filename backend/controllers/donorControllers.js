@@ -15,20 +15,29 @@ const addDonor = async (req, res) => {
             date_of_birth,
             available
         } = req.body;
-
+        if (!/^[A-Za-z\s]+$/.test(full_name)) {
+            return res.status(400).json({ message: "Invalid full name" });
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            return res.status(400).json({ message: "Invalid email address" });
+        }
+        if (!password || password.length < 6) {
+            return res.status(400).json({ message: "Password must be at least 6 characters" });
+        }
+        if (!/^\d{10}$/.test(telephon)) {
+            return res.status(400).json({ message: "Invalid phone number" });
+        }
         const hashedPassword = await bcrypt.hash(password, 10); 
-
-        const verification_code = Math.floor(100000 + Math.random() * 900000).toString();
 
         const query = `
             INSERT INTO donors
-            (full_name, blood_type, telephon, email, password, verification_code, is_verified, location, date_of_birth, available)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (full_name, blood_type, telephon, email, password, location, date_of_birth, available)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
         db.query(
             query,
-            [full_name, blood_type, telephon, email, hashedPassword, verification_code, false, location, date_of_birth, available],
+            [full_name, blood_type, telephon, email, hashedPassword, location, date_of_birth, available],
             (err, result) => {
                 if (err) {
                     console.error(err);

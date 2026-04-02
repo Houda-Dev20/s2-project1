@@ -1,4 +1,5 @@
 const db = require('../config/db');
+
 const getStats = (req, res) => {
     const stats = {};
     db.query("SELECT COUNT(*) AS totalDonors FROM donors", (err, result) => {
