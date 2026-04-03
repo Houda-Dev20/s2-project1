@@ -266,3 +266,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+//to edit profile pic
+    editPhotoBtn.onclick = function() {
+         fileInput.click(); 
+        };//when we click it the folder will open
+    fileInput.onchange = function(e) {
+         profileImage.src = URL.createObjectURL(e.target.files[0]);
+         };
