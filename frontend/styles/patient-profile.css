@@ -492,11 +492,9 @@ span{
     border: 1px solid #EEE8EA;
     box-shadow: 0px 4px 12px 0px #0000000D;
     background-color: white;
-    overflow: visible;
+    overflow:hidden;
 }
-.third-div .personal-info {
-    overflow: visible; /* Allow dropdown to overflow */
-}
+
 .dd-item{
     display: flex;
     gap: 210px;
@@ -677,7 +675,7 @@ span{
 .Security-img2{
     width: 21px;
     height: 21px;
-    opacity: 0.7;
+    opacity: 1;
 }
 .Security-img3{
     width: 18px;
@@ -697,6 +695,9 @@ span{
     line-height: 1.1;
     letter-spacing: -2%;
     color: #000000;
+}
+.security-pp{
+    color: #F24822;
 }
 .security-options li:nth-child(1) .security-btn {
     border-top-left-radius: 10px;
