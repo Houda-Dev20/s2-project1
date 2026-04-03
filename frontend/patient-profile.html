@@ -31,7 +31,7 @@
     <div class="content">
         <div class="first-div">
             <div class="pic-div">
-                <img class="patient-pic" src="" alt="">
+                <img class="patient-pic" id="profileImage" src="" alt="">
                 <img class="true-pic" src="images/Group 122.svg" alt="">
             </div> 
             <div class="name-div">
@@ -49,10 +49,11 @@
                     <span>Member since 2026</span>
                 </div>   
             </div>
-            <button class="edit-div">
-                <img class="edit-pic" src="images/Vector29.svg" alt="edit">
+            <button class="edit-div" id="editPhotoBtn">
+                <img class="edit-pic"  src="images/Vector29.svg" alt="edit">
                 <p class="edit">Edit photo</p>
             </button>
+    <input type="file" id="fileInput" style="display:none">
         </div>
         <div class="second-third-div">
         <div class="second-div"> 
@@ -131,7 +132,7 @@
                 </li>
                  <li>
                     <button class="security-btn" data-action="2fa">
-                        <img class="Security-img2" src="images/Vector34.svg" alt="">
+                        <img class="Security-img2" src="images/carbon_password.svg" alt="">
                         <p class="security-p">Two-Factor Authentication</p>
                         <img class="end-img" src="images/Vector51.svg" alt="">
                     </button>
@@ -139,14 +140,14 @@
                 <li>
                     <button class="security-btn " data-action="delete-account">
                         <img class="Security-img3" src="images/Group26.svg" alt="">
-                       <p class="security-p">Deactivate the account</p>  
+                       <p class="security-p">Delete Account</p>  
                        <img class="end-img" src="images/Vector51.svg" alt="">
                     </button>
                 </li>
                 <li>
                     <button class="security-btn" data-action="logout">
                         <img class="Security-img4" src="images/Vector36.svg" alt="">
-                         <p class="security-p">Log Out</p> 
+                         <p class="security-p security-pp">Log Out</p> 
                          <img class="end-img" src="images/Vector51.svg" alt="">
                     </button>
                 </li>
