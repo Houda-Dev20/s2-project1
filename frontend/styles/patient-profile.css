@@ -726,6 +726,7 @@ span{
     margin-left: auto;
     width:500px;
     gap:40px;
+    padding-right:45px ;
 }
 .sm-div{
     display: flex;
