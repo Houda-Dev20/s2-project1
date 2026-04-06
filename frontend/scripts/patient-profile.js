@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <tr><td onclick="selectBlood(this,'A+')">A+</td><td onclick="selectBlood(this,'A-')">A-</td></tr>
             <tr><td onclick="selectBlood(this,'B+')">B+</td><td onclick="selectBlood(this,'B-')">B-</td></tr>
             <tr><td onclick="selectBlood(this,'AB+')">AB+</td><td onclick="selectBlood(this,'AB-')">AB-</td></tr>
-         </>
+         </table>
     `;
     document.body.appendChild(bloodDropdown);
     
@@ -110,16 +110,19 @@ function toggleDropdown() {
     const dropdown = document.getElementById('dropdown');
     const arrow = document.getElementById('arrow-icon');
     const stateDropdown = document.getElementById('stateDropdown');
-    
+
     if (stateDropdown) stateDropdown.style.display = "none";
     
     if (dropdown.style.display === "block") {
         dropdown.style.display = "none";
+        document.body.classList.remove('dropdown-open'); // remove active style
     } else {
         const rect = arrow.getBoundingClientRect();
-        dropdown.style.top = rect.bottom + window.scrollY + 0 + 'px';
+        dropdown.style.top = rect.bottom + window.scrollY- 1.1 + 'px';
         dropdown.style.left = rect.left + window.scrollX + 'px';
         dropdown.style.display = "block";
+
+        document.body.classList.add('dropdown-open'); // apply active style
     }
 }
 
@@ -142,10 +145,16 @@ function toggleStateDropdown() {
 }
 
 function selectBlood(element, value) {
-    const bloodDiv = document.getElementById('arrow-icon');
+    const bloodDiv = document.getElementById('arrow-icon'); // dropdown display
     const dropdown = document.getElementById('dropdown');
-    bloodDiv.childNodes[0].nodeValue = value;
+    bloodDiv.childNodes[0].nodeValue = value; // update dropdown text
+
+    // Update first div blood type text
+    const bloodTypeText = document.querySelector('.bloodtype-text');
+    bloodTypeText.innerText = value; // set the text
+
     dropdown.style.display = "none";
+    document.body.classList.remove('dropdown-open');
 }
 
 function selectState(element, value) {
@@ -161,56 +170,72 @@ function selectState(element, value) {
 }
 
 // Close dropdowns when clicking outside
+// Close dropdowns when clicking outside
 document.addEventListener('click', function(e) {
     const bloodDropdown = document.getElementById('dropdown');
     const stateDropdown = document.getElementById('stateDropdown');
     const bloodIcon = document.getElementById('arrow-icon');
     const stateIcon = document.getElementById('state-icon');
-    
-    if (bloodIcon && !bloodIcon.contains(e.target) && bloodDropdown && !bloodDropdown.contains(e.target)) {
+
+    // Blood dropdown
+    if (bloodDropdown && bloodIcon && !bloodDropdown.contains(e.target) && !bloodIcon.contains(e.target)) {
         bloodDropdown.style.display = "none";
+        document.body.classList.remove('dropdown-open'); // Remove border style
     }
-    if (stateIcon && !stateIcon.contains(e.target) && stateDropdown && !stateDropdown.contains(e.target)) {
+
+    // State dropdown
+    if (stateDropdown && stateIcon && !stateDropdown.contains(e.target) && !stateIcon.contains(e.target)) {
         stateDropdown.style.display = "none";
+        // For state dropdown, you probably don't need dropdown-open, 
+        // but if you did use it, remove it here too
     }
 });
 // For edit button
+// For edit button
 const editBtn = document.querySelector('.edit2-div');
-const wrapper = document.querySelector('.dd-wrapper');
+const wrapper = document.querySelector('.dd-wrapper'); // second-div info wrapper
 let isEditing = false;
 
 editBtn.onclick = (e) => {
-    e.stopPropagation(); // Prevent event bubbling
-    if (isEditing) return;
-    isEditing = true;
+    e.stopPropagation(); // prevent dropdown close
     
-    const items = wrapper.querySelectorAll('.dd-item');
-    
-    items.forEach((item, index) => {
-        const input = document.createElement('input');
-        input.value = item.innerText;
-        input.className = 'edit-input';
-        input.dataset.index = index;
-        
-        item.innerHTML = '';
-        item.appendChild(input);
-        
-        if (index === 0) input.focus();
-        
-        input.onkeypress = (e) => {
-            if (e.key === 'Enter') {
-                saveChanges();
-            }
-        };
-    });
-    
-    function saveChanges() {
+    const buttonText = editBtn.querySelector('.edit2'); // your text span inside button
+
+    if (!isEditing) {
+        // Start editing
+        isEditing = true;
+        buttonText.innerText = "Save"; // change button text
+
+        const items = wrapper.querySelectorAll('.dd-item');
+
+        items.forEach((item, index) => {
+            const input = document.createElement('input');
+            input.value = item.innerText;
+            input.className = 'edit-input';
+            input.dataset.index = index;
+
+            item.innerHTML = '';
+            item.appendChild(input);
+        });
+
+    } else {
+        // Save changes
         const inputs = wrapper.querySelectorAll('.edit-input');
         const items = wrapper.querySelectorAll('.dd-item');
+
         inputs.forEach((input, i) => {
-            items[i].innerHTML = input.value;
+            items[i].innerHTML = input.value; // update item text
         });
+
+        // ALSO update first div
+        const nameDiv = document.querySelector('.name');
+        const locationDiv = document.querySelector('.position span');
+
+        nameDiv.innerText = items[0].innerText; // Full Name
+        locationDiv.innerText = items[4].innerText; // Location
+
         isEditing = false;
+        buttonText.innerText = "Edit"; // change back to Edit
     }
 };
 document.addEventListener('DOMContentLoaded', function() {
@@ -273,3 +298,6 @@ document.addEventListener('DOMContentLoaded', function() {
     fileInput.onchange = function(e) {
          profileImage.src = URL.createObjectURL(e.target.files[0]);
          };
+
+
+         
