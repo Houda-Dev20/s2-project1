@@ -1,5 +1,5 @@
 body{
-    max-width: 1440px;
+    width: 1440px;
     height: 900px;
     background-color: #EEE8EA;
     margin: 0px;
@@ -10,7 +10,6 @@ body{
 
 .header{
     width: 100%;
-    max-width: 1440px;
     height: 80px;
     display: flex;
     flex-direction: row;
@@ -87,7 +86,6 @@ body{
 
 .content{
     display: flex;
-    
     align-items: center;
     flex-direction: column;
 }
@@ -100,8 +98,9 @@ body{
     margin-top: 30px;
     display: flex;
     box-shadow: 0px 4px 12px 0px #0000000D;
-
+   
 }
+
 
 .pic-div{
    
@@ -312,7 +311,7 @@ span{
     flex-direction: column;
     box-shadow: 0px 4px 40px 0px #00000026;
     border-radius: 10px;
-
+    margin-bottom: 100px;
     
 }  
 
@@ -343,6 +342,8 @@ span{
     width: 280px;
     display: flex;
     flex-direction: column;
+    
+
 }
 .dd-item{
     width: 280px;
@@ -440,6 +441,12 @@ span{
 .dropdown td:hover {
     background-color: #D97775;
     color: white;
+}
+.dropdown-open .dd-item5-1 {
+    border: 1px solid #000000 !important;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+     height: 37px !important;
 }
 /* State Dropdown Styling */
 .state-dropdown {
@@ -716,7 +723,7 @@ span{
 .footer{
     display: flex;
     align-items: center;
-    margin-left: 840px;
+    margin-left: auto;
     width:500px;
     gap:40px;
 }
@@ -772,13 +779,37 @@ span{
     cursor: pointer;
 }
 .dd-item5-1:hover{
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-    border-width: 0.25px;
-    border: 0.25px solid #000000;
     box-shadow: none;
-    height: 37.5px;
+    
 }
+
 .dd-item5:hover{
     box-shadow: none;
+}
+/* Flex container for name + badge */
+.name-section {
+    display: flex;           /* horizontal alignment */
+    align-items: center;     /* vertically centers items by default */
+    gap: 20px;                /* space between name and badge */
+}
+
+.bloodtype-text {
+    width: 52px;
+    height: 26px;
+    background: #8CC7AE;
+    border-radius: 10px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    line-height: 26px;        /* keeps text vertically centered inside badge */
+    color: white;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    box-sizing: border-box;
+    cursor: default;
+
+    margin-top: 8px;          /* lowers the badge a bit */
 }
