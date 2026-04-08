@@ -15,6 +15,7 @@ const addDonor = async (req, res) => {
             date_of_birth,
             available
         } = req.body;
+
         if (!/^[A-Za-z\s]+$/.test(full_name)) {
             return res.status(400).json({ message: "Invalid full name" });
         }
@@ -27,24 +28,43 @@ const addDonor = async (req, res) => {
         if (!/^\d{10}$/.test(telephon)) {
             return res.status(400).json({ message: "Invalid phone number" });
         }
+
         const hashedPassword = await bcrypt.hash(password, 10); 
+
+        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
         const query = `
             INSERT INTO donors
-            (full_name, blood_type, telephon, email, password, location, date_of_birth, available)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            (full_name, blood_type, telephon, email, password, location, date_of_birth, available, verification_code)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
         db.query(
             query,
-            [full_name, blood_type, telephon, email, hashedPassword, location, date_of_birth, available],
-            (err, result) => {
+            [full_name, blood_type, telephon, email, hashedPassword, location, date_of_birth, available, verificationCode],
+            async (err, result) => {
                 if (err) {
                     console.error(err);
+                    if (err.code === 'ER_DUP_ENTRY') {
+                        return res.status(400).json({ message: "Email or phone already exists" });
+                    }
                     return res.status(500).json({ message: "Error adding donor" });
                 }
 
-                res.status(201).json({ message: 'Donor added successfully', id: result.insertId });
+                try {
+                    await sendVerificationEmail(email, verificationCode);
+                    
+                    res.status(201).json({ 
+                        message: 'Donor added successfully. Please check your email for verification code.', 
+                        id: result.insertId 
+                    });
+                } catch (emailError) {
+                    console.error("Mail Error:", emailError);
+                    res.status(201).json({ 
+                        message: 'Donor registered but failed to send verification email.', 
+                        id: result.insertId 
+                    });
+                }
             }
         );
     } catch (error) {
@@ -148,12 +168,14 @@ SET is_verified = true
 WHERE email = ?
 `;
 
-db.query(update, [email]);
+db.query(update, [email], (errUpdate) => {
+            if (errUpdate) return res.status(500).json({ message: "Error updating verification status" });
 
 res.json({ message: "Email verified successfully" });
 
 });
 
+});
 };
 
 const searchDonors = (req, res) => {
