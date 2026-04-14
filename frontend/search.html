@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LifeDrop — Search</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+  <link rel="stylesheet" href="search.css">
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="logo">
+    <div class="logo-drop"></div>
+    LifeDrop
+  </a>
+  <ul>
+    <li><a href="#">Home</a></li>
+    <li><a href="#">Map</a></li>
+    <li><a href="#" class="active">Search</a></li>
+  </ul>
+  <div class="avatar"></div>
+</nav>
+
+<!-- MAIN -->
+<main>
+
+  <!-- FILTERS -->
+  <div class="filters">
+
+    <!-- BLOOD TYPE -->
+    <div class="filter-group">
+      <label>Blood Type</label>
+      <div class="blood-picker-wrap">
+        <div class="blood-display" id="bloodDisplay" onclick="toggleBloodPicker()">
+          <span class="icon-left">&#x1FA78;</span>
+          <span id="bloodLabel">Select Blood Type</span>
+          <svg class="chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="blood-dropdown" id="bloodDropdown">
+          <div class="blood-grid">
+            <button class="blood-btn" onclick="selectBlood('O+')">O+</button>
+            <button class="blood-btn" onclick="selectBlood('O-')">O-</button>
+            <button class="blood-btn" onclick="selectBlood('A+')">A+</button>
+            <button class="blood-btn" onclick="selectBlood('A-')">A-</button>
+            <button class="blood-btn" onclick="selectBlood('B+')">B+</button>
+            <button class="blood-btn" onclick="selectBlood('B-')">B-</button>
+            <button class="blood-btn" onclick="selectBlood('AB+')">AB+</button>
+            <button class="blood-btn" onclick="selectBlood('AB-')">AB-</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOCATION — 69 wilayas -->
+    <div class="filter-group">
+      <label>Location</label>
+      <div class="select-wrap">
+        <span class="icon-left">&#x1F4CD;</span>
+        <select>
+          <option value="">Select Location</option>
+          <option>01 - Adrar</option>
+          <option>02 - Chlef</option>
+          <option>03 - Laghouat</option>
+          <option>04 - Oum El Bouaghi</option>
+          <option>05 - Batna</option>
+          <option>06 - Béjaïa</option>
+          <option>07 - Biskra</option>
+          <option>08 - Béchar</option>
+          <option>09 - Blida</option>
+          <option>10 - Bouira</option>
+          <option>11 - Tamanrasset</option>
+          <option>12 - Tébessa</option>
+          <option>13 - Tlemcen</option>
+          <option>14 - Tiaret</option>
+          <option>15 - Tizi Ouzou</option>
+          <option>16 - Alger</option>
+          <option>17 - Djelfa</option>
+          <option>18 - Jijel</option>
+          <option>19 - Sétif</option>
+          <option>20 - Saïda</option>
+          <option>21 - Skikda</option>
+          <option>22 - Sidi Bel Abbès</option>
+          <option>23 - Annaba</option>
+          <option>24 - Guelma</option>
+          <option>25 - Constantine</option>
+          <option>26 - Médéa</option>
+          <option>27 - Mostaganem</option>
+          <option>28 - M'Sila</option>
+          <option>29 - Mascara</option>
+          <option>30 - Ouargla</option>
+          <option>31 - Oran</option>
+          <option>32 - El Bayadh</option>
+          <option>33 - Illizi</option>
+          <option>34 - Bordj Bou Arréridj</option>
+          <option>35 - Boumerdès</option>
+          <option>36 - El Tarf</option>
+          <option>37 - Tindouf</option>
+          <option>38 - Tissemsilt</option>
+          <option>39 - El Oued</option>
+          <option>40 - Khenchela</option>
+          <option>41 - Souk Ahras</option>
+          <option>42 - Tipaza</option>
+          <option>43 - Mila</option>
+          <option>44 - Aïn Defla</option>
+          <option>45 - Naâma</option>
+          <option>46 - Aïn Témouchent</option>
+          <option>47 - Ghardaïa</option>
+          <option>48 - Relizane</option>
+          <option>49 - Timimoun</option>
+          <option>50 - Bordj Badji Mokhtar</option>
+          <option>51 - Ouled Djellal</option>
+          <option>52 - Béni Abbès</option>
+          <option>53 - In Salah</option>
+          <option>54 - In Guezzam</option>
+          <option>55 - Touggourt</option>
+          <option>56 - Djanet</option>
+          <option>57 - El M'Ghair</option>
+          <option>58 - El Menia</option>
+          <option>59 - Aflou</option>
+          <option>60 - Brika</option>
+          <option>61 - Ksar El Hilaline</option>
+          <option>62 - Messaad</option>
+          <option>63 - Ain Oussera</option>
+          <option>64 - Bou Saâda</option>
+          <option>65 - El Abiodh Sidi Cheikh</option>
+          <option>66 - El Kantara</option>
+          <option>67 - Bir El Ater</option>
+          <option>68 - Ksar El Boukhari</option>
+          <option>69 - Aricha</option>
+        </select>
+        <svg class="chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- URGENCY -->
+    <div class="filter-group">
+      <label>Urgency</label>
+      <div class="select-wrap">
+        <select>
+          <option value="">Any Urgency</option>
+          <option>High Urgency</option>
+          <option>Stable</option>
+        </select>
+        <svg class="chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CARDS -->
+  <div class="cards-grid">
+
+    <!-- Card 1 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="avatar-sm"></div>
+        <div class="card-meta">
+          <div class="card-name">
+            Ahlam Naseri
+            <span class="blood-badge">O+</span>
+          </div>
+          <span class="urgency-tag high">High Urgency</span>
+        </div>
+      </div>
+      <div class="card-location">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+          <path d="M6.5 1C4.29 1 2.5 2.79 2.5 5c0 3.19 4 7 4 7s4-3.81 4-7c0-2.21-1.79-4-4-4z" fill="#7A7A7A"/>
+          <circle cx="6.5" cy="5" r="1.3" fill="#fff"/>
+        </svg>
+        EL-khroub, Constantine
+      </div>
+      <div class="request-box">
+        <div class="request-info">
+          <div class="hospital-name">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <rect x="1" y="3" width="12" height="10" rx="1.5" stroke="#7A7A7A" stroke-width="1.2"/>
+              <path d="M5 13V9h4v4" stroke="#7A7A7A" stroke-width="1.2"/>
+              <path d="M7 5.5v3M5.5 7h3" stroke="#E8433A" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+            Hospital Ali Mendjli
+          </div>
+          <div class="req-date">15 Apr 2026</div>
+        </div>
+        <div class="req-meta">
+          <span>
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+              <rect x="1" y="2" width="9" height="8" rx="1" stroke="#aaa" stroke-width="1"/>
+              <path d="M3.5 1v2M7.5 1v2M1 5h9" stroke="#aaa" stroke-width="1" stroke-linecap="round"/>
+            </svg>
+            Posted 2 days ago
+          </span>
+          <span>
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+              <circle cx="5.5" cy="5.5" r="4" stroke="#aaa" stroke-width="1"/>
+              <path d="M5.5 3v2.5l1.5 1" stroke="#aaa" stroke-width="1" stroke-linecap="round"/>
+            </svg>
+            12 km away
+          </span>
+        </div>
+        <div class="map-preview"><div id="map1"></div></div>
+        <button class="btn-view">View Request &#x2192;</button>
+      </div>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="avatar-sm"></div>
+        <div class="card-meta">
+          <div class="card-name">
+            Niema Derghal
+            <span class="blood-badge a-plus">A+</span>
+          </div>
+          <span class="urgency-tag stable">Stable</span>
+        </div>
+      </div>
+      <div class="card-location">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+          <path d="M6.5 1C4.29 1 2.5 2.79 2.5 5c0 3.19 4 7 4 7s4-3.81 4-7c0-2.21-1.79-4-4-4z" fill="#7A7A7A"/>
+          <circle cx="6.5" cy="5" r="1.3" fill="#fff"/>
+        </svg>
+        EL Eulma, Sétif
+      </div>
+      <div class="request-box">
+        <div class="request-info">
+          <div class="hospital-name">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <rect x="1" y="3" width="12" height="10" rx="1.5" stroke="#7A7A7A" stroke-width="1.2"/>
+              <path d="M5 13V9h4v4" stroke="#7A7A7A" stroke-width="1.2"/>
+              <path d="M7 5.5v3M5.5 7h3" stroke="#E8433A" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+            Clinique Zammit
+          </div>
+          <div class="req-date">02 Fev 2026</div>
+        </div>
+        <div class="req-meta">
+          <span>
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+              <rect x="1" y="2" width="9" height="8" rx="1" stroke="#aaa" stroke-width="1"/>
+              <path d="M3.5 1v2M7.5 1v2M1 5h9" stroke="#aaa" stroke-width="1" stroke-linecap="round"/>
+            </svg>
+            Posted 2 months ago
+          </span>
+          <span>
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+              <circle cx="5.5" cy="5.5" r="4" stroke="#aaa" stroke-width="1"/>
+              <path d="M5.5 3v2.5l1.5 1" stroke="#aaa" stroke-width="1" stroke-linecap="round"/>
+            </svg>
+            70 km away
+          </span>
+        </div>
+        <div class="map-preview"><div id="map2"></div></div>
+        <button class="btn-view">View Request &#x2192;</button>
+      </div>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="avatar-sm"></div>
+        <div class="card-meta">
+          <div class="card-name">
+            Salim Hamdi
+            <span class="blood-badge ab">AB</span>
+          </div>
+          <span class="urgency-tag stable">Stable</span>
+        </div>
+      </div>
+      <div class="card-location">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+          <path d="M6.5 1C4.29 1 2.5 2.79 2.5 5c0 3.19 4 7 4 7s4-3.81 4-7c0-2.21-1.79-4-4-4z" fill="#7A7A7A"/>
+          <circle cx="6.5" cy="5" r="1.3" fill="#fff"/>
+        </svg>
+        Batna, Batna
+      </div>
+      <div class="request-box">
+        <div class="request-info">
+          <div class="hospital-name">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <rect x="1" y="3" width="12" height="10" rx="1.5" stroke="#7A7A7A" stroke-width="1.2"/>
+              <path d="M5 13V9h4v4" stroke="#7A7A7A" stroke-width="1.2"/>
+              <path d="M7 5.5v3M5.5 7h3" stroke="#E8433A" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+            Clinique Les Rosiers
+          </div>
+          <div class="req-date">13 Mar 2026</div>
+        </div>
+        <div class="req-meta">
+          <span>
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+              <rect x="1" y="2" width="9" height="8" rx="1" stroke="#aaa" stroke-width="1"/>
+              <path d="M3.5 1v2M7.5 1v2M1 5h9" stroke="#aaa" stroke-width="1" stroke-linecap="round"/>
+            </svg>
+            Posted a month ago
+          </span>
+          <span>
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+              <circle cx="5.5" cy="5.5" r="4" stroke="#aaa" stroke-width="1"/>
+              <path d="M5.5 3v2.5l1.5 1" stroke="#aaa" stroke-width="1" stroke-linecap="round"/>
+            </svg>
+            3.6 km away
+          </span>
+        </div>
+        <div class="map-preview"><div id="map3"></div></div>
+        <button class="btn-view">View Request &#x2192;</button>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <a href="#">Privacy Policy</a>
+  <a href="#">Terms of services</a>
+  <div class="footer-social">
+    <a href="#">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+        <path d="M1 1l4.5 5.5L1 12h1.5l3.7-4.2L9.5 12H12L7.3 6.2 11.7 1h-1.5L6.6 4.9 3.5 1H1z" fill="#7A7A7A"/>
+      </svg>
+    </a>
+    <a href="#">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+        <rect x="1" y="1" width="11" height="11" rx="3" stroke="#7A7A7A" stroke-width="1.2"/>
+        <circle cx="6.5" cy="6.5" r="2.5" stroke="#7A7A7A" stroke-width="1.2"/>
+        <circle cx="9.8" cy="3.2" r=".7" fill="#7A7A7A"/>
+      </svg>
+    </a>
+    <a href="#">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+        <path d="M7.5 12V7h1.7l.3-2H7.5V3.7c0-.6.2-1 1-1H9.5V1H8C6.2 1 5.5 2 5.5 3.5V5H4v2h1.5v5H7.5z" fill="#7A7A7A"/>
+      </svg>
+    </a>
+    <a href="#">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+        <rect x="1" y="1" width="11" height="11" rx="2" stroke="#7A7A7A" stroke-width="1.2"/>
+        <path d="M4 5.5V9.5M4 3.5v.5" stroke="#7A7A7A" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M7 9.5V7c0-1 .5-1.5 1.5-1.5S10 6 10 7v2.5" stroke="#7A7A7A" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M7 5.5v4" stroke="#7A7A7A" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+    </a>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="search.js"></script>
+</body>
+</html>
