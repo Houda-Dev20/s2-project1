@@ -12,7 +12,23 @@
         src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=ioJbUjvIeqA2mi9Kzyt-iLwE4zbSc1uBw5qj7MzrYL3UTYeCI5pYlzFzvzwxpuJTeSe84SDQRVHTB5s7WGzlthaGkoC6yS_LdzYfkFVt7B8EJvM7TZtXt9bIOH1gq7yMvwGdXqj_cXN96ub07CRsiWnNlkbXEbWfJL0tvkWqdRM3RjX5iEvvLeXYwrUFw-vU9BJxAtvj-5jHURBimqJ_4lVpJ0hxqvwMekJd-x9y6hXeStynNhTj4fM0tPnXZirAlbWUmgCq7oVgq7TC_caUKsjQQwboeikxewu271T668kuz4bdyHCx2t5nJiWq3NBNCVQ7tXyOIB3CA00VJt2F7PQrH4Z-doW0rHWjjcch6hZklCda6v5vtlA-xj98hYSkN4rJjURUfSt-U8_oQwz6YrkWkWgdKf83gRxioQDh9I-KimiGrVdmld8HAhyUQc2uxYY144-fU3F1MDcWn-egJEC5OKU5Og0feWo2o63__E8CbaiqFP8wkt0icO2E962WlktCXPf2ejvzKjkrvuhTR7a5uWh4SFnmlmv0vNuAApWwEvUGnA7zJDf1A5zBBv7X_JMoMdISeMUMdlTH1kZ4bBP4XWGtfOsEtOexSjIYfcS9pRp7J8GIzaVf5Znah_7UGoi40mdL-8aIh2PajmUj_tP3i5FDLHM51ZmI4ljozZt5hSm7_1tZKAP1opIotTRS6GtNwxs2Ff8-sOVbUjaQSt46o5K1ozkE8fkwkRFNQ-HyQwgZCsTzz1aRgWskJROcD4TS0I5QzC7Azd8xZcZ261U50uRG2gHMn-u8GEncJ70r2434vCRecCqjoJhmHCJaqSSkOqMlCcln8joD-Rbyhzmjtittpni-josQjFLuo10OK04KPwCU5gKit3OU7O3n5YkuAYj3A_Ym_gO0rzXsHnU-6MCrineF3Coo958zMI5BbmNmnbg7aNiC3mAFsuyr0AzJWhJyRq5sBWtr-RL8iITulaS87y_tDNncpqVnCOOfS4_hoRac1fs3J7LjooNcd_PNj1nro6iYPHwhIWOmY2Mj5vtyxgtq6xgHwGvtVHc4aV_jeq_pq3EXU4CSn5bsLOLbK2qQHHlDqhJZEU-qWaulfU9F8d-2bCWLPuFq5RqznKopUvE96VnbcZCdEBF_MRmf8r23DAyPB_jlcGKrH7wLRGAQ4GKiFgDomOA80ntFagr_luaTYRRuCQHZNN1EQsGpCssFZ1ugvPxlHEDt8HTbDwmgYmZKwQh8xHatNOscDFwbw9CISo_HchTgYYOjpO77vGaUvNoFfAB2qJeEY58U4X9qIRkcNZraMhpP1t8Khki35nE1sokLwgBYWpn9I9Hzi8F4tyvzSCcmq4FuLTbYdM5K6v9BDbMtkzc6T8165hWmt92nyA4sn4q4Rgib5ZeKgaPjca0u0kr5TsD0SeE0myd7J9filWwj3X51NeZ7QEnNtIux92brO-hmmqjwQJqM2z1IvOHbEUTU8LcW6Xn3ryCFRIznlu_--EgfpCUy1dWhl2xx48h2KKR3mPVAbCXq4RZb5UQRYcqfLU6PdIwaqZCbsdPGbcSjATNRBD2r6Jz7dqUXmuqbmAiWymRxdF4eCQ9VeNCGOtZVtoifFjzd_G90NSIUqUVXoLR0nZU_rMK6YLzpM53MK_O-Z_1e7Bgznm8eALrCLrbPTl-dO5a1WvNECTnh2hZH8c35o4ZbvHtk4QEKdWHzRkn6Gz89"
         nonce="d3089e26521ee49339a0f1e5653971f0" charset="UTF-8"></script>
 </head>
+       <style>
 
+
+.container {
+    width: 455px;
+    border-radius: 35px; 
+}
+
+
+select {
+    width: 100%;
+    height: 60px;
+    padding: 10px;
+    border-radius: 10px;
+   
+}
+</style>
 <body>
 
     <div class="main-container">
@@ -49,10 +65,14 @@
                         position: absolute;bottom: -18px; left: 10px;"></small>
                     </div>
 
-                    <div class="input-group">
+                   <div class="input-group">
                         <img src="images/Vector1.svg" class="input-icon" alt="location">
-
-                        <input type="text" id="location_s" placeholder="Enter Wilaya, Baladiya" required>
+                        <div class="container">
+                            <select id="location">
+                                <option >Select Location</option>
+                            </select>
+                        </div>
+                        
                         <small class="error-msg" style="color: red; display: none; font-size: 11px;
                         position: absolute;bottom: -18px; left: 10px;"></small>
                     </div>
