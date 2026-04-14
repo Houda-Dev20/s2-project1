@@ -2,6 +2,7 @@ const db=require('../config/db');
 const bcrypt = require('bcrypt');
 
 const sendVerificationEmail = require("../utils/sendEmail");
+const { ALGERIA_WILAYAS } = require('../utils/constants');
 
 const addDonor = async (req, res) => {
     try {
@@ -32,6 +33,13 @@ const addDonor = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10); 
 
         const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    const wilayaNumber = parseInt(location);
+
+    if (!ALGERIA_WILAYAS.includes(wilayaNumber)) {
+        return res.status(400).json({ 
+message: "Invalid location. Please select a valid wilaya number between 1 and 58."        });
+    }
 
         const query = `
             INSERT INTO donors
@@ -75,8 +83,8 @@ const addDonor = async (req, res) => {
 
 const updateDonor = async (req, res) => {
     try {
-        const { id } = req.params;
-        const {
+const { id } = req.params;
+      const {
             full_name,
             blood_type,
             telephon,
@@ -87,31 +95,72 @@ const updateDonor = async (req, res) => {
             available
         } = req.body;
 
+        if (full_name && !/^[A-Za-z\s]+$/.test(full_name)) {
+            return res.status(400).json({ message: "Invalid full name format" });
+        }
+
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            return res.status(400).json({ message: "Invalid email address" });
+        }
+
+        if (telephon && !/^\d{10}$/.test(telephon)) {
+            return res.status(400).json({ message: "Invalid phone number" });
+        }
+
+        if (location) {
+            const wilayaNumber = parseInt(location);
+            if (!ALGERIA_WILAYAS.includes(wilayaNumber)) {
+                return res.status(400).json({ 
+                    message: "Invalid location. Please select a valid wilaya number between 1 and 58." 
+                });
+            }
+        }
+
         let hashedPassword = password;
         if (password) {
             hashedPassword = await bcrypt.hash(password, 10);
         }
 
-        const query = `
-            UPDATE donors 
-            SET full_name=?, blood_type=?, telephon=?, email=?, password=?, location=?, date_of_birth=?,
-            available=? 
-            WHERE id=?
-        `;
+const query = `
+    UPDATE donors 
+    SET 
+        full_name = COALESCE(?, full_name), 
+        blood_type = COALESCE(?, blood_type), 
+        telephon = COALESCE(?, telephon), 
+        email = COALESCE(?, email), 
+        password = COALESCE(?, password),
+        location = COALESCE(?, location), 
+        date_of_birth = COALESCE(?, date_of_birth),
+        available = COALESCE(?, available)
+    WHERE id = ?
+`;
 
         db.query(query,
-            [full_name, blood_type, telephon, email, hashedPassword, location, date_of_birth, available, id],
+            [
+                full_name || null, 
+                blood_type || null, 
+                telephon || null, 
+                email || null, 
+                hashedPassword,
+                location || null, 
+                date_of_birth || null, 
+                available !== undefined ? available : null, 
+                id
+            ],
             (err, result) => {
                 if (err) {
-                    console.error(err);
-                    return res.status(500).json({ message: "Error updating donor" });
+                    console.error("Database Error:", err);
+                    if (err.code === 'ER_DUP_ENTRY') {
+                        return res.status(400).json({ message: "Email or phone already exists" });
+                    }
+                    return res.status(500).json({ message: "Error updating donor data" });
                 }
 
                 if (result.affectedRows === 0) {
-                    return res.status(404).json({ message: "donor not found" });
+                    return res.status(404).json({ message: "Donor not found" });
                 }
 
-                res.json({ message: "Donor updated successfully" });
+                res.json({ message: "Donor updated successfully!" });
             }
         );
     } catch (error) {
@@ -171,7 +220,17 @@ WHERE email = ?
 db.query(update, [email], (errUpdate) => {
             if (errUpdate) return res.status(500).json({ message: "Error updating verification status" });
 
-res.json({ message: "Email verified successfully" });
+            const token = jwt.sign(
+                { id: result[0].id, email: result[0].email },
+                process.env.ESI_SBA_SECRET_KEY,
+                { expiresIn: '24h' }
+            );
+
+res.json({
+     message: "Email verified successfully" ,
+     token: token,
+     donor: { id: result[0].id, full_name: result[0].full_name }
+    });
 
 });
 
@@ -231,7 +290,6 @@ donors: result
 const loginDonor = (req, res) => {
 
     const { email, password } = req.body;
-console.log(email, password);
 
     const sql = "SELECT * FROM donors WHERE email = ?";
 
@@ -249,7 +307,6 @@ console.log(email, password);
                 message: "Donor not found"
             });
         }
-
         const donor = result[0];
         const match = await bcrypt.compare(password, donor.password);
 
@@ -259,6 +316,17 @@ console.log(email, password);
                 message: "Incorrect password"
             });
         }
+
+        if (!donor.is_verified) {
+            return res.status(403).json({ message: "Please verify your email first" });
+        }
+
+        const token = jwt.sign(
+            { id: donor.id, email: donor.email }, 
+            process.env.ESI_SBA_SECRET_KEY,                
+            { expiresIn: '24h' }      
+        );
+
         res.status(200).json({
             success: true,
             message: "Login successful",
@@ -284,4 +352,14 @@ const logoutDonor = (req, res) => {
 
 };
 
-module.exports = { deactivateAccount, addDonor, updateDonor , verifyEmail, searchDonors, getAllDonors, loginDonor, logoutDonor };
+const getProfile = (req, res) => {
+    const donorId = req.user.id; 
+
+    const sql = "SELECT full_name, email, blood_type FROM donors WHERE id = ?";
+    db.query(sql, [donorId], (err, result) => {
+        if (err) return res.status(500).json({ message: "Database error" });
+        res.json(result[0]); 
+    });
+};
+
+module.exports = { deactivateAccount, addDonor, updateDonor , verifyEmail, searchDonors, getAllDonors, loginDonor, logoutDonor, getProfile };
