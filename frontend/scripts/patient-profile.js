@@ -105,7 +105,11 @@ document.addEventListener('DOMContentLoaded', function() {
     `;
     document.body.appendChild(stateDropdown);
 });
-
+function getZoomLevel() {
+    // This checks the actual rendered width vs the body's offsetWidth
+    // It works whether you use zoom or transform: scale
+    return document.body.getBoundingClientRect().width / document.body.offsetWidth || 1;
+}
 function toggleDropdown() {
     const dropdown = document.getElementById('dropdown');
     const arrow = document.getElementById('arrow-icon');
@@ -118,8 +122,9 @@ function toggleDropdown() {
         document.body.classList.remove('dropdown-open'); // remove active style
     } else {
         const rect = arrow.getBoundingClientRect();
-        dropdown.style.top = rect.bottom + window.scrollY- 1.1 + 'px';
-        dropdown.style.left = rect.left + window.scrollX + 'px';
+        const currentZoom = getZoomLevel();
+      dropdown.style.top = (rect.bottom + window.scrollY) / currentZoom - 1 + 'px';
+        dropdown.style.left = (rect.left + window.scrollX) / currentZoom + 'px';
         dropdown.style.display = "block";
 
         document.body.classList.add('dropdown-open'); // apply active style
@@ -137,9 +142,10 @@ function toggleStateDropdown() {
         dropdown.style.display = "none";
     } else {
         const rect = stateIcon.getBoundingClientRect();
+        const currentZoom = getZoomLevel();
         dropdown.style.position = 'absolute';
-        dropdown.style.top = rect.bottom + window.scrollY + 0 + 'px';
-        dropdown.style.left = rect.left + window.scrollX + 'px';
+       dropdown.style.top = (rect.bottom + window.scrollY) / currentZoom + 'px';
+        dropdown.style.left = (rect.left + window.scrollX) / currentZoom + 'px';
         dropdown.style.display = "block";
     }
 }
@@ -297,6 +303,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };//when we click it the folder will open
     fileInput.onchange = function(e) {
          profileImage.src = URL.createObjectURL(e.target.files[0]);
+         document.querySelector('.profile img').src = URL.createObjectURL(e.target.files[0]);
          };
 
 
