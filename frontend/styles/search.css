@@ -201,13 +201,12 @@ main {
     font-family: 'Tharlon', sans-serif;
     font-size: 16px;
     color: rgba(0, 0, 0, 0.5);
-    appearance: none; /* إخفاء سهم المتصفح الافتراضي */
+    appearance: none; 
     cursor: pointer;
-    padding-left: px; /* مسافة للأيقونة */
+    
 }
 
 
-/* BLOOD PICKER SPECIFIC */
 .blood-picker-wrap {
     position: relative;
     background-color: transparent;
@@ -225,7 +224,7 @@ main {
     top: 70px;
     left: 0;
     width: 100%;
-    background: white;
+    background: rgba(238, 232, 234, 0.2);
     border-radius: 12px;
     box-shadow: 0px 10px 30px rgba(0,0,0,0.1);
     padding: 15px;
@@ -258,12 +257,10 @@ main {
     border-color: #D94444;
 }
 
-/* SHOW CLASS FOR JS */
 .show {
     display: block !important;
 }
 
-/* ── CARDS GRID ── */
 .cards-grid {
   width: 1300px;
   height: 440px;
@@ -421,12 +418,12 @@ main {
 .req-meta span { display: flex; align-items: center; gap: 7px; }
 
 /* ── MAP ── */
-/* 1. الحاوية الخارجية (الرقيقة) */
+
 .map-preview {
     width: 90%;
-    height: 60px;            /* الارتفاع الرقيق المطلوب */
-    border-radius: 8px;     /* زوايا دائرية ناعمة */
-    overflow: hidden;        /* لإخفاء أي أجزاء زائدة من الخريطة */
+    height: 60px;
+    border-radius: 8px;    
+    overflow: hidden;        
     border: 1px solid rgba(0, 0, 0, 0.06); 
     position: relative;
     margin: 10px 0;
@@ -435,24 +432,22 @@ main {
     margin-bottom: 10px;  
 }
 
-/* 2. حاوية الخريطة الداخلية */
 .map-preview > div { 
     height: 100%; 
     width: 100%; 
 }
 
-/* 3. تنسيق الماركر (النقطة الحمراء + اسم المشفى بجانبها) */
 .custom-hospital-marker {
     display: flex;
     align-items: center;
-    gap: 6px;                /* المسافة بين النقطة والنص */
-    white-space: nowrap;     /* لمنع النص من النزول لسطر جديد */
+    gap: 6px;                
+    white-space: nowrap;    
 }
 
 .marker-pin {
     width: 12px;
     height: 12px;
-    background-color: #E8433A; /* اللون الأحمر الخاص بمشروعك */
+    background-color: #E8433A; 
     border: 2px solid white;
     border-radius: 50%;
     box-shadow: 0 1px 3px rgba(0,0,0,0.3);
@@ -464,22 +459,18 @@ main {
     font-weight: 700;
     font-size: 11px;
     color: #333;
-    /* ظل أبيض خلف النص لضمان وضوحه فوق شوارع الخريطة */
     text-shadow: 1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff;
 }
 
-/* 4. تنظيف الخريطة (إخفاء الأزرار والمعلومات الزائدة) */
 .leaflet-control-zoom,
 .leaflet-control-attribution { 
     display: none !important; 
 }
 
-/* 5. تحسين مظهر التولتيب (في حال استخدمتِه مستقبلاً) */
 .leaflet-tooltip-pane {
     z-index: 1000;
 }
 
-/* ── BTN VIEW ── */
 .btn-view {
   display: block;
   width: 128px;
