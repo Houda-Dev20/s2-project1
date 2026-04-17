@@ -14,23 +14,48 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles/notifications.css">
 </head>
 <body>
 
-<!-- NAV -->
-<header class="navbar">
-  <div class="logo-area">
-    <img src="images/Blur.svg" alt="Logo" class="logo-icon">
-        <span class="logo-text">LifeDrop</span>
-</div>
-    <nav class="nav-links">
-       <a href="home.html" >Home</a>
-        <a href="map.html">Map</a>
-        <a href="search.html" class="taps">Search</a>
-    </nav>
-            
- <button class="profile" id="profile"> <img src="" alt="profile-pic"></button>
-  </header>
+  <header class="header">
+        <div class="left-section">
+            <img class="logo" src="images/Blur.svg" alt="logo">
+            <img class="logo1" src="images/LifeDrop.svg" alt="logo1">
+        </div>
+
+        <nav class="middle-section">
+            <a href="home.html" class="taps ">Home</a>
+            <a href="map.html" class="taps">Map</a>
+            <a href="search.html" class="taps active">Search</a>
+        </nav>
+
+        <div class="right-section">
+            <div class="notif-wrapper">
+                <button class="notif-trigger" id="notifBtn">
+                    <img class="bell-img" src="images/bell.svg" alt="notifications">
+                    <div class="red-dot" id="notifBadge"></div>
+                </button>
+
+                <div class="dropdown-container" id="notifDropdown">
+                <div id="notifList"></div>    
+                  <button class="mark-read-btn" id="markReadBtn">Mark all as read</button>
+
+                    <div class="empty-state" id="emptyState">
+                        <div class="check-icon-large">
+                            <img class="large-notif-img" src="images/gg_check-o.svg" alt="caught-up">
+                        </div>
+                        <h3 class="empty-title">You’re All Caught Up</h3>
+                        <p class="empty-desc">No new notifications for now</p>
+                    </div>
+                </div>
+            </div>
+
+            <button class="profile" id="profile">
+                <img class="profile-img" src="" alt="profile-picture">
+            </button>
+        </div>
+    </header>
 
 <!-- MAIN -->
 <main>
@@ -318,5 +343,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="scripts/search.js"></script>
+<script src="scripts/notifications.js"></script>
 </body>
 </html>

@@ -8,23 +8,73 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles/notifications.css">
 </head>
 <body>
 
 
-        <header class="navbar">
-            <div class="logo-area">
-                <img src="images/Blur.svg" alt="Logo" class="logo-icon">
-                <span class="logo-text">LifeDrop</span>
+          <header class="header">
+        <div class="left-section">
+            <img class="logo" src="images/Blur.svg" alt="logo">
+            <img class="logo1" src="images/LifeDrop.svg" alt="logo1">
+        </div>
+
+        <nav class="middle-section">
+            <a href="home.html" class="taps active">Home</a>
+            <a href="map.html" class="taps">Map</a>
+            <a href="search.html" class="taps">Search</a>
+        </nav>
+
+        <div class="right-section">
+            <div class="notif-wrapper">
+                <button class="notif-trigger" id="notifBtn">
+                    <img class="bell-img" src="images/bell.svg" alt="notifications">
+                    <div class="red-dot" id="notifBadge"></div>
+                </button>
+
+                <div class="dropdown-container" id="notifDropdown">
+                <div id="notifList"></div>    
+                  <button class="mark-read-btn" id="markReadBtn">Mark all as read</button>
+
+                    <div class="empty-state" id="emptyState">
+                        <div class="check-icon-large">
+                            <img class="large-notif-img" src="images/gg_check-o.svg" alt="caught-up">
+                        </div>
+                        <h3 class="empty-title">You’re All Caught Up</h3>
+                        <p class="empty-desc">No new notifications for now</p>
+                    </div>
+                </div>
             </div>
-            <nav class="nav-links">
-                <a href="home.html">Home</a>
-                <a href="map.html">Map</a>
-                <a href="search.html">Search</a>
-            </nav>
-            <button class="profile" id="profile"> <img src="" alt="profile-pic"></button>
+
+            <button class="profile" id="profile">
+                <img class="profile-img" src="" alt="profile-picture">
+            </button>
+        </div>
+    </header>
+    <div id="notifModal" class="modal-overlay">
+    <div class="frame-33">
+        <div class="vector-circle">
+            <img src="images/Vector-heart.svg" alt="heart"> 
+        </div>
+        
+        <h2 class="modal-title">DONOR MATCH FOUND!</h2>
+
+        <div class="donor-info">
+            <img src="" id="modalImg" class="donor-img">
+            <div class="donor-text">
+                <span id="modalName" class="donor-name">Abd El-Malek Zerarga</span>
+                <span id="modalLocation" class="donor-loc">El-Eulma, Sétif</span>
             </div>
-        </header>
+        </div>
+
+        <p class="modal-msg">Hello, I am nearby and I can be at EPSP</p>
+
+        <div class="modal-buttons">
+            <button class="btn-accept">Accept Request</button>
+            <button class="btn-cancel" id="closeModal">Cancel</button>
+        </div>
+    </div>
+</div>
 
         <section class="profile-header card">
             <div class="user-main">
@@ -190,7 +240,7 @@
         </div>
     </div>  
     <script src="scripts\donor-profile.js"></script>
-    
+    <script src="scripts/notifications.js"></script>
 
 </body>
 </html>
