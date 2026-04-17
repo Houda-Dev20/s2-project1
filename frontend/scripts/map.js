@@ -52,24 +52,3 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-//Without L., the browser wouldn't understand what a map 
-// or a marker is. It keeps the Leaflet code organized 
-// and prevents it from clashing with other libraries 
-// you might be using (like Google Maps or Mapbox).
-//
-// When the user clicks anywhere on the map...
-//map.on('click', function(e) {
-    // 1. Get the coordinates of the click
-  //  var lat = e.latlng.lat;
-    //var lng = e.latlng.lng;
-
-    // 2. Ask the user for their blood type (simple popup for now)
-    //var bloodType = prompt("Enter Blood Type (e.g., AB+):");
-
-    //if (bloodType) {
-        // 3. Use your function to drop the marker immediately!
-      //  L.marker([lat, lng], { 
-          //  icon: createBloodIcon(bloodType) 
-        //}).addTo(map);
-   // }
-//});
