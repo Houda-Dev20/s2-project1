@@ -1,0 +1,87 @@
+
+  const inputs = document.querySelectorAll('.otp-input');
+  const verifyBtn = document.getElementById('verify-btn');
+  const resendBtn = document.getElementById('resend-btn');
+  const formView  = document.getElementById('form-view');
+  const successView = document.getElementById('success-view');
+
+  // ── OTP navigation ──
+  inputs.forEach((inp, i) => {
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !inp.value && i > 0) {
+        inputs[i - 1].focus();
+        inputs[i - 1].value = '';
+        inputs[i - 1].classList.remove('filled');
+        updateBtn();
+      }
+    });
+
+    inp.addEventListener('input', e => {
+      const val = e.target.value.replace(/\D/g,'');
+      inp.value = val ? val[val.length - 1] : '';
+      inp.classList.toggle('filled', !!inp.value);
+      if (inp.value && i < inputs.length - 1) inputs[i + 1].focus();
+      updateBtn();
+    });
+
+    inp.addEventListener('paste', e => {
+      e.preventDefault();
+      const data = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g,'');
+      [...data].slice(0, 6).forEach((ch, j) => {
+        if (inputs[i + j]) {
+          inputs[i + j].value = ch;
+          inputs[i + j].classList.add('filled');
+        }
+      });
+      const next = Math.min(i + data.length, 5);
+      inputs[next].focus();
+      updateBtn();
+    });
+
+    inp.addEventListener('focus', () => inp.select());
+  });
+
+  function updateBtn() {
+    const full = [...inputs].every(i => i.value);
+    verifyBtn.disabled = !full;
+  }
+
+  // ── Verify ──
+  verifyBtn.addEventListener('click', function(e) {
+    addRipple(e, this);
+    verifyBtn.textContent = 'Verifying…';
+    verifyBtn.disabled = true;
+
+    setTimeout(() => {
+      formView.style.display = 'none';
+      successView.classList.add('show');
+    }, 1100);
+  });
+
+  function addRipple(e, btn) {
+    const r = document.createElement('span');
+    r.className = 'ripple';
+    const rect = btn.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    r.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX - rect.left - size/2}px;top:${e.clientY - rect.top - size/2}px`;
+    btn.appendChild(r);
+    r.addEventListener('animationend', () => r.remove());
+  }
+
+  // ── Resend countdown ──
+  resendBtn.addEventListener('click', () => {
+    inputs.forEach(i => { i.value=''; i.classList.remove('filled'); });
+    inputs[0].focus();
+    updateBtn();
+    let sec = 30;
+    resendBtn.disabled = true;
+    resendBtn.textContent = `Resend (${sec}s)`;
+    const t = setInterval(() => {
+      sec--;
+      resendBtn.textContent = sec > 0 ? `Resend (${sec}s)` : 'Resend';
+      if (sec <= 0) { clearInterval(t); resendBtn.disabled = false; }
+    }, 1000);
+  });
+
+  // auto-focus first
+  inputs[0].focus();

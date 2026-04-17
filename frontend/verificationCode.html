@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LifeDrop – Verify your email</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+ <link rel="stylesheet" href="styles/verificationCode.css">
+</head>
+<body>
+
+<!-- LEFT -->
+<div class="left">
+  <div class="circle c1"></div>
+  <div class="circle c2"></div>
+  <div class="circle c3"></div>
+
+ <div class="logo">
+    <img src="images\Blur.svg" alt="Logo" >
+    LifeDrop
+</div>
+
+  <div class="tagline">
+    <h1>One step<br/>away from<br/>saving lives</h1>
+    <p>Enter the code we sent to verify your identity and join our donor community.</p>
+  </div>
+
+  <div class="mascot">
+    <img src="images\Component 1.png">
+  </div>
+</div>
+
+<!-- RIGHT -->
+<div class="right">
+  <div class="card" id="card">
+
+    <div id="form-view">
+      <h2>Verify your email</h2>
+      <p class="sub">We sent a 6-digit code to</p>
+      <p class="email">SaraBoussifeO6@gmail.com</p>
+
+      <div class="otp-row" id="otp-row">
+        <input class="otp-input" type="text" inputmode="numeric" maxlength="1" data-index="0" autocomplete="one-time-code"/>
+        <input class="otp-input" type="text" inputmode="numeric" maxlength="1" data-index="1"/>
+        <input class="otp-input" type="text" inputmode="numeric" maxlength="1" data-index="2"/>
+        <input class="otp-input" type="text" inputmode="numeric" maxlength="1" data-index="3"/>
+        <input class="otp-input" type="text" inputmode="numeric" maxlength="1" data-index="4"/>
+        <input class="otp-input" type="text" inputmode="numeric" maxlength="1" data-index="5"/>
+      </div>
+
+      <div class="resend-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        Didn't receive it?
+        <button class="resend-btn" id="resend-btn">Resend</button>
+      </div>
+
+      <button class="btn-verify" id="verify-btn" disabled>Verify</button>
+
+      <p class="wrong-email">Wrong email? <a href="#">Change it</a></p>
+
+      <div class="privacy">
+        <img src="images\arcticons_password.svg" style="width: 15px; height: 15px;">
+        Your information is safe and only shared with verified donors.
+      </div>
+    </div>
+
+    <div class="success-overlay" id="success-view">
+      <div class="success-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#E84040" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 6L9 17l-5-5"/>
+        </svg>
+      </div>
+      <h3>Email Verified!</h3>
+      <p>Welcome to the LifeDrop donor community </p>
+    </div>
+
+  </div>
+</div>
+
+<script src="scripts/verificationCode,js"></script>
+</body>
+</html>
