@@ -7,7 +7,7 @@ const addSearcher = async (req, res) => {
     try {
         const {
             full_name,
-            blood_type,
+            required_blood_type,
             telephon,
             email,
             password,
@@ -22,20 +22,39 @@ const addSearcher = async (req, res) => {
 
         const query = `
             INSERT INTO searchers
-            (full_name, blood_type, telephon, email, password, verification_code, is_verified, location, date_of_birth, is_urgent)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (full_name, telephon, email, password, verification_code, is_verified, location, date_of_birth, is_urgent)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
         db.query(
             query,
-            [full_name, blood_type, telephon, email, hashedPassword, verification_code, false, location, date_of_birth, is_urgent],
+            [full_name, telephon, email, hashedPassword, verification_code, false, location, date_of_birth, is_urgent],
             (err, result) => {
                 if (err) {
                     console.error(err);
+                    if (err.code === 'ER_DUP_ENTRY') {
+                        return res.status(400).json({ message: "Email or phone already exists" });
+                    }
                     return res.status(500).json({ message: "Error adding searcher" });
                 }
 
+                 const newSearcherId = result.insertId;
+
+                if (required_blood_types && Array.isArray(required_blood_types)) {
+                    const bloodValues = required_blood_types.map(type => [newSearcherId, type]);
+                    
+                    const queryBlood = `INSERT INTO searcher_blood_requirements (searcher_id, blood_type) VALUES ?`;
+
+                    db.query(queryBlood, [bloodValues], (bloodErr) => {
+                        if (bloodErr) {
+                            console.error(bloodErr);
+                            return res.status(500).json({ message: "Searcher added, but blood types failed" });
+                        }
                 res.status(201).json({ message: 'searcher added successfully', id: result.insertId });
+});
+                } else {
+                    res.status(201).json({ message: 'Searcher added (no blood types specified)', id: newSearcherId });
+                }
             }
         );
     } catch (error) {
@@ -49,7 +68,7 @@ const updateSearcher = async (req, res) => {
         const { id } = req.params;
         const {
             full_name,
-            blood_type,
+            required_blood_type,
             telephon,
             email,
             password,
@@ -65,24 +84,40 @@ const updateSearcher = async (req, res) => {
 
         const query = `
             UPDATE searchers 
-            SET full_name=?, blood_type=?, telephon=?, email=?, password=?, location=?, date_of_birth=?,
+            SET full_name=?, required_blood_type=?, telephon=?, email=?, password=?, location=?, date_of_birth=?,
             is_urgent=? 
             WHERE id=?
         `;
 
         db.query(query,
-            [full_name, blood_type, telephon, email, hashedPassword, location, date_of_birth, is_urgent, id],
+            [full_name, required_blood_type, telephon, email, hashedPassword, location, date_of_birth, is_urgent, id],
             (err, result) => {
                 if (err) {
                     console.error(err);
+                    if (err.code === 'ER_DUP_ENTRY') return res.status(400).json({ message: "Conflict: Email or phone exists" });
                     return res.status(500).json({ message: "Error updating searcher" });
                 }
 
                 if (result.affectedRows === 0) {
                     return res.status(404).json({ message: "searcher not found" });
                 }
+if (required_blood_types && Array.isArray(required_blood_types)) {
+                    db.query(`DELETE FROM searcher_blood_requirements WHERE searcher_id = ?`, [id], (delErr) => {
+                        if (delErr) return res.status(500).json({ message: "Error resetting blood types" });
 
-                res.json({ message: "Searcher updated successfully" });
+                        if (required_blood_types.length > 0) {
+                            const bloodValues = required_blood_types.map(type => [id, type]);
+                            db.query(`INSERT INTO searcher_blood_requirements (searcher_id, blood_type) VALUES ?`, [bloodValues], (insErr) => {
+                                if (insErr) return res.status(500).json({ message: "Error inserting new blood types" });
+                                return res.json({ message: "Searcher and blood types updated successfully" });
+                            });
+                        } else {
+                            return res.json({ message: "Searcher updated, all blood requirements removed" });
+                        }
+                    });
+                } else {
+                    return res.json({ message: "Searcher profile updated successfully" });
+                }
             }
         );
     } catch (error) {

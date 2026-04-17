@@ -30,16 +30,26 @@ const addDonor = async (req, res) => {
             return res.status(400).json({ message: "Invalid phone number" });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10); 
-
-        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-
+       
     const wilayaNumber = parseInt(location);
 
     if (!ALGERIA_WILAYAS.includes(wilayaNumber)) {
         return res.status(400).json({ 
 message: "Invalid location. Please select a valid wilaya number between 1 and 58."        });
     }
+
+     const hashedPassword = await bcrypt.hash(password, 10); 
+
+     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+             const emailSent = await sendVerificationEmail(email, verificationCode);
+
+                     if (!emailSent) {
+            return res.status(500).json({ 
+                message: "Failed to send verification email. Please check your email address and try again",
+                success: false
+            });
+        }
 
         const query = `
             INSERT INTO donors
@@ -50,7 +60,7 @@ message: "Invalid location. Please select a valid wilaya number between 1 and 58
         db.query(
             query,
             [full_name, blood_type, telephon, email, hashedPassword, location, date_of_birth, available, verificationCode],
-            async (err, result) => {
+             (err, result) => {
                 if (err) {
                     console.error(err);
                     if (err.code === 'ER_DUP_ENTRY') {
@@ -59,20 +69,11 @@ message: "Invalid location. Please select a valid wilaya number between 1 and 58
                     return res.status(500).json({ message: "Error adding donor" });
                 }
 
-                try {
-                    await sendVerificationEmail(email, verificationCode);
-                    
-                    res.status(201).json({ 
-                        message: 'Donor added successfully. Please check your email for verification code.', 
-                        id: result.insertId 
-                    });
-                } catch (emailError) {
-                    console.error("Mail Error:", emailError);
-                    res.status(201).json({ 
-                        message: 'Donor registered but failed to send verification email.', 
-                        id: result.insertId 
-                    });
-                }
+                 res.status(201).json({ 
+                    message: 'Donor registered successfully. Verification code has been sent to your email.',
+                    donorId: result.insertId,
+                    success: true
+                });
             }
         );
     } catch (error) {
