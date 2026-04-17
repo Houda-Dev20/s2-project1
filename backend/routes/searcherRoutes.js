@@ -1,18 +1,20 @@
 const express = require('express');
 const router = express.Router();
 
-const { addSearcher, updateSearcher, deleteSearcher, verifyEmail, searchSearchers, getAllSearchers, loginSearcher, logoutSearcher } = require('../controllers/searcherControllers');
+const { deleteSearcher, addSearcher, updateSearcher, searchSearchers, verifyAndSave, getAllSearchers, loginSearcher, logoutSearcher, getProfile } = require('../controllers/searcherControllers');
 const { validateSearcher, checkValidation } = require("../validators/searcherValidator");
 
-router.post("/add", validateSearcher, checkValidation, addSearcher);
-router.put("/:id", updateSearcher);
-router.delete("/:id", deleteSearcher);
-router.post("/verify-email", verifyEmail);
+router.post("/register", validateSearcher, checkValidation, addSearcher);
+router.put("/update/:id", updateSearcher);
+router.put('/deactivate/:id', deleteSearcher);
+router.post("/verify", verifyAndSave);
 router.post("/search", searchSearchers);
 router.get("/", getAllSearchers);
 router.post("/login", loginSearcher );
 router.post("/logout", logoutSearcher );
 
 
+
 module.exports = router;
+
 

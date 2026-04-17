@@ -2,12 +2,29 @@ const db=require('../config/db');
 const bcrypt = require('bcrypt');
 
 const sendVerificationEmail = require("../utils/sendEmail");
+const { ALGERIA_WILAYAS } = require('../utils/constants');
+
+const pendingRegistrations = new Map();
+
+setInterval(() => {
+    const now = Date.now();
+    let cleanedCount = 0;
+    for (const [email, data] of pendingRegistrations.entries()) {
+        if (data.expiresAt < now) {
+            pendingRegistrations.delete(email);
+            cleanedCount++;
+        }
+    }
+    if (cleanedCount > 0) {
+        console.log(`🧹 Cleaned ${cleanedCount} expired pending registrations`);
+    }
+}, 60 * 1000);
 
 const addSearcher = async (req, res) => {
     try {
         const {
             full_name,
-            required_blood_type,
+            blood_type_research,
             telephon,
             email,
             password,
@@ -16,47 +33,86 @@ const addSearcher = async (req, res) => {
             is_urgent
         } = req.body;
 
-        const hashedPassword = await bcrypt.hash(password, 10); 
+       if (!/^[A-Za-z\s]+$/.test(full_name)) {
+            return res.status(400).json({ message: "Invalid full name" });
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            return res.status(400).json({ message: "Invalid email address" });
+        }
+        if (!password || password.length < 8) {
+            return res.status(400).json({ message: "Password must be at least 8 characters" });
+        }
+        if (!/^\d{10}$/.test(telephon)) {
+            return res.status(400).json({ message: "Invalid phone number" });
+        }
+
+    const wilayaNumber = parseInt(location);
+
+    if (!ALGERIA_WILAYAS.includes(wilayaNumber)) {
+        return res.status(400).json({ 
+message: "Invalid location. Please select a valid wilaya number between 1 and 58."});
+    }
+
+            const emailCheckQuery = `SELECT email FROM searchers WHERE email = ?`;
+        const emailExists = await new Promise((resolve) => {
+            db.query(emailCheckQuery, [email], (err, result) => {
+                resolve(result && result.length > 0);
+            });
+        });
+
+        if (emailExists) {
+            return res.status(400).json({ 
+                message: "Email already registered. Please login instead."
+            });
+        }
+
+                const phoneCheckQuery = `SELECT telephon FROM searchers WHERE telephon = ?`;
+        const phoneExists = await new Promise((resolve) => {
+            db.query(phoneCheckQuery, [telephon], (err, result) => {
+                resolve(result && result.length > 0);
+            });
+        });
+
+        if (phoneExists) {
+            return res.status(400).json({ 
+                message: "Phone number already registered."
+            });
+        }
 
         const verification_code = Math.floor(100000 + Math.random() * 900000).toString();
 
-        const query = `
-            INSERT INTO searchers
-            (full_name, telephon, email, password, verification_code, is_verified, location, date_of_birth, is_urgent)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `;
 
-        db.query(
-            query,
-            [full_name, telephon, email, hashedPassword, verification_code, false, location, date_of_birth, is_urgent],
-            (err, result) => {
-                if (err) {
-                    console.error(err);
-                    if (err.code === 'ER_DUP_ENTRY') {
-                        return res.status(400).json({ message: "Email or phone already exists" });
-                    }
-                    return res.status(500).json({ message: "Error adding searcher" });
-                }
+        const hashedPassword = await bcrypt.hash(password, 10); 
 
-                 const newSearcherId = result.insertId;
+                pendingRegistrations.set(email, {
+            full_name,
+            blood_type_research,
+            telephon,
+            hashedPassword,
+            location: wilayaNumber,
+            date_of_birth,
+            is_urgent: is_urgent || false,
+            verification_code,
+            createdAt: new Date(),
+            expiresAt: Date.now() + (60 * 1000)
+        });
 
-                if (required_blood_types && Array.isArray(required_blood_types)) {
-                    const bloodValues = required_blood_types.map(type => [newSearcherId, type]);
-                    
-                    const queryBlood = `INSERT INTO searcher_blood_requirements (searcher_id, blood_type) VALUES ?`;
+        const emailSent = await sendVerificationEmail(email, verification_code);
 
-                    db.query(queryBlood, [bloodValues], (bloodErr) => {
-                        if (bloodErr) {
-                            console.error(bloodErr);
-                            return res.status(500).json({ message: "Searcher added, but blood types failed" });
-                        }
-                res.status(201).json({ message: 'searcher added successfully', id: result.insertId });
-});
-                } else {
-                    res.status(201).json({ message: 'Searcher added (no blood types specified)', id: newSearcherId });
-                }
-            }
-        );
+        if (!emailSent) {
+            pendingRegistrations.delete(email);
+            return res.status(500).json({ 
+                message: "Failed to send verification email. Please try again."
+            });
+        }
+
+                res.status(200).json({ 
+            message: "✓ Verification code sent to your email. Please check your inbox.",
+            email: email,
+            expiresIn: "1 minutes",
+            nextStep: "POST /api/searchers/verify with your email and code"
+        });
+                
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Server error" });
@@ -144,7 +200,7 @@ function deleteSearcher(req, res) {
     });
 };
 
-const verifyEmail = (req, res) => {
+const verifyAndSave  = (req, res) => {
 
 const { email, verification_code } = req.body;
 
@@ -154,41 +210,111 @@ if (!email || !verification_code) {
   });
 }
 
-const sql = `
-SELECT verification_code FROM searchers WHERE email = ?
-`;
+    const pending = pendingRegistrations.get(email);
 
-db.query(sql, [email], (err, result) => {
+    if (!pending) {
+        return res.status(404).json({ 
+            message: "No pending registration found. Please register again.",
+            hint: "Verification code expires after 1 minutes"
+        });
+    }
 
-if (err) {
-return res.status(500).json({ message: "Server error" });
-}
+        if (pending.expiresAt < Date.now()) {
+        pendingRegistrations.delete(email);
+        return res.status(400).json({ 
+            message: "Verification code has expired. Please register again.",
+            reason: "Code is only valid for 1 minute"
+        });
+    }
 
-if (result.length === 0) {
-return res.status(404).json({ message: "Email not found" });
-}
+        if (pending.verification_code  !== verification_code) {
+        return res.status(400).json({ 
+            message: "Invalid verification code. Please try again.",
+            attempts: "You have limited attempts"
+        });
+    }
 
-console.log("DB code:", result[0].verification_code);
-console.log("User code:", verification_code );
+        const query = `
+        INSERT INTO searchers
+        (full_name, blood_type_research, telephon, email, password, verification_code, is_verified, location, date_of_birth, is_urgent)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
 
-if (result[0].verification_code !== verification_code) {
-    console.log(err);
-return res.status(400).json({ message: "Invalid code" });
-}
+        db.query(
+        query,
+        [
+            pending.full_name,
+            pending.blood_type_research,
+            pending.telephon,
+            email,
+            pending.hashedPassword,
+            pending.verification_code,
+            true,  
+            pending.location,
+            pending.date_of_birth,
+            pending.is_urgent
+        ],
+        (err, result) =>{
+            if (err) {
+                console.error(err);
+                if (err.code === 'ER_DUP_ENTRY') {
+                    return res.status(400).json({ 
+                        message: "Email or phone already exists"
+                    });
+                }
+                return res.status(500).json({ 
+                    message: "Error saving user to database"
+                });
+            }
 
-const update = `
-UPDATE searchers
-SET is_verified = true
-WHERE email = ?
-`;
+            pendingRegistrations.delete(email);
 
-db.query(update, [email]);
-
-res.json({ message: "Email verified successfully" });
-
-});
-
+            res.status(201).json({
+                message: "✓ Registration completed successfully!",
+                searcherId: result.insertId,
+                searcher: {
+                    id: result.insertId,
+                    full_name: pending.full_name,
+                    blood_type_research: pending.blood_type_research,
+                    email: email
+                }
+            });
+        }
+    );
 };
+
+const resendCode = async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+    }
+
+    const pending = pendingRegistrations.get(email);
+
+    if (!pending) {
+        return res.status(404).json({ 
+            message: "No pending registration found. Please register again."
+        });
+    }
+
+    const newCode = Math.floor(100000 + Math.random() * 900000).toString();
+    pending.verification_code = newCode;
+    pending.expiresAt = Date.now() + (60 * 1000);  
+    pendingRegistrations.set(email, pending);
+
+    const emailSent = await sendVerificationEmail(email, newCode);
+
+    if (!emailSent) {
+        return res.status(500).json({ message: "Failed to send verification email" });
+    }
+
+    res.json({ 
+        message: "✓ New verification code sent to your email",
+        expiresIn: "1 minutes"
+    });
+};
+
 
 const searchSearchers = (req, res) => {
 
@@ -294,4 +420,4 @@ const logoutSearcher = (req, res) => {
 
 };
 
-module.exports = { addSearcher, updateSearcher, deleteSearcher, verifyEmail, searchSearchers, getAllSearchers, loginSearcher, logoutSearcher };
+module.exports = { addSearcher, updateSearcher, deleteSearcher, verifyAndSave , searchSearchers, getAllSearchers, loginSearcher, logoutSearcher, resendCode };
