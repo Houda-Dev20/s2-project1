@@ -159,6 +159,7 @@ body{
 }
 
 .btn-logout {
+    font-family: 'DM Sans';
     background: #E74C3C;
     color: #FFFFFF;
     border: none;
