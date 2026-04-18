@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 require('dotenv').config();
+require("./cron/eligibilityCron");
 
 const app = express();
 
@@ -18,6 +19,9 @@ app.use("/searchers", searcherRoutes);
 
 const adminRoutes = require("./routes/adminRoutes");
 app.use("/admin", adminRoutes);
+
+const notificationRoutes = require("./routes/notificationRoutes");
+app.use("/notifications", notificationRoutes);
 
 app.listen(3000, () => {
 console.log("Server running on port 3000");

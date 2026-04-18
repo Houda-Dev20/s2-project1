@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 
 const sendVerificationEmail = require("../utils/sendEmail");
 const { ALGERIA_WILAYAS } = require('../utils/constants');
+const { createNotification } = require("./notificationController");
 
 const addDonor = async (req, res) => {
     try {
@@ -171,7 +172,7 @@ const query = `
 };
 
 
-function deactivateAccount(req, res) {
+function deactivateDonor(req, res) {
     const donorId = req.params.id;
 
     const sql = "UPDATE donors SET is_active = 0 WHERE id = ?";
@@ -386,6 +387,40 @@ const logoutDonor = (req, res) => {
 
 };
 
+const activateDonor = (req, res) => {
+    const { id } = req.params;
+
+    db.query(
+        "UPDATE donors SET available = 1 WHERE id = ?",
+        [id],
+        (err, result) => {
+
+            if (err) return res.status(500).json({ message: "error" });
+
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ message: "Donor not found" });
+            }
+
+            res.json({ message: "Donor activated successfully" });
+        }
+    );
+};
+
+const disactivateDonor = (req, res) => {
+    const { id } = req.params;
+
+    const sql = `
+        UPDATE donors 
+        SET available = 0, last_donation_date = NOW()
+        WHERE id = ?
+    `;
+
+    db.query(sql, [id], (err, result) => {
+        callback(err, result);
+    });
+};
+
+
 const getProfile = (req, res) => {
     const donorId = req.user.id; 
 
@@ -396,4 +431,4 @@ const getProfile = (req, res) => {
     });
 };
 
-module.exports = { deactivateAccount, addDonor, updateDonor , verifyEmail, searchDonors, getAllDonors, loginDonor, logoutDonor, getProfile };
+module.exports = { deactivateDonor, addDonor, updateDonor , verifyEmail, searchDonors, getAllDonors, loginDonor, logoutDonor, getProfile, activateDonor, disactivateDonor };

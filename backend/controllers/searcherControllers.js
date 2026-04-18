@@ -79,10 +79,8 @@ message: "Invalid location. Please select a valid wilaya number between 1 and 58
             });
         }
 
-        const verification_code = Math.floor(100000 + Math.random() * 900000).toString();
-
-
         const hashedPassword = await bcrypt.hash(password, 10); 
+        const verification_code = Math.floor(100000 + Math.random() * 900000).toString();
 
                 pendingRegistrations.set(email, {
             full_name,
@@ -182,23 +180,24 @@ if (required_blood_types && Array.isArray(required_blood_types)) {
     }
 };
 
-function deleteSearcher(req, res) {
-    const donorId = req.params.id;
+function deactivateSearcher(req, res) {
+    const searcherId = req.params.id;
 
-    const sql = "DELETE FROM searchers WHERE id = ?";
+    const sql = "UPDATE searchers SET is_active = 0 WHERE id = ?";
 
-    db.query(sql, [donorId], (err, result) => {
+    db.query(sql, [searcherId], (err, result) => {
         if (err) {
+            console.error(err);
             return res.status(500).json({ message: "Server error" });
         }
 
         if (result.affectedRows === 0) {
-            return res.status(404).json({ message: "searcher not found" });
+            return res.status(404).json({ message: "Searcher not found" });
         }
 
-        return res.json({ message: "Account deleted successfully" });
+        return res.json({ message: "Account deactivated successfully" });
     });
-};
+}
 
 const verifyAndSave  = (req, res) => {
 
@@ -277,7 +276,8 @@ if (!email || !verification_code) {
                     full_name: pending.full_name,
                     blood_type_research: pending.blood_type_research,
                     email: email
-                }
+                },
+            savedToDatabase: true
             });
         }
     );
@@ -420,4 +420,4 @@ const logoutSearcher = (req, res) => {
 
 };
 
-module.exports = { addSearcher, updateSearcher, deleteSearcher, verifyAndSave , searchSearchers, getAllSearchers, loginSearcher, logoutSearcher, resendCode };
+module.exports = { addSearcher, updateSearcher, deactivateSearcher, verifyAndSave , searchSearchers, getAllSearchers, loginSearcher, logoutSearcher, resendCode };

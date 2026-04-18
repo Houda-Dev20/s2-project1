@@ -46,23 +46,5 @@ const getStats = (req, res) => {
     });
 };
 
-const activateDonor = (req, res) => {
-    const { id } = req.params;
 
-    db.query("UPDATE donors SET available = 1 WHERE id = ?", [id], (err, result) => {
-        if (err) return res.status(500).json({ message: "error" });
-
-        res.json({ message: "Donor activated successfully" });
-    });
-};
-
-const disactivateDonor = (req, res) => {
-    const { id } = req.params;
-
-    db.query("UPDATE donors SET available = 0 WHERE id = ?", [id], (err, result) => {
-        if (err) return res.status(500).json({ message: "error" });
-
-        res.json({ message: "Donor deactivated successfully" });
-    });
-};
-module.exports = { getStats, activateDonor, disactivateDonor };
+module.exports = { getStats };
