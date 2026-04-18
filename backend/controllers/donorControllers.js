@@ -411,7 +411,7 @@ const disactivateDonor = (req, res) => {
 
     const sql = `
         UPDATE donors 
-        SET available = 0, last_donation_date = NOW()
+        SET available = 0
         WHERE id = ?
     `;
 
@@ -421,14 +421,26 @@ const disactivateDonor = (req, res) => {
 };
 
 
-const getProfile = (req, res) => {
-    const donorId = req.user.id; 
+const getDonorProfile = (req, res) => {
 
-    const sql = "SELECT full_name, email, blood_type FROM donors WHERE id = ?";
-    db.query(sql, [donorId], (err, result) => {
-        if (err) return res.status(500).json({ message: "Database error" });
-        res.json(result[0]); 
+    const { id } = req.params;
+
+    const sql = "SELECT * FROM donors WHERE id = ?";
+
+    db.query(sql, [id], (err, result) => {
+
+        if (err) return res.status(500).json({ message: "error" });
+
+        if (result.length === 0) {
+            return res.status(404).json({ message: "Donor not found" });
+        }
+
+        const donor = result[0];
+
+        createEligibilityNotification(donor);
+
+        res.json(donor);
     });
 };
 
-module.exports = { deactivateDonor, addDonor, updateDonor , verifyEmail, searchDonors, getAllDonors, loginDonor, logoutDonor, getProfile, activateDonor, disactivateDonor };
+module.exports = { deactivateDonor, addDonor, updateDonor , verifyEmail, searchDonors, getAllDonors, loginDonor, logoutDonor, getDonorProfile, activateDonor, disactivateDonor };

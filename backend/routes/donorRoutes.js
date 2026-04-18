@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const verifyToken = require('../middleware/auth');
 
-const { deactivateDonor, addDonor, updateDonor, searchDonors, verifyEmail, getAllDonors, loginDonor, logoutDonor, getProfile, activateDonor, disactivateDonor } = require('../controllers/donorControllers');
+const { deactivateDonor, addDonor, updateDonor, searchDonors, verifyEmail, getAllDonors, loginDonor, logoutDonor, getDonorProfile, activateDonor, disactivateDonor } = require('../controllers/donorControllers');
 const { validateDonor, checkValidation } = require("../validators/donorValidator");
 
 router.post("/register", validateDonor, checkValidation, addDonor);
@@ -15,6 +15,7 @@ router.post("/login", loginDonor );
 router.post("/logout", logoutDonor );
 router.post("/active/:id", activateDonor );
 router.post("/disactive/:id", disactivateDonor );
+router.get("/profile/:id", getDonorProfile);
 
 
 //token functions

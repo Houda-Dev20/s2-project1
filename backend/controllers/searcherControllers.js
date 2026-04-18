@@ -420,4 +420,58 @@ const logoutSearcher = (req, res) => {
 
 };
 
-module.exports = { addSearcher, updateSearcher, deactivateSearcher, verifyAndSave , searchSearchers, getAllSearchers, loginSearcher, logoutSearcher, resendCode };
+const activateSearcher = (req, res) => {
+
+    const { id } = req.params;
+
+    const sql = `
+        UPDATE searchers 
+        SET available = 1
+        WHERE id = ?
+    `;
+
+    db.query(sql, [id], (err, result) => {
+
+        if (err) return res.status(500).json({ message: "error" });
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: "Searcher not found" });
+        }
+
+        res.json({ message: "Searcher activated successfully" });
+    });
+};
+
+const disactivateSearcher = (req, res) => {
+
+    const { id } = req.params;
+
+    const sql = `
+        UPDATE searchers 
+        SET available = 0
+        WHERE id = ?
+    `;
+
+    db.query(sql, [id], (err, result) => {
+
+        if (err) return res.status(500).json({ message: "error" });
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: "Searcher not found" });
+        }
+
+        res.json({ message: "Searcher deactivated successfully" });
+    });
+};
+
+const getSearcherProfile = (req, res) => {
+
+    db.query("SELECT * FROM searchers WHERE id = ?", [req.params.id], (err, result) => {
+
+        if (err) return res.status(500).json({ message: "error" });
+
+        res.json(result[0]);
+    });
+};
+
+module.exports = { addSearcher, updateSearcher, deactivateSearcher, verifyAndSave , searchSearchers, getAllSearchers, loginSearcher, logoutSearcher, resendCode, activateSearcher, disactivateSearcher, getSearcherProfile };
