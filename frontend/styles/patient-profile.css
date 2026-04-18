@@ -669,7 +669,7 @@ span{
 }
 .fifth-div{
      width: 618px;
-    height: 279px;
+    height: 192px;
     border-radius: 20px;
     background: #FFFFFF;
     box-shadow: 0px 4px 12px 0px #00000000;
@@ -733,7 +733,7 @@ span{
 }
 
 
-.security-options li:nth-child(4) .security-btn {
+.security-options li:nth-child(2) .security-btn {
     border-bottom-left-radius: 10px;
     border-bottom-right-radius: 10px;
 }

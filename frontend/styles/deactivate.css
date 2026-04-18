@@ -1,0 +1,371 @@
+/* --- Global Styles --- */
+body {
+    background-color: #FDF4F4;
+    font-family: 'DM Sans', sans-serif;
+    margin: 0px;
+    color: #1A1A1A;
+}
+
+.content-wrapper {
+    max-width: 885px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.back-arrow-btn {
+    position: absolute;
+    left: 28px;
+    top: 100px;
+    background: none;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 48px; 
+    color: #888888;
+    cursor: pointer;
+    z-index: 10;
+    line-height: 1;
+}
+
+
+
+
+/* --- Breadcrumbs --- */
+.breadcrumb {
+    font-family: 'DM Sans', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    margin-bottom: 30px;
+    color: #BBA0A0;
+    font-weight: 400;
+}
+
+
+
+.breadcrumb .separator {
+    width: 6px;
+    height: 6px;
+    border-right: 1.5px solid #BBA0A0;
+    border-bottom: 1.5px solid #BBA0A0;
+    transform: rotate(-45deg);
+}
+
+.breadcrumb .active {
+    color: #C0392B;
+    font-weight: 500;
+}
+
+/* --- Alert Box --- */
+.alert-box {
+    background: #FDF8F8;
+    border: 1px solid #F5A0A0;
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    gap: 14px;
+    margin-bottom: 28px;
+}
+
+.alert-icon-circle {
+    width: 36px;
+    height: 36px;
+    background: #FDEAEA;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.alert-text h4 {
+    color: #C0392B;
+    font-size: 14px;
+    margin: 0 0 4px 0;
+}
+
+.alert-text p {
+    color: #AAAAAA;
+    font-size: 12.5px;
+    line-height: 20px;
+    margin: 0;
+}
+
+/* --- Main Card & Consequence Items --- */
+.main-card {
+    background: #FFFFFF;
+    border: 1px solid #F0DADA;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.card-header {
+    padding: 24px 28px;
+    padding-top:5px ;
+    border-bottom: 1px solid #FDF4F4;
+}
+
+.card-header h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    margin-bottom: -5px;
+    font-weight: 400;
+}
+
+.card-header p {
+    color: #AAAAAA;
+    font-size: 12.5px;
+    font-weight: 400;
+    margin-bottom: -10px;
+}
+
+.card-body {
+    padding: 24px 28px;
+}
+
+.item {
+    background: #FDF8F8; /* Fantasy background */
+    border: 1px solid #F0DADA; /* Bizarre border */
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex; /* Aligns bullet and text horizontally */
+    align-items: flex-start; /* Keeps bullet at the top of the first line */
+    gap: 12px; /* Space between bullet and text */
+    margin-bottom: 12px;
+}
+
+.bullet {
+    width: 8px;
+    height: 8px;
+    background: #E74C3C; /* Red bullet color */
+    border-radius: 50%;
+    margin-top: 6px; /* Adjust this to center the dot with the first line of text */
+    flex-shrink: 0; /* Prevents the dot from squishing */
+}
+
+.item p {
+    
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 0;
+    color: #666666;
+    font-weight: 400; 
+}
+
+
+.text{
+    font-weight: 500;
+    color:#1A1A1A;
+}
+/* --- Inputs & Checkbox --- */
+.input-group label{
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 0;
+    margin-left:3px ;
+    color: #666666;
+    font-weight: 400; 
+}
+.input-wrapper {
+    position: relative;
+    margin: 8px 0 24px;
+}
+
+.input-wrapper img {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.input-wrapper input {
+    width: 100%;
+    box-sizing: border-box; /* ADD THIS: Keeps padding inside the width */
+    padding: 10px 10px 10px 40px;
+    background: #FDF8F8;
+    border: 1px solid #F0DADA;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    color: #1A1A1A; /* Darker color for typed text as discussed */
+}
+.input-wrapper ::placeholder{
+    color: #BBA0A0;
+}
+.input-wrapper input:focus {
+    outline: none; /* Removes the default browser focus ring */
+    border: 1px solid #F0DADA; /* Keeps your 'Bizarre' border color */
+}
+.checkbox-container {
+    background: #FDF8F8;
+    border: 1px solid #F0DADA;
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+.checkbox-container label{
+     font-size: 13px;
+    line-height: 1.5;
+    margin: 0;
+    color: #666666;
+    font-weight: 400; 
+}
+
+/* Custom Checkbox Logic */
+#consent {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #C0392B;
+     
+}
+.text1{
+    color: #C0392B;
+    font-weight: 600;
+}
+/* --- Buttons --- */
+.button-group {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-cancel2 {
+    padding: 13px 40px;
+    background: #FDF8F8;
+    border: 1px solid #F0DADA;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 500;
+    color: #555555;
+    width: 200px;
+}
+.btn-cancel2:hover{
+   background-color:  #FDEAEA;
+
+}
+.btn-deactivate {
+    width: 285px;
+    display: flex;
+    justify-content: center; /* Centers horizontally */
+    align-items: center;
+    font-family: 'DM Sans';
+    padding: 13px 40px;
+    background: #FFFFFF;
+    border: 1px solid #F5A0A0;
+    border-radius: 12px;
+    color: #C0392B;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: not-allowed;
+    opacity: 0.45;
+    transition: all 0.2s ease;
+}
+
+/* Active State for Deactivate Button */
+.btn-deactivate.active {
+    opacity: 1;
+    cursor: pointer;
+}
+
+/* Modal Overlay - Darkens the background */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: none; /* Hidden by default */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* Modal Card */
+.modal-card-popup {
+    background: #FFFFFF;
+    border: 1px solid #F0DADA;
+    box-shadow: 0px 16px 60px rgba(200, 60, 60, 0.15);
+    border-radius: 24px;
+    width: 320px;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+/* Icon Circle */
+.icon-circle-large {
+    width: 55px;
+    height: 55px;
+    background: #FDEAEA;
+    border: 1px solid #F5A0A0;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.modal-trash-icon {
+    width: 22px;
+    
+}
+
+/* Typography */
+.modal-title-confirm {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18.4px;
+    color: #1A1A1A;
+    margin: 0 0 10px 0;
+    font-weight: 400;
+    margin-bottom: -5px;
+}
+
+.modal-description {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #AAAAAA;
+    margin-bottom: 25px;
+    font-weight: 400;
+    
+}
+
+/* Buttons */
+.modal-action-buttons {
+    display: flex;
+    gap: 10px;
+    width: 90%;
+}
+
+.btn-keep {
+    font-family: 'DM Sans', serif;
+    flex: 1;
+    height: 40px;
+    background: #FDF8F8;
+    border: 1px solid #F0DADA;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #555555;
+    cursor: pointer;
+}
+
+.btn-confirm-delete {
+    font-family: 'DM Sans', serif;
+    flex: 1;
+    height: 40px;
+    background: #E74C3C;
+    border: none;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #FFFFFF;
+    cursor: pointer;
+}
