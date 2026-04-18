@@ -306,5 +306,29 @@ document.addEventListener('DOMContentLoaded', function() {
          document.querySelector('.profile img').src = URL.createObjectURL(e.target.files[0]);
          };
 
+//connect with log out
+// Add this to your existing patient-profile.js
+document.addEventListener('DOMContentLoaded', function() {
+   // Inside patient-profile.js
+const logoutBtn = document.querySelector('[data-action="logout"]');
 
-         
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', function() {
+        const name = document.querySelector('.name').innerText;
+        // Specifically grab the text updated by selectBlood()
+        const bloodType = document.querySelector('.bloodtype-text').innerText;
+        const profilePic = document.getElementById('profileImage').src;
+        const email = document.querySelectorAll('.dd-wrapper .dd-item')[3].innerText;
+
+        const sessionData = {
+            userName: name,
+            userEmail: email,
+            userBlood: bloodType,
+            userPic: profilePic
+        };
+
+        localStorage.setItem('currentUserSession', JSON.stringify(sessionData));
+        window.location.href = 'log-out.html';
+    });
+}
+});         

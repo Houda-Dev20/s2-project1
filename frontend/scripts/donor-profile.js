@@ -196,3 +196,34 @@ document.addEventListener('DOMContentLoaded', () => {
     setupFooterHover();
 
 });
+// Add this to your donor-profile.js
+// Inside donor-profile.js
+const logoutBtn = document.querySelector('.logout-item'); // Matches your HTML class
+
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', function() {
+        const name = document.getElementById('topName').innerText;
+        // Specifically grab the badge updated by selectBloodType()
+        const bloodType = document.querySelector('.blood-badge').innerText;
+        const profilePic = document.querySelector('.main-avatar').src;
+        
+        // Find email by looking for the label
+        let email = "";
+        const rows = document.querySelectorAll('.data-row');
+        rows.forEach(row => {
+            if(row.innerText.toLowerCase().includes('email')) {
+                email = row.querySelector('span:last-child').innerText;
+            }
+        });
+
+        const sessionData = {
+            userName: name,
+            userEmail: email,
+            userBlood: bloodType,
+            userPic: profilePic
+        };
+
+        localStorage.setItem('currentUserSession', JSON.stringify(sessionData));
+        window.location.href = 'log-out.html';
+    });
+}
