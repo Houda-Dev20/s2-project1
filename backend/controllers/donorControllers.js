@@ -3,7 +3,6 @@ const bcrypt = require('bcrypt');
 
 const sendVerificationEmail = require("../utils/sendEmail");
 const { ALGERIA_WILAYAS } = require('../utils/constants');
-const { createNotification } = require("./notificationController");
 
 const addDonor = async (req, res) => {
     try {

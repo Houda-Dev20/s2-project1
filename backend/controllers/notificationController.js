@@ -6,7 +6,7 @@ const getNotifications = (req, res) => {
     const sql = `
         SELECT * 
         FROM notifications 
-        WHERE donor_id = ? 
+        WHERE user_id = ? 
         ORDER BY created_at DESC
     `;
 
@@ -17,14 +17,14 @@ const getNotifications = (req, res) => {
     });
 };
 
-const createNotification = (donor_id, title, message, type) => {
+const createNotification = (user_id, title, message, type) => {
 
     const sql = `
-        INSERT INTO notifications (donor_id, title, message, type)
+        INSERT INTO notifications (user_id, title, message, type)
         VALUES (?, ?, ?, ?)
     `;
 
-    db.query(sql, [donor_id, title, message, type], (err) => {
+    db.query(sql, [user_id, title, message, type], (err) => {
         if (err) console.log("Notification Error:", err);
     });
 };
@@ -40,7 +40,7 @@ const createEligibilityNotification = (donor) => {
 
         const checkSql = `
             SELECT id FROM notifications 
-            WHERE donor_id = ? AND type = 'eligibility'
+            WHERE user_id = ? AND type = 'eligibility'
         `;
 
         db.query(checkSql, [donor.id], (err, result) => {
@@ -75,10 +75,10 @@ const markAsRead = (req, res) => {
 };
 
 const markAllAsRead = (req, res) => {
-    const { donor_id } = req.params;
+    const { user_id } = req.params;
 
     db.query(
-        "UPDATE notifications SET is_read = 1 WHERE donor_id = ?",
+        "UPDATE notifications SET is_read = 1 WHERE user_id = ?",
         [donor_id],
         (err) => {
             if (err) return res.status(500).json({ message: "error" });
@@ -92,7 +92,7 @@ const getUnreadCount = (req, res) => {
     const { id } = req.params;
 
     db.query(
-        "SELECT COUNT(*) AS count FROM notifications WHERE donor_id = ? AND is_read = 0",
+        "SELECT COUNT(*) AS count FROM notifications WHERE user_id = ? AND is_read = 0",
         [id],
         (err, result) => {
             if (err) return res.status(500).json({ message: "error" });
@@ -102,10 +102,44 @@ const getUnreadCount = (req, res) => {
     );
 };
 
+const createDonationRequestNotification = (searcherId, donorName, bloodType) => {
+
+    createNotification(
+        searcherId,
+        "New Donation Request",
+        `${donorName} wants to donate ${bloodType} for you`,
+        "donation_request"
+    );
+};
+
+const createRequestAcceptedNotification = (donorId, searcherName) => {
+
+    createNotification(
+        donorId,
+        "Your request was accepted",
+        `${searcherName} accepted your donation request`,
+        "request_accepted"
+    );
+};
+
+const createNearbyPatientNotification = (donorId) => {
+
+    createNotification(
+        donorId,
+        "Nearby patient found",
+        "Someone you can donate to is near you",
+        "nearby_patient"
+    );
+};
+
+
 module.exports = {
     getNotifications,
     createNotification,
     createEligibilityNotification,
+    createDonationRequestNotification,
+    createRequestAcceptedNotification,
+    createNearbyPatientNotification,
     markAsRead,
     markAllAsRead,
     getUnreadCount

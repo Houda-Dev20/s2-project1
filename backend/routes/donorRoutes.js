@@ -18,7 +18,4 @@ router.post("/disactive/:id", disactivateDonor );
 router.get("/profile/:id", getDonorProfile);
 
 
-//token functions
-router.get('/profile', verifyToken, getProfile);
-
 module.exports = router;
