@@ -33,13 +33,16 @@ function toggleDropdown() {
 }
  
  
-function selectBlood(element, value) {
-    const input = document.getElementById('bloodInput_s');
+function selectBlood(element, value, inputId ) {
+    const input = document.getElementById(inputId);
     const dropdown = document.getElementById('dropdown');
     const arrow = document.querySelector('#arrow-icon');
     
     if (input) {
         input.value = value;
+        console.log("Selected:", value); 
+    } else {
+        console.log("Input not found:", inputId);
     }
 
     const allCells = document.querySelectorAll('.dropdown td');
@@ -65,7 +68,8 @@ window.onclick = function(event) {
         }
     }
 };
-const wilayaSelect = document.getElementById("location");
+const wilayaSelectDonor = document.getElementById("location");
+const wilayaSelectSearcher = document.getElementById("location_s");
 
 const wilayas = [
 "Adrar","Chlef","Laghouat","Oum El Bouaghi","Batna","Bejaia","Biskra","Bechar",
@@ -80,11 +84,15 @@ const wilayas = [
 ];
 
 
-wilayas.forEach(w => {
-    let option = document.createElement("option");
-    option.value = w;
-    option.textContent = w;
-    wilayaSelect.appendChild(option);
+wilayas.forEach((w, index) => {
+    let option1 = document.createElement("option");
+    option1.value = index + 1;
+    option1.textContent = w;
+
+    let option2 = option1.cloneNode(true);
+
+    if (wilayaSelectDonor) wilayaSelectDonor.appendChild(option1);
+    if (wilayaSelectSearcher) wilayaSelectSearcher.appendChild(option2);
 });
 //api
 
@@ -92,6 +100,11 @@ const donorForm = document.getElementById("signupForm");
 if (donorForm) {
     donorForm.addEventListener("submit", async function(e) {
         e.preventDefault();
+
+    if (!document.getElementById("location").value) {
+        alert("Please select a location");
+        return;
+    }
 
         const donorData = {
             full_name: document.getElementById("full_name").value,
@@ -104,7 +117,7 @@ if (donorForm) {
             available: true
         };
 
-        await sendData("http://localhost:3000/donors/add", donorData);
+        await sendData("http://localhost:3000/donors/register", donorData);
     });
 }
 
@@ -113,17 +126,24 @@ if (searcherForm) {
     searcherForm.addEventListener("submit", async function(e) {
         e.preventDefault();
 
+const loc = document.getElementById("location_s");
+
+if (!loc || !loc.value) {
+    alert("Please select a location");
+    return;
+}
+
         const searcherData = {
             full_name: document.getElementById("full_name_s").value,
             date_of_birth: document.getElementById("date_of_birth_s").value,
             location: document.getElementById("location_s").value,
-            blood_type: document.getElementById("bloodInput_s").value,
+            blood_type_research: document.getElementById("bloodInput_s").value,
             telephon: document.getElementById("telephon_s").value,
             email: document.getElementById("email_s").value,
             password: document.getElementById("password_s").value
         };
 
-        await sendData("http://localhost:3000/searchers/add", searcherData);
+        await sendData("http://localhost:3000/searchers/register", searcherData);
     });
 }
 
@@ -135,9 +155,18 @@ async function sendData(url, dataObject) {
             body: JSON.stringify(dataObject)
         });
 
-        const result = await response.json();
+        const text = await response.text(); 
+
+        console.log("Server response:", text); 
+
+        if (!response.ok) {
+            throw new Error(`Server error: ${response.status}`);
+        }
+
+        const result = JSON.parse(text); 
+
         alert(result.message);
-        
+
     } catch (error) {
         console.error("Error:", error);
         alert("error connecting to server");

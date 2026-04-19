@@ -1,14 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const verifyToken = require('../middleware/auth');
 
-const { deactivateDonor, addDonor, updateDonor, searchDonors, verifyEmail, getAllDonors, loginDonor, logoutDonor, getDonorProfile, activateDonor, disactivateDonor } = require('../controllers/donorControllers');
+const { deactivateDonor, addDonor, updateDonor, searchDonors, verifyAndSaveDonor, getAllDonors, loginDonor, logoutDonor, getDonorProfile, activateDonor, disactivateDonor } = require('../controllers/donorControllers');
 const { validateDonor, checkValidation } = require("../validators/donorValidator");
 
 router.post("/register", validateDonor, checkValidation, addDonor);
 router.put("/update/:id", updateDonor);
 router.put('/deactivate/:id', deactivateDonor);
-router.post("/verify", verifyEmail);
+router.post("/verify", verifyAndSaveDonor);
 router.post("/search", searchDonors);
 router.get("/", getAllDonors);
 router.post("/login", loginDonor );

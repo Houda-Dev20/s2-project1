@@ -70,7 +70,7 @@ select {
                         <img src="images/Vector1.svg" class="input-icon" alt="location">
                         <div class="container">
                             <select id="location">
-                                <option >Select Location</option>
+                                <option value="">Select Location</option>
                             </select>
                         </div>
                         
@@ -97,20 +97,20 @@ select {
                             <div class="dropdown" id="dropdown">
                                 <table>
                                     <tr>
-                                        <td onclick="selectBlood(this,'O+')">O+</td>
-                                        <td onclick="selectBlood(this,'O-')">O-</td>
+                                        <td onclick="selectBlood(this,'O+', 'bloodInput')">O+</td>
+                                        <td onclick="selectBlood(this,'O-', 'bloodInput')">O-</td>
                                     </tr>
                                     <tr>
-                                        <td onclick="selectBlood(this,'A+')">A+</td>
-                                        <td onclick="selectBlood(this,'A-')">A-</td>
+                                        <td onclick="selectBlood(this,'A+', 'bloodInput')">A+</td>
+                                        <td onclick="selectBlood(this,'A-', 'bloodInput')">A-</td>
                                     </tr>
                                     <tr>
-                                        <td onclick="selectBlood(this,'B+')">B+</td>
-                                        <td onclick="selectBlood(this,'B-')">B-</td>
+                                        <td onclick="selectBlood(this,'B+', 'bloodInput')">B+</td>
+                                        <td onclick="selectBlood(this,'B-', 'bloodInput')">B-</td>
                                     </tr>
                                     <tr>
-                                        <td onclick="selectBlood(this,'AB+')">AB+</td>
-                                        <td onclick="selectBlood(this,'AB-')">AB-</td>
+                                        <td onclick="selectBlood(this,'AB+', 'bloodInput')">AB+</td>
+                                        <td onclick="selectBlood(this,'AB-', 'bloodInput')">AB-</td>
                                     </tr>
                                 </table>
                             </div>

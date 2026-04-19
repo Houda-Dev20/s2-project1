@@ -4,6 +4,22 @@ const bcrypt = require('bcrypt');
 const sendVerificationEmail = require("../utils/sendEmail");
 const { ALGERIA_WILAYAS } = require('../utils/constants');
 
+const pendingDonors = new Map();
+
+setInterval(() => {
+    const now = Date.now();
+    let cleanedCount = 0;
+    for (const [email, data] of pendingRegistrations.entries()) {
+        if (data.expiresAt < now) {
+            pendingRegistrations.delete(email);
+            cleanedCount++;
+        }
+    }
+    if (cleanedCount > 0) {
+        console.log(`🧹 Cleaned ${cleanedCount} expired pending registrations`);
+    }
+}, 60 * 1000);
+
 const addDonor = async (req, res) => {
     try {
         const {
@@ -38,11 +54,37 @@ const addDonor = async (req, res) => {
 message: "Invalid location. Please select a valid wilaya number between 1 and 58."        });
     }
 
+    const emailCheckQuery = `SELECT email FROM donors WHERE email = ?`;
+const emailExists = await new Promise((resolve) => {
+    db.query(emailCheckQuery, [email], (err, result) => {
+        resolve(result && result.length > 0);
+    });
+});
+
+if (emailExists) {
+    return res.status(400).json({
+        message: "Email already registered"
+    });
+}
+
+const phoneCheckQuery = `SELECT telephon FROM donors WHERE telephon = ?`;
+const phoneExists = await new Promise((resolve) => {
+    db.query(phoneCheckQuery, [telephon], (err, result) => {
+        resolve(result && result.length > 0);
+    });
+});
+
+if (phoneExists) {
+    return res.status(400).json({
+        message: "Phone already registered"
+    });
+}
+
      const hashedPassword = await bcrypt.hash(password, 10); 
 
-     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+     const verification_code = Math.floor(100000 + Math.random() * 900000).toString();
 
-             const emailSent = await sendVerificationEmail(email, verificationCode);
+             const emailSent = await sendVerificationEmail(email, verification_code);
 
                      if (!emailSent) {
             return res.status(500).json({ 
@@ -51,31 +93,27 @@ message: "Invalid location. Please select a valid wilaya number between 1 and 58
             });
         }
 
-        const query = `
-            INSERT INTO donors
-            (full_name, blood_type, telephon, email, password, location, date_of_birth, available, verification_code)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `;
+pendingDonors.set(email, {
+    full_name,
+    blood_type,
+    telephon,
+    email,
+    hashedPassword,
+    location: wilayaNumber,
+    date_of_birth,
+    available,
+    verification_code,
+    expiresAt: Date.now() + 60 * 1000
+});
 
-        db.query(
-            query,
-            [full_name, blood_type, telephon, email, hashedPassword, location, date_of_birth, available, verificationCode],
-             (err, result) => {
-                if (err) {
-                    console.error(err);
-                    if (err.code === 'ER_DUP_ENTRY') {
-                        return res.status(400).json({ message: "Email or phone already exists" });
-                    }
-                    return res.status(500).json({ message: "Error adding donor" });
-                }
 
-                 res.status(201).json({ 
-                    message: 'Donor registered successfully. Verification code has been sent to your email.',
-                    donorId: result.insertId,
-                    success: true
-                });
-            }
-        );
+         res.status(200).json({ 
+            message: "✓ Verification code sent to your email. Please check your inbox.",
+            email: email,
+            expiresIn: "1 minutes",
+            nextStep: "POST /api/donors/verify with your email and code"
+        });
+
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Server error" });
@@ -190,52 +228,88 @@ function deactivateDonor(req, res) {
     });
 }
 
-const verifyEmail = (req, res) => {
+const verifyAndSaveDonor = (req, res) => {
 
-const { email, code } = req.body;
+    const { email, verification_code } = req.body;
 
-const sql = `
-SELECT verification_code FROM donors WHERE email = ?
-`;
+    if (!email || !verification_code) {
+        return res.status(400).json({
+            message: "Email and code are required"
+        });
+    }
 
-db.query(sql, [email], (err, result) => {
+    const pending = pendingDonors.get(email);
 
-if (err) {
-return res.status(500).json({ message: "Server error" });
-}
+    if (!pending) {
+        return res.status(404).json({
+            message: "No pending donor registration found. Please register again.",
+            hint: "Verification code expires after 1 minute"
+        });
+    }
 
-if (result.length === 0) {
-return res.status(404).json({ message: "Email not found" });
-}
+    if (pending.expiresAt < Date.now()) {
+        pendingDonors.delete(email);
+        return res.status(400).json({
+            message: "Verification code has expired. Please register again.",
+            reason: "Code is only valid for 1 minute"
+        });
+    }
 
-if (result[0].verification_code !== code) {
-return res.status(400).json({ message: "Invalid code" });
-}
+    if (pending.verification_code !== verification_code) {
+        return res.status(400).json({
+            message: "Invalid verification code. Please try again.",
+            attempts: "You have limited attempts"
+        });
+    }
 
-const update = `
-UPDATE donors
-SET is_verified = true
-WHERE email = ?
-`;
+    const query = `
+        INSERT INTO donors
+        (full_name, blood_type, telephon, email, password, location, date_of_birth, available, verification_code, is_verified)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
 
-db.query(update, [email], (errUpdate) => {
-            if (errUpdate) return res.status(500).json({ message: "Error updating verification status" });
+    db.query(
+        query,
+        [
+            pending.full_name,
+            pending.blood_type,
+            pending.telephon,
+            email,
+            pending.hashedPassword,
+            pending.location,
+            pending.date_of_birth,
+            pending.available,
+            pending.verification_code,
+            true
+        ],
+        (err, result) => {
+            if (err) {
+                console.error(err);
+                if (err.code === 'ER_DUP_ENTRY') {
+                    return res.status(400).json({
+                        message: "Email or phone already exists"
+                    });
+                }
+                return res.status(500).json({
+                    message: "Error saving donor to database"
+                });
+            }
 
-            const token = jwt.sign(
-                { id: result[0].id, email: result[0].email },
-                process.env.ESI_SBA_SECRET_KEY,
-                { expiresIn: '24h' }
-            );
+            pendingDonors.delete(email);
 
-res.json({
-     message: "Email verified successfully" ,
-     token: token,
-     donor: { id: result[0].id, full_name: result[0].full_name }
-    });
-
-});
-
-});
+            res.status(201).json({
+                message: "✓ Donor registration completed successfully!",
+                donorId: result.insertId,
+                donor: {
+                    id: result.insertId,
+                    full_name: pending.full_name,
+                    blood_type: pending.blood_type,
+                    email: email
+                },
+                savedToDatabase: true
+            });
+        }
+    );
 };
 
 
@@ -442,4 +516,4 @@ const getDonorProfile = (req, res) => {
     });
 };
 
-module.exports = { deactivateDonor, addDonor, updateDonor , verifyEmail, searchDonors, getAllDonors, loginDonor, logoutDonor, getDonorProfile, activateDonor, disactivateDonor };
+module.exports = { deactivateDonor, addDonor, updateDonor , verifyAndSaveDonor, searchDonors, getAllDonors, loginDonor, logoutDonor, getDonorProfile, activateDonor, disactivateDonor, resendCode };
