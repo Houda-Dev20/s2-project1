@@ -94,6 +94,7 @@ wilayas.forEach((w, index) => {
     if (wilayaSelectDonor) wilayaSelectDonor.appendChild(option1);
     if (wilayaSelectSearcher) wilayaSelectSearcher.appendChild(option2);
 });
+
 //api
 
 const donorForm = document.getElementById("signupForm");
@@ -156,19 +157,30 @@ async function sendData(url, dataObject) {
         });
 
         const text = await response.text(); 
-
-        console.log("Server response:", text); 
-
-        if (!response.ok) {
-            throw new Error(`Server error: ${response.status}`);
-        }
+        console.log("Server response:", text);
 
         const result = JSON.parse(text); 
 
+        if (!response.ok) {
+            throw new Error(result.message || `Server error: ${response.status}`);
+        }
+
         alert(result.message);
+
+        if (result.id) {
+    localStorage.setItem("currentUserSession", JSON.stringify({
+        userId: result.id,
+        userName: dataObject.full_name
+    }));
+}
+
+
+        const type = url.includes("donors") ? "donor" : "searcher";
+
+        window.location.href = `verificationCode.html?email=${encodeURIComponent(dataObject.email)}&type=${type}`;
 
     } catch (error) {
         console.error("Error:", error);
-        alert("error connecting to server");
+        alert(error.message || "Error connecting to server");
     }
 }

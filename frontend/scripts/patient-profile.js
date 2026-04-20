@@ -1,3 +1,20 @@
+const wilayas = [
+    "Adrar", "Chlef", "Laghouat", "Oum El Bouaghi", "Batna", "Bejaia", "Biskra", "Bechar",
+    "Blida", "Bouira", "Tamanrasset", "Tebessa", "Tlemcen", "Tiaret", "Tizi Ouzou", "Algiers",
+    "Djelfa", "Jijel", "Setif", "Saida", "Skikda", "Sidi Bel Abbes", "Annaba", "Guelma",
+    "Constantine", "Medea", "Mostaganem", "Msila", "Mascara", "Ouargla", "Oran", "El Bayadh",
+    "Illizi", "Bordj Bou Arreridj", "Boumerdes", "El Tarf", "Tindouf", "Tissemsilt",
+    "El Oued", "Khenchela", "Souk Ahras", "Tipaza", "Mila", "Ain Defla", "Naama",
+    "Ain Temouchent", "Ghardaia", "Relizane", "Timimoun", "Bordj Badji Mokhtar", "Ouled Djellal",
+    "Beni Abbes", "In Salah", "In Guezzam", "Touggourt", "Djanet", "El M'Ghair", "El Meniaa"
+];
+
+function getWilayaNameById(id) {
+    if (!id) return "Unknown";
+    const index = parseInt(id) - 1;
+    return (index >= 0 && index < wilayas.length) ? wilayas[index] : "Unknown";
+}
+
 // Data
 let requests = [
     { date: "12 Feb 2026", hospital: "Mustapha Hospital", status: "pending" },

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeDrop Profile</title>
+    <link rel="stylesheet" href="styles/donor-profil.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles/notifications.css">
+</head>
+<body>
+
+
+          <header class="header">
+        <div class="left-section">
+            <img class="logo" src="images/Blur.svg" alt="logo">
+            <img class="logo1" src="images/LifeDrop.svg" alt="logo1">
+        </div>
+
+        <nav class="middle-section">
+            <a href="home.html" class="taps active">Home</a>
+            <a href="map.html" class="taps">Map</a>
+            <a href="search.html" class="taps">Search</a>
+        </nav>
+
+        <div class="right-section">
+            <div class="notif-wrapper">
+                <button class="notif-trigger" id="notifBtn">
+                    <img class="bell-img" src="images/bell.svg" alt="notifications">
+                    <div class="red-dot" id="notifBadge"></div>
+                </button>
+
+                <div class="dropdown-container" id="notifDropdown">
+                <div id="notifList"></div>    
+                  <button class="mark-read-btn" id="markReadBtn">Mark all as read</button>
+
+                    <div class="empty-state" id="emptyState">
+                        <div class="check-icon-large">
+                            <img class="large-notif-img" src="images/gg_check-o.svg" alt="caught-up">
+                        </div>
+                        <h3 class="empty-title">You’re All Caught Up</h3>
+                        <p class="empty-desc">No new notifications for now</p>
+                    </div>
+                </div>
+            </div>
+
+            <button class="profile" id="profile">
+                <img class="profile-img" src="" alt="profile-picture">
+            </button>
+        </div>
+    </header>
+    <div id="notifModal" class="modal-overlay">
+    <div class="frame-33">
+        <div class="vector-circle">
+            <img src="images/Vector-heart.svg" alt="heart"> 
+        </div>
+        
+        <h2 class="modal-title">DONOR MATCH FOUND!</h2>
+
+        <div class="donor-info">
+            <img src="" id="modalImg" class="donor-img">
+            <div class="donor-text">
+                <span id="modalName" class="donor-name">Abd El-Malek Zerarga</span>
+                <span id="modalLocation" class="donor-loc">El-Eulma, Sétif</span>
+            </div>
+        </div>
+
+        <p class="modal-msg">Hello, I am nearby and I can be at EPSP</p>
+
+        <div class="modal-buttons">
+            <button class="btn-accept">Accept Request</button>
+            <button class="btn-cancel" id="closeModal">Cancel</button>
+        </div>
+    </div>
+</div>
+
+        <section class="profile-header card">
+            <div class="user-main">
+                <div class="avatar-wrapper">
+                    <img src="images\Ellipse 13.png" alt="Profile"class="main-avatar">
+                    <div class="online-indicator">
+                        <img src="images\Vector-tick.svg" alt="online" class="verified-tick">
+                    </div>
+                </div>
+                <div class="user-meta">
+                    <h2 class="user-name" ><span id="topName"></span>  <span class="blood-badge">O+</span></h2>
+                    <p class="user-loc">
+                        <img src="images\Group 83.svg" alt="Location" class="icon-loc">
+                        <span  id="topLocation"></span></p>
+
+                     <div class="user-stats">
+                        <img src="images\VectorLoc.svg" class="stat-icon" alt="user">
+                     <span class="stat-text">Member since <span id="join-date">2026</span> 
+                     <img src="images\vectore.svg" class="separator-icon" alt="separator">
+                     <span id="fulfilled-requests">3</span> requests fulfilled</span>
+                     </div>
+               </div>
+           </div>
+
+          <button class="btn-edit">
+              <img src="images\VectorPen.svg" alt="Edit" class="icon-btn">
+             <span class="btn-text">Edit photo</span>
+          </button>
+     </section>
+
+
+     <div class="main-grid">
+    <div class="col">
+        <div class="card" id="personalCard">
+            <div class="card-header">
+                <h3>Personal Information</h3>
+                <button class="edit-btn-small">
+                    <img src="images\VectorPen.svg" class="icon-small"> Edit
+                </button>
+            </div>
+            <div class="data-list">
+                <div class="data-row"><span>Full Name</span><span class="Personalinfo" id="fullName"></span></div>
+                <div class="data-row"><span>Date of Birth</span><span class="Personalinfo" id="birthDate"></span></div>
+                <div class="data-row"><span>Phone</span><span class="Personalinfo" id="phone"></span></div>
+                <div class="data-row"><span>Email</span><span class="Personalinfo" id="email"></span></div>
+                <div class="data-row"><span>Location</span><span class="Personalinfo" id="location"></span></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Donation History</h3>
+            <div class="history-list" id="historyList">
+                <div class="history-item">
+                    <img src="images\Blur.svg" class="icon-blood">
+                    <div class="history-text">
+                        <span></span>
+                        <p></p>
+                    </div>
+                </div>
+                <div class="history-item">
+                    <img src="images/Blur.svg" class="icon-blood">
+                    <div class="history-text">
+                        <span></span>
+                        <p></p>
+                    </div>
+                </div>
+                <div class="history-item">
+                    <img src="images\Blur.svg" class="icon-blood">
+                    <div class="history-text">
+                        <span></span>
+                        <p></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card">
+    <h3>Blood Information</h3>
+    <div class="data-list">
+        
+        <div class="data-row">
+            <span class="label">Blood Type</span>
+            <span class="value">
+                <strong></strong> 
+                <img src="images\VectorPen.svg" class="pen-icon">
+            </span>
+        </div>
+
+        <div class="data-row">
+            <span class="label">Last Donation</span>
+            <span class="value"><strong></strong></span>
+        </div>
+
+        <div class="data-row">
+            <span class="label">Next Possible Donation</span>
+            <span class="value"><strong></strong></span>
+        </div>
+
+    </div>
+</div>
+
+        <div class="card">
+    <h3>Security Settings</h3>
+    <div class="security-list">
+        
+        <div class="security-item">
+            <div class="security-left">
+                <img src="images\material-symbols-light_password-rounded.svg" class="sec-icon">
+                <span>Change Password</span>
+            </div>
+        </div>
+
+        <div class="security-item">
+            <div class="security-left">
+                <img src="images\carbon_password.svg" class="sec-icon">
+                <span>Two-Factor Authentication</span>
+            </div>
+            <span class="arrow"><img src="images\Vectoree.svg" alt="❯" class="Vectore"></span>
+        </div>
+
+        <a href="deactivate.html" class="security-item" style="text-decoration: none; color: inherit; display: flex;">
+            <div class="security-left">
+                <img src="images/line-md_account-delete.svg" class="sec-icon">
+                <span>Deactivate Account</span>
+            </div>
+                <span class="arrow"><img src="images/Vectoree.svg" alt="❯" class="Vectore"></span>
+        </a>
+
+        <div class="security-item logout-item">
+            <div class="security-left">
+                <img src="images\ant-design_logout-outlined.svg" class="sec-icon logout-icon">
+                <span>Log Out</span>
+            </div>
+            <span class="arrow"><img src="images\Vectoree.svg" alt="❯" class="Vectore"></span>
+        </div>
+
+    </div>
+</div>
+    </div>
+</div>
+ <div class="footer">
+        <div class="elm-div">
+            <a class="elm" href="">Privacy Policy</a>
+            <a class="elm" href="">Terms of services</a>
+        </div>
+        <div class="sm-div">
+        <a href="#">
+            <img src="images/Vector27.svg" alt="" class="sm1-img">
+        </a>
+         <a href="#">
+            <img src="images/Vector24.svg" alt="" class="sm2-img">
+        </a>
+         <a href="#">
+            <img src="images/Vector26.svg" alt="" class="sm3-img">
+        </a>
+        
+         <a href="#">
+            <img src="images/Vector25.svg" alt="" class="sm4-img">
+        </a>
+        
+        </div>
+    </div>  
+    <script src="scripts/donor-profile.js"></script>
+    <script src="scripts/notifications.js"></script>
+
+</body>
+</html>

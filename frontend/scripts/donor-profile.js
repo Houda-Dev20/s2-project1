@@ -1,12 +1,74 @@
-let donationHistory = [
-    { date: "12 Feb 2026", hospital: "Al-Nafis Hospital", icon: "images/Blur.svg" },
-    { date: "03 June 2025", hospital: "Mustafa Hospital", icon: "images/Blur.svg" },
-    { date: "03 Mar 2025", hospital: "Maillot Hospital", icon: "images/Blur.svg" }
+const wilayas = [
+    "Adrar","Chlef","Laghouat","Oum El Bouaghi","Batna","Bejaia","Biskra","Bechar",
+    "Blida","Bouira","Tamanrasset","Tebessa","Tlemcen","Tiaret","Tizi Ouzou","Algiers",
+    "Djelfa","Jijel","Setif","Saida","Skikda","Sidi Bel Abbes","Annaba","Guelma",
+    "Constantine","Medea","Mostaganem","Msila","Mascara","Ouargla","Oran","El Bayadh",
+    "Illizi","Bordj Bou Arreridj","Boumerdes","El Tarf","Tindouf","Tissemsilt",
+    "El Oued","Khenchela","Souk Ahras","Tipaza","Mila","Ain Defla","Naama",
+    "Ain Temouchent","Ghardaia","Relizane","Timimoun","Bordj Badji Mokhtar","Ouled Djellal",
+    "Beni Abbes","In Salah","In Guezzam","Touggourt","Djanet","El M'Ghair","El Meniaa"
 ];
+
+function getWilayaNameById(id) {
+    if (!id) return "Unknown";
+    const index = parseInt(id) - 1;
+    return (index >= 0 && index < wilayas.length) ? wilayas[index] : "Unknown";
+}
+
+async function loadDonorData() {
+    console.log("Loading donor data...");
+    const user = JSON.parse(localStorage.getItem("currentUserSession"));
+
+    if (!user || !user.userId) {
+        console.error("No user session found or missing userId");
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:3000/donors/profile/${user.userId}`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        console.log("Donor Data:", data);
+
+        const locationName = getWilayaNameById(data.location);
+
+        document.getElementById("topName").innerText = data.full_name;
+        document.querySelector(".blood-badge").innerText = data.blood_type;
+        document.getElementById("topLocation").innerText = locationName;
+
+        document.getElementById("fullName").innerText = data.full_name;
+        document.getElementById("birthDate").innerText = data.date_of_birth;
+        document.getElementById("phone").innerText = data.telephon;
+        document.getElementById("email").innerText = data.email;
+        document.getElementById("location").innerText = locationName;
+
+        document.getElementById("location").setAttribute("data-wilaya-id", data.location);
+
+        const bloodStrong = document.querySelector('.value strong');
+        if (bloodStrong) bloodStrong.innerText = data.blood_type;
+        
+
+    } catch (error) {
+        console.error("Error loading donor:", error);
+alert("Failed to load profile data. Please make sure the server is running.");    }
+}
+
+let donationHistory = []; 
 
 function showDonations() {
     const container = document.getElementById("historyList");
     if (!container) return;
+    
+    if (donationHistory.length === 0) {
+        container.innerHTML = `<div class="history-item" style="justify-content: center;">
+            <div class="history-text">
+                <span>No donations yet</span>
+                <p>Your donation history will appear here</p>
+            </div>
+        </div>`;
+        return;
+    }
+    
     let html = "";
     for (let i = 0; i < donationHistory.length; i++) {
         let item = donationHistory[i];
@@ -25,7 +87,6 @@ function showDonations() {
 function setupInfoEdit() {
     const editBtn = document.querySelector('.edit-btn-small');
     const personalCard = document.getElementById('personalCard');
-    
     const topName = document.getElementById('topName');
     const topLocation = document.getElementById('topLocation');
 
@@ -40,20 +101,20 @@ function setupInfoEdit() {
             rows.forEach(row => {
                 const valueSpan = row.querySelector('span:last-child');
                 const currentText = valueSpan.innerText;
-                valueSpan.innerHTML = `<input type="text" value="${currentText}" style="border:1px solid #ddd; width:100%; padding: 2px;">`;
+                valueSpan.innerHTML = `<input type="text" value="${currentText.replace(/"/g, '&quot;')}" style="border:1px solid #ddd; width:100%; padding: 5px;">`;
             });
             this.innerHTML = "Save";
             isEditing = true;
         } else {
-            rows.forEach((row, index) => {
+            rows.forEach(row => {
                 const input = row.querySelector('input');
                 const valueSpan = row.querySelector('span:last-child');
                 const label = row.querySelector('span:first-child').innerText.toLowerCase();
-
+                
                 if (input) {
                     const newValue = input.value;
                     valueSpan.innerText = newValue;
-
+                    
                     if (label.includes("name") && topName) {
                         topName.innerText = newValue;
                     }
@@ -62,7 +123,6 @@ function setupInfoEdit() {
                     }
                 }
             });
-            
             this.innerHTML = `<img src="images/VectorPen.svg" class="icon-small"> Edit`;
             isEditing = false;
         }
@@ -196,28 +256,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-function resetBloodContainer() {
-    const bloodContainer = document.querySelector('.value');
-    const dropdown = document.getElementById('bloodDropdown');
-    if (dropdown) dropdown.style.display = 'none';
-    if (bloodContainer) {
-        bloodContainer.style.border = "none";
-        bloodContainer.style.borderRadius = "0";
-        bloodContainer.style.backgroundColor = "transparent";
-        bloodContainer.style.zIndex = "";
-    }
-}
-
-function resetBloodContainer() {
-    const bloodContainer = document.querySelector('.value');
-    const dropdown = document.getElementById('bloodDropdown');
-    if (dropdown) dropdown.style.display = 'none';
-    if (bloodContainer) {
-        bloodContainer.style.border = "none";
-        bloodContainer.style.borderRadius = "0";
-        bloodContainer.style.backgroundColor = "transparent";
-    }
-}
 
 function resetBloodContainer() {
     const bloodContainer = document.querySelector('.value');
@@ -261,41 +299,47 @@ function resetBloodContainer() {
        
     }
 }
-document.addEventListener('DOMContentLoaded', () => {
-    showDonations();
-    setupPhotoEdit();
-    setupInfoEdit();
-    setupFooterHover();
 
-});
+
 // Add this to your donor-profile.js
 // Inside donor-profile.js
-const logoutBtn = document.querySelector('.logout-item'); // Matches your HTML class
-
-if (logoutBtn) {
+function setupLogout() {
+    const logoutBtn = document.querySelector('.logout-item');
+    if (!logoutBtn) return;
     logoutBtn.addEventListener('click', function() {
+        const user = JSON.parse(localStorage.getItem("currentUserSession"));
+        const id = user ? user.userId : null;
+        
         const name = document.getElementById('topName').innerText;
-        // Specifically grab the badge updated by selectBloodType()
         const bloodType = document.querySelector('.blood-badge').innerText;
         const profilePic = document.querySelector('.main-avatar').src;
         
-        // Find email by looking for the label
         let email = "";
         const rows = document.querySelectorAll('.data-row');
         rows.forEach(row => {
             if(row.innerText.toLowerCase().includes('email')) {
-                email = row.querySelector('span:last-child').innerText;
+                const emailSpan = row.querySelector('span:last-child');
+                if(emailSpan) email = emailSpan.innerText;
             }
         });
-
+        
         const sessionData = {
+            userId: id,
             userName: name,
             userEmail: email,
             userBlood: bloodType,
             userPic: profilePic
         };
-
         localStorage.setItem('currentUserSession', JSON.stringify(sessionData));
         window.location.href = 'log-out.html';
     });
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    showDonations();
+    setupPhotoEdit();
+    setupInfoEdit();
+    setupFooterHover();
+    setupLogout();
+    loadDonorData();  
+});

@@ -3,15 +3,16 @@ const bcrypt = require('bcrypt');
 
 const sendVerificationEmail = require("../utils/sendEmail");
 const { ALGERIA_WILAYAS } = require('../utils/constants');
+const { createEligibilityNotification } = require("./notificationController");
 
 const pendingDonors = new Map();
 
 setInterval(() => {
     const now = Date.now();
     let cleanedCount = 0;
-    for (const [email, data] of pendingRegistrations.entries()) {
+    for (const [email, data] of pendingDonors.entries()) {
         if (data.expiresAt < now) {
-            pendingRegistrations.delete(email);
+            pendingDonors.delete(email);
             cleanedCount++;
         }
     }
@@ -516,4 +517,19 @@ const getDonorProfile = (req, res) => {
     });
 };
 
-module.exports = { deactivateDonor, addDonor, updateDonor , verifyAndSaveDonor, searchDonors, getAllDonors, loginDonor, logoutDonor, getDonorProfile, activateDonor, disactivateDonor, resendCode };
+
+module.exports = { deactivateDonor,
+                   addDonor,
+                   updateDonor ,
+                   verifyAndSaveDonor,
+                   searchDonors,
+                   getAllDonors,
+                   loginDonor,
+                   logoutDonor,
+                   getDonorProfile,
+                   activateDonor,
+                   disactivateDonor,
+                   resendCode
+         }; 
+
+         
