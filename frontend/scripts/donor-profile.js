@@ -104,73 +104,145 @@ function setupFooterHover() {
         }
     });
 }
-
 document.addEventListener('DOMContentLoaded', function() {
-    const bloodDropdown = document.createElement('div');
-    bloodDropdown.id = 'bloodDropdown';
-    bloodDropdown.style.cssText = `
-        display: none;
-        position: absolute;
-        background: white;
-        border: 0.25px solid black;
-        border-top: none; 
-        border-radius: 0 0 10px 10px; /* تم التعديل لـ 10px */
-        box-shadow: 0px 4px 10px rgba(0,0,0,0.05);
-        z-index: 1000;
-        overflow: hidden;
-   ` ;
-
-    bloodDropdown.innerHTML = `
-        <table style="width:100%; border-collapse: collapse; table-layout: fixed;">
-            <tr>
-                <td onclick="selectBloodType('O+')" style="padding: 8px 20px; text-align: left; color: #D97775; font-weight: bold; border-right: 0.25px solid black; border-bottom: 0.25px solid black; cursor: pointer;">O+</td>
-                <td onclick="selectBloodType('O-')" style="padding: 8px 20px; text-align: left; color: #D97775; font-weight: bold; border-bottom: 0.25px solid black; cursor: pointer;">O-</td>
-            </tr>
-            <tr>
-                <td onclick="selectBloodType('A+')" style="padding: 8px 20px; text-align: left; color: #D97775; font-weight: bold; border-right: 0.25px solid black; border-bottom: 0.25px solid black; cursor: pointer;">A+</td>
-                <td onclick="selectBloodType('A-')" style="padding: 8px 20px; text-align: left; color: #D97775; font-weight: bold; border-bottom: 0.25px solid black; cursor: pointer;">A-</td>
-            </tr>
-            <tr>
-                <td onclick="selectBloodType('B+')" style="padding: 8px 20px; text-align: left; color: #D97775; font-weight: bold; border-right: 0.25px solid black; border-bottom: 0.25px solid black; cursor: pointer;">B+</td>
-                <td onclick="selectBloodType('B-')" style="padding: 8px 20px; text-align: left; color: #D97775; font-weight: bold; border-bottom: 0.25px solid black; cursor: pointer;">B-</td>
-            </tr>
-            <tr>
-                <td onclick="selectBloodType('AB+')" style="padding: 8px 20px; text-align: left; color: #D97775; font-weight: bold; border-right: 0.25px solid black; cursor: pointer;">AB+</td>
-                <td onclick="selectBloodType('AB-')" style="padding: 8px 20px; text-align: left; color: #D97775; font-weight: bold; cursor: pointer;">AB-</td>
-            </tr>
-        </table>
-    `;
-    document.body.appendChild(bloodDropdown);
-
     const penIcon = document.querySelector('.pen-icon');
     const bloodContainer = penIcon ? penIcon.closest('.value') : null;
 
     if (penIcon && bloodContainer) {
+        bloodContainer.style.position = 'relative';
+
+        let bloodDropdown = document.createElement('div');
+        bloodDropdown.id = 'bloodDropdown';
+        bloodDropdown.style.cssText = `
+            display: none;
+            position: absolute;
+            top: 100%; 
+            left: -1px; 
+            width: calc(100% + 2px); 
+            background: white;
+            border: 1px solid black; 
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+            z-index: 10000;
+            overflow: hidden;
+            box-sizing: border-box;
+        `;
+
+        bloodDropdown.innerHTML = `
+            <table style="width:100%; border-collapse: collapse; table-layout: fixed; border-style: hidden;">
+                <tr style="cursor: pointer;">
+                    <td class="blood-item" onclick="selectBloodType('O+')" style="padding: 18px 10px; text-align: center; color: #D97775; font-weight: bold; border-right: 1px solid black; border-bottom: 1px solid black; transition: all 0.2s;">O+</td>
+                    <td class="blood-item" onclick="selectBloodType('O-')" style="padding: 18px 10px; text-align: center; color: #D97775; font-weight: bold; border-bottom: 1px solid black; transition: all 0.2s;">O-</td>
+                </tr>
+                <tr style="cursor: pointer;">
+                    <td class="blood-item" onclick="selectBloodType('A+')" style="padding: 18px 10px; text-align: center; color: #D97775; font-weight: bold; border-right: 1px solid black; border-bottom: 1px solid black; transition: all 0.2s;">A+</td>
+                    <td class="blood-item" onclick="selectBloodType('A-')" style="padding: 18px 10px; text-align: center; color: #D97775; font-weight: bold; border-bottom: 1px solid black; transition: all 0.2s;">A-</td>
+                </tr>
+                <tr style="cursor: pointer;">
+                    <td class="blood-item" onclick="selectBloodType('B+')" style="padding: 18px 10px; text-align: center; color: #D97775; font-weight: bold; border-right: 1px solid black; border-bottom: 1px solid black; transition: all 0.2s;">B+</td>
+                    <td class="blood-item" onclick="selectBloodType('B-')" style="padding: 18px 10px; text-align: center; color: #D97775; font-weight: bold; border-bottom: 1px solid black; transition: all 0.2s;">B-</td>
+                </tr>
+                <tr style="cursor: pointer;">
+                    <td class="blood-item" onclick="selectBloodType('AB+')" style="padding: 18px 10px; text-align: center; color: #D97775; font-weight: bold; border-right: 1px solid black; transition: all 0.2s;">AB+</td>
+                    <td class="blood-item" onclick="selectBloodType('AB-')" style="padding: 18px 10px; text-align: center; color: #D97775; font-weight: bold; transition: all 0.2s;">AB-</td>
+                </tr>
+            </table>
+        `;
+        bloodContainer.appendChild(bloodDropdown);
+
+        const items = bloodDropdown.querySelectorAll('.blood-item');
+        items.forEach(item => {
+            item.addEventListener('mouseenter', () => {
+                item.style.backgroundColor = '#D97775';
+                item.style.color = 'white';
+            });
+            item.addEventListener('mouseleave', () => {
+                item.style.backgroundColor = 'white';
+                item.style.color = '#D97775';
+            });
+        });
+
         penIcon.onclick = function(e) {
             e.stopPropagation();
-            let rect = bloodContainer.getBoundingClientRect();
-            
-            bloodContainer.style.border = "0.25px solid black";
-            bloodContainer.style.borderBottomLeftRadius = "0";
-            bloodContainer.style.borderBottomRightRadius = "0";
-            bloodContainer.style.borderTopLeftRadius = "10px";
-            bloodContainer.style.borderTopRightRadius = "10px";
+            const isVisible = bloodDropdown.style.display === 'block';
 
-            bloodDropdown.style.width = rect.width + 'px';
-            bloodDropdown.style.top = (rect.bottom + window.scrollY) + 'px';
-            bloodDropdown.style.left = (rect.left + window.scrollX) + 'px';
-            bloodDropdown.style.display = 'block';
+            if (!isVisible) {
+                bloodDropdown.style.display = 'block';
+                bloodContainer.style.border = "1px solid black";
+                bloodContainer.style.borderBottom = "none";
+                bloodContainer.style.borderRadius = "10px 10px 0 0";
+                bloodContainer.style.backgroundColor = "white";
+                bloodContainer.style.zIndex = "10001";
+            } else {
+                closeBloodDropdown();
+            }
         };
+
+        document.addEventListener('click', function(e) {
+            if (!bloodContainer.contains(e.target)) {
+                closeBloodDropdown();
+            }
+        });
     }
 
-    document.addEventListener('click', function() {
-        const dropdown = document.getElementById('bloodDropdown');
-        if (dropdown && dropdown.style.display === 'block') {
-            dropdown.style.display = 'none';
-            resetBloodContainer();
+    function closeBloodDropdown() {
+        if (bloodDropdown && bloodDropdown.style.display === 'block') {
+            bloodDropdown.style.display = 'none';
+            bloodContainer.style.border = "none";
+            bloodContainer.style.borderRadius = "0";
+            bloodContainer.style.backgroundColor = "transparent";
+            bloodContainer.style.zIndex = "";
         }
-    });
+    }
 });
+
+function resetBloodContainer() {
+    const bloodContainer = document.querySelector('.value');
+    const dropdown = document.getElementById('bloodDropdown');
+    if (dropdown) dropdown.style.display = 'none';
+    if (bloodContainer) {
+        bloodContainer.style.border = "none";
+        bloodContainer.style.borderRadius = "0";
+        bloodContainer.style.backgroundColor = "transparent";
+        bloodContainer.style.zIndex = "";
+    }
+}
+
+function resetBloodContainer() {
+    const bloodContainer = document.querySelector('.value');
+    const dropdown = document.getElementById('bloodDropdown');
+    if (dropdown) dropdown.style.display = 'none';
+    if (bloodContainer) {
+        bloodContainer.style.border = "none";
+        bloodContainer.style.borderRadius = "0";
+        bloodContainer.style.backgroundColor = "transparent";
+    }
+}
+
+function resetBloodContainer() {
+    const bloodContainer = document.querySelector('.value');
+    const dropdown = document.getElementById('bloodDropdown');
+    if (dropdown) dropdown.style.display = 'none';
+    if (bloodContainer) {
+        bloodContainer.style.border = "none";
+        bloodContainer.style.borderRadius = "0";
+        bloodContainer.style.backgroundColor = "transparent";
+    }
+}
+
+function resetBloodContainer() {
+    const bloodContainer = document.querySelector('.value');
+    const dropdown = document.getElementById('bloodDropdown');
+    
+    if (dropdown) dropdown.style.display = 'none';
+    
+    if (bloodContainer) {
+        bloodContainer.style.border = "none";
+        bloodContainer.style.borderRadius = "0";
+        bloodContainer.style.backgroundColor = "transparent";
+        bloodContainer.style.zIndex = "";
+    }
+}
 
 function selectBloodType(type) {
     const bloodValueText = document.querySelector('.value strong');
