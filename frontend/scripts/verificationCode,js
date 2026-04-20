@@ -73,7 +73,7 @@
     inputs.forEach(i => { i.value=''; i.classList.remove('filled'); });
     inputs[0].focus();
     updateBtn();
-    let sec = 30;
+    let sec = 60;
     resendBtn.disabled = true;
     resendBtn.textContent = `Resend (${sec}s)`;
     const t = setInterval(() => {
