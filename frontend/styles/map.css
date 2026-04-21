@@ -162,7 +162,7 @@ body {
     }
     50% {
         /* Peak visibility: Rings "multiply" their darkness in the center */
-        opacity: 1; 
+        opacity: 0.5; 
     }
     100% {
         transform: scale(1);
