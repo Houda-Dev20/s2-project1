@@ -74,6 +74,7 @@ function validateStep1() {
     } else {
         document.getElementById('displayEmail').innerText = emailInput.value;
         showStep(2);
+        startTimer();
     }
 }
 
@@ -141,3 +142,4 @@ function startTimer() {
         }
     }, 1000);
 }
+
