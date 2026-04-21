@@ -257,16 +257,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
-function resetBloodContainer() {
-    const bloodContainer = document.querySelector('.value');
-    const dropdown = document.getElementById('bloodDropdown');
-    if (dropdown) dropdown.style.display = 'none';
-    if (bloodContainer) {
-        bloodContainer.style.border = "none";
-        bloodContainer.style.borderRadius = "0";
-        bloodContainer.style.backgroundColor = "transparent";
-    }
-}
+
 
 function resetBloodContainer() {
     const bloodContainer = document.querySelector('.value');
@@ -282,22 +273,80 @@ function resetBloodContainer() {
     }
 }
 
-function selectBloodType(type) {
-    const bloodValueText = document.querySelector('.value strong');
-    const topBadge = document.querySelector('.blood-badge');
-if (bloodValueText) bloodValueText.innerText = type;
-    if (topBadge) topBadge.innerText = type;
+document.addEventListener('DOMContentLoaded', function() {
+    const penIcon = document.querySelector('.pen-icon');
+    const bloodContainer = document.getElementById('bloodValueContainer'); // تأكد من إضافة هذا الـ ID في الـ HTML
 
-    document.getElementById('bloodDropdown').style.display = 'none';
-    resetBloodContainer();
-}
+    if (penIcon && bloodContainer) {
+        // إنشاء القائمة مرة واحدة فقط عند تحميل الصفحة
+        let bloodDropdown = document.createElement('div');
+        bloodDropdown.id = 'bloodDropdown';
+        bloodDropdown.style.cssText = `
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: white;
+            border: 2px solid #D97775;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0px 8px 16px rgba(0,0,0,0.1);
+            z-index: 9999;
+            overflow: hidden;
+        `;
 
-function resetBloodContainer() {
-    const bloodContainer = document.querySelector('.value');
-    if (bloodContainer) {
-        bloodContainer.removeAttribute('style');
-       
+        const types = [['O+', 'O-'], ['A+', 'A-'], ['B+', 'B-'], ['AB+', 'AB-']];
+        
+        let tableHTML = `<table style="width:100%; border-collapse: collapse;">`;
+        types.forEach(row => {
+            tableHTML += `<tr>`;
+            row.forEach(type => {
+                tableHTML += `
+                    <td onclick="selectBloodType('${type}')" 
+                        style="padding: 15px; text-align: center; color: #D97775; font-weight: bold; border: 1px solid #eee; cursor: pointer;"
+                        onmouseover="this.style.backgroundColor='#D97775'; this.style.color='white'"
+                        onmouseout="this.style.backgroundColor='white'; this.style.color='#D97775'">
+                        ${type}
+                    </td>`;
+            });
+            tableHTML += `</tr>`;
+        });
+        tableHTML += `</table>`;
+        
+        bloodDropdown.innerHTML = tableHTML;
+        bloodContainer.appendChild(bloodDropdown);
+
+        // عند الضغط على أيقونة القلم
+        penIcon.onclick = function(e) {
+            e.stopPropagation();
+            const isOpen = bloodDropdown.style.display === 'block';
+            bloodDropdown.style.display = isOpen ? 'none' : 'block';
+        };
+
+        // إغلاق القائمة عند الضغط في أي مكان خارجها
+        document.addEventListener('click', () => {
+            bloodDropdown.style.display = 'none';
+        });
     }
+});
+
+// دالة اختيار الزمرة وتحديث الواجهة
+function selectBloodType(type) {
+    const bloodDisplay = document.querySelector('.value strong');
+    const topBadge = document.querySelector('.blood-badge');
+
+    if (bloodDisplay) bloodDisplay.innerText = type;
+    if (topBadge) topBadge.innerText = type;
+if (bloodContainer) {
+        bloodContainer.style.border = "none";
+        bloodContainer.style.borderRadius = "0";
+        bloodContainer.style.backgroundColor = "transparent";
+    }
+    // إغلاق القائمة بعد الاختيار
+    document.getElementById('bloodDropdown').style.display = 'none';
+    
+    console.log("Selected Blood Type:", type);
+    // هنا يمكنك إضافة fetch لتحديث البيانات في السيرفر
 }
 
 
