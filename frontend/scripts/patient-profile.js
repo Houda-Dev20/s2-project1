@@ -15,11 +15,92 @@ function getWilayaNameById(id) {
     return (index >= 0 && index < wilayas.length) ? wilayas[index] : "Unknown";
 }
 
+async function loadSearcherProfile() {
+    const user = JSON.parse(localStorage.getItem("currentUserSession"));
+    if (!user?.userId) {
+        console.error("No user session");
+        alert("Please log in again.");
+        window.location.href = "login.html";
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:3000/searchers/profile/${user.userId}`);
+        
+        // التحقق من حالة الاستجابة
+        if (!response.ok) {
+            if (response.status === 404) {
+                console.error("User not found");
+                alert("User not found. Please log in again.");
+                localStorage.removeItem("currentUserSession");
+                window.location.href = "login.html";
+                return;
+            }
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        // التحقق من وجود محتوى
+        const text = await response.text();
+        if (!text || text.trim() === "") {
+            console.error("Empty response from server");
+            alert("Server returned empty response. Please try again later.");
+            return;
+        }
+        
+        const data = JSON.parse(text);
+        console.log("Profile data:", data);
+        
+        if (!data || !data.full_name) {
+            throw new Error("Invalid profile data");
+        }
+
+        const locationName = getWilayaNameById(data.location);
+
+        // تحديث العناصر العلوية
+        const nameElem = document.querySelector('.name');
+        const bloodTypeElem = document.querySelector('.bloodtype-text');
+        const locationSpan = document.querySelector('.position span');
+        const memberSpan = document.querySelector('.member-since span');
+        
+        if (nameElem) nameElem.innerText = data.full_name;
+        if (bloodTypeElem) bloodTypeElem.innerText = data.blood_type_research;
+        if (locationSpan) locationSpan.innerText = locationName;
+        if (memberSpan) memberSpan.innerText = "Member since " + (data.created_at ? new Date(data.created_at).getFullYear() : "2026");
+
+        // تحديث المعلومات الشخصية
+        const ddItems = document.querySelectorAll('.dd-wrapper .dd-item');
+        if (ddItems.length >= 5) {
+            ddItems[0].innerText = data.full_name;
+            ddItems[1].innerText = data.date_of_birth || "";
+            ddItems[2].innerText = data.telephon || "";
+            ddItems[3].innerText = data.email || "";
+            ddItems[4].innerText = locationName;
+        }
+
+        // تحديث فصيلة الدم في المربع المنسدل
+        const bloodBox = document.getElementById('arrow-icon');
+        if (bloodBox && data.blood_type_research) {
+            if (bloodBox.childNodes[0]) bloodBox.childNodes[0].nodeValue = data.blood_type_research;
+            else bloodBox.innerText = data.blood_type_research;
+        }
+
+        // تحديث حالة الطوارئ
+        const stateBox = document.getElementById('state-icon');
+        if (stateBox) {
+            const isUrgent = data.is_urgent === 1 || data.is_urgent === true;
+            const stateText = isUrgent ? "Urgent" : "Stable";
+            if (stateBox.childNodes[0]) stateBox.childNodes[0].nodeValue = stateText;
+            else stateBox.innerText = stateText;
+            stateBox.style.color = isUrgent ? "#E33E3E" : "#EA9A60";
+        }
+
+    } catch (error) {
+        console.error("Error loading profile:", error);
+        alert("Failed to load profile data. Please make sure the server is running.");
+    }
+}
 // Data
 let requests = [
-    { date: "12 Feb 2026", hospital: "Mustapha Hospital", status: "pending" },
-    { date: "03 June 2025", hospital: "El Kettar Hospital", status: "fulfilled" },
-    { date: "03 Mar 2025", hospital: "Maillot Hospital", status: "fulfilled" },
     
 ];
 
@@ -348,4 +429,5 @@ if (logoutBtn) {
         window.location.href = 'log-out.html';
     });
 }
-});         
+});     
+    loadSearcherProfile(); 

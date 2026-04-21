@@ -99,10 +99,19 @@ if (!response.ok) {
   throw new Error(data.message || "Verification failed");
 }
 
+let userId, userName;
+if (type === "searcher") {
+    userId = data.searcherId;
+    userName = data.searcher.full_name;
+} else {
+    userId = data.donorId;
+    userName = data.donor.full_name;
+}
+
 localStorage.setItem("currentUserSession", JSON.stringify({
-    userId: data.donorId,
-    userName: data.donor.full_name
-}));
+    userId: userId,
+    userName: userName
+}))
 
 formView.style.display = 'none';
 successView.classList.add('show');
