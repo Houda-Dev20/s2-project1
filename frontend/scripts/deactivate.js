@@ -50,3 +50,68 @@ document.addEventListener('DOMContentLoaded', () => {
   
    
 });
+
+//api
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. تعريف العناصر من HTML
+    const passwordInput = document.getElementById('passwordInput');
+    const consentCheckbox = document.getElementById('consent');
+    const deactivateBtn = document.getElementById('deactivateBtn');
+    const confirmationModal = document.getElementById('confirmationModal');
+    const confirmDeleteBtn = document.querySelector('.btn-confirm-delete');
+    const cancelModalBtn = document.getElementById('cancelModal');
+
+    // 2. تفعيل زر التعطيل عند الموافقة على الشروط
+    consentCheckbox.addEventListener('change', () => {
+        deactivateBtn.disabled = !consentCheckbox.checked;
+    });
+
+    // 3. إظهار نافذة التأكيد (Modal)
+    deactivateBtn.addEventListener('click', () => {
+        if (!passwordInput.value) {
+            alert("Please enter your password first.");
+            return;
+        }
+        confirmationModal.style.display = 'flex';
+    });
+
+    // 4. إغلاق النافذة عند الإلغاء
+    cancelModalBtn.addEventListener('click', () => {
+        confirmationModal.style.display = 'none';
+    });
+
+    // 5. عملية الربط الفعلي باستخدام PUT
+    confirmDeleteBtn.addEventListener('click', async () => {
+        const userId = localStorage.getItem('userId'); 
+        const token = localStorage.getItem('token');
+
+        try {
+            // الرابط المعتمد على PUT في ملف donorRoutes.js
+            const apiUrl = `http://localhost:5000/api/donors/deactivate/${userId}`;
+
+            const response = await fetch(apiUrl, {
+                method: 'PUT', // تغيير الطريقة إلى PUT كما طلبتِ
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    password: passwordInput.value
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert("Account deactivated successfully.");
+                localStorage.clear(); 
+                window.location.href = "home.html"; 
+            } else {
+                alert(result.message || "Failed to deactivate account.");
+            }
+        } catch (error) {
+            console.error("Connection Error:", error);
+            alert("Could not connect to the server.");
+        }
+    });
+});
