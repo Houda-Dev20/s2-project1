@@ -120,63 +120,67 @@ message: "Invalid location. Please select a valid wilaya number between 1 and 58
 const updateSearcher = async (req, res) => {
     try {
         const { id } = req.params;
-        const {
-            full_name,
-            required_blood_type,
-            telephon,
-            email,
-            password,
-            location,
-            date_of_birth,
-            is_urgent
-        } = req.body;
+        const updates = req.body;
+console.log("UPDATES RECEIVED:", updates);
 
-        let hashedPassword = password;
-        if (password) {
-            hashedPassword = await bcrypt.hash(password, 10);
+console.log("🔹 blood_type_research:", updates.blood_type_research);
+console.log("🔹 is_urgent:", updates.is_urgent);
+
+        if (Object.keys(updates).length === 0) {
+            return res.status(400).json({ message: "No data provided" });
         }
 
-        const query = `
-            UPDATE searchers 
-            SET full_name=?, required_blood_type=?, telephon=?, email=?, password=?, location=?, date_of_birth=?,
-            is_urgent=? 
-            WHERE id=?
-        `;
+        if (updates.full_name && !/^[A-Za-z\s]+$/.test(updates.full_name)) {
+            return res.status(400).json({ message: "Invalid full name format" });
+        }
 
-        db.query(query,
-            [full_name, required_blood_type, telephon, email, hashedPassword, location, date_of_birth, is_urgent, id],
-            (err, result) => {
-                if (err) {
-                    console.error(err);
-                    if (err.code === 'ER_DUP_ENTRY') return res.status(400).json({ message: "Conflict: Email or phone exists" });
-                    return res.status(500).json({ message: "Error updating searcher" });
-                }
+        if (updates.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(updates.email)) {
+            return res.status(400).json({ message: "Invalid email address" });
+        }
 
-                if (result.affectedRows === 0) {
-                    return res.status(404).json({ message: "searcher not found" });
-                }
-if (required_blood_types && Array.isArray(required_blood_types)) {
-                    db.query(`DELETE FROM searcher_blood_requirements WHERE searcher_id = ?`, [id], (delErr) => {
-                        if (delErr) return res.status(500).json({ message: "Error resetting blood types" });
+        if (updates.telephon && !/^\d{10}$/.test(updates.telephon)) {
+            return res.status(400).json({ message: "Invalid phone number" });
+        }
 
-                        if (required_blood_types.length > 0) {
-                            const bloodValues = required_blood_types.map(type => [id, type]);
-                            db.query(`INSERT INTO searcher_blood_requirements (searcher_id, blood_type) VALUES ?`, [bloodValues], (insErr) => {
-                                if (insErr) return res.status(500).json({ message: "Error inserting new blood types" });
-                                return res.json({ message: "Searcher and blood types updated successfully" });
-                            });
-                        } else {
-                            return res.json({ message: "Searcher updated, all blood requirements removed" });
-                        }
-                    });
-                } else {
-                    return res.json({ message: "Searcher profile updated successfully" });
-                }
+        if (updates.location) {
+            const wilayaNumber = parseInt(updates.location);
+            if (!ALGERIA_WILAYAS.includes(wilayaNumber)) {
+                return res.status(400).json({
+                    message: "Invalid location"
+                });
             }
-        );
+        }
+
+        if (updates.password) {
+            updates.password = await bcrypt.hash(updates.password, 10);
+        }
+
+        const fields = Object.keys(updates)
+            .map(key => `${key}=?`)
+            .join(", ");
+
+        const values = Object.values(updates);
+
+        console.log("UPDATES:", updates);
+
+        const query = `UPDATE searchers SET ${fields} WHERE id=?`;
+
+        db.query(query, [...values, id], (err, result) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).json({ message: "Error updating searcher" });
+            }
+
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ message: "searcher not found" });
+            }
+
+            return res.json({ message: "Updated successfully" });
+        });
+
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Internel Server Error" });
+        res.status(500).json({ message: "Internal Server Error" });
     }
 };
 

@@ -1,2 +1,47 @@
 node_modules/
 .env
+
+
+
+editBtn.onclick = (e) => {
+    e.stopPropagation(); // prevent dropdown close
+    
+    const buttonText = editBtn.querySelector('.edit2'); // your text span inside button
+
+    if (!isEditing) {
+        // Start editing
+        isEditing = true;
+        buttonText.innerText = "Save"; // change button text
+
+        const items = wrapper.querySelectorAll('.dd-item');
+
+        items.forEach((item, index) => {
+            const input = document.createElement('input');
+            input.value = item.innerText;
+            input.className = 'edit-input';
+            input.dataset.index = index;
+
+            item.innerHTML = '';
+            item.appendChild(input);
+        });
+
+    } else {
+        // Save changes
+        const inputs = wrapper.querySelectorAll('.edit-input');
+        const items = wrapper.querySelectorAll('.dd-item');
+
+        inputs.forEach((input, i) => {
+            items[i].innerHTML = input.value; // update item text
+        });
+
+        // ALSO update first div
+        const nameDiv = document.querySelector('.name');
+        const locationDiv = document.querySelector('.position span');
+
+        nameDiv.innerText = items[0].innerText; // Full Name
+        locationDiv.innerText = items[4].innerText; // Location
+
+        isEditing = false;
+        buttonText.innerText = "Edit"; // change back to Edit
+    }
+};

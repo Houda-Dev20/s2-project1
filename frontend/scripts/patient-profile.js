@@ -1,3 +1,5 @@
+let currentProfileData = {};
+
 const wilayas = [
     "Adrar", "Chlef", "Laghouat", "Oum El Bouaghi", "Batna", "Bejaia", "Biskra", "Bechar",
     "Blida", "Bouira", "Tamanrasset", "Tebessa", "Tlemcen", "Tiaret", "Tizi Ouzou", "Algiers",
@@ -27,7 +29,6 @@ async function loadSearcherProfile() {
     try {
         const response = await fetch(`http://localhost:3000/searchers/profile/${user.userId}`);
         
-        // التحقق من حالة الاستجابة
         if (!response.ok) {
             if (response.status === 404) {
                 console.error("User not found");
@@ -39,7 +40,6 @@ async function loadSearcherProfile() {
             throw new Error(`HTTP ${response.status}`);
         }
         
-        // التحقق من وجود محتوى
         const text = await response.text();
         if (!text || text.trim() === "") {
             console.error("Empty response from server");
@@ -48,6 +48,7 @@ async function loadSearcherProfile() {
         }
         
         const data = JSON.parse(text);
+        currentProfileData = data;
         console.log("Profile data:", data);
         
         if (!data || !data.full_name) {
@@ -56,7 +57,6 @@ async function loadSearcherProfile() {
 
         const locationName = getWilayaNameById(data.location);
 
-        // تحديث العناصر العلوية
         const nameElem = document.querySelector('.name');
         const bloodTypeElem = document.querySelector('.bloodtype-text');
         const locationSpan = document.querySelector('.position span');
@@ -67,7 +67,6 @@ async function loadSearcherProfile() {
         if (locationSpan) locationSpan.innerText = locationName;
         if (memberSpan) memberSpan.innerText = "Member since " + (data.created_at ? new Date(data.created_at).getFullYear() : "2026");
 
-        // تحديث المعلومات الشخصية
         const ddItems = document.querySelectorAll('.dd-wrapper .dd-item');
         if (ddItems.length >= 5) {
             ddItems[0].innerText = data.full_name;
@@ -77,14 +76,12 @@ async function loadSearcherProfile() {
             ddItems[4].innerText = locationName;
         }
 
-        // تحديث فصيلة الدم في المربع المنسدل
         const bloodBox = document.getElementById('arrow-icon');
         if (bloodBox && data.blood_type_research) {
             if (bloodBox.childNodes[0]) bloodBox.childNodes[0].nodeValue = data.blood_type_research;
             else bloodBox.innerText = data.blood_type_research;
         }
 
-        // تحديث حالة الطوارئ
         const stateBox = document.getElementById('state-icon');
         if (stateBox) {
             const isUrgent = data.is_urgent === 1 || data.is_urgent === true;
@@ -249,28 +246,31 @@ function toggleStateDropdown() {
 }
 
 function selectBlood(element, value) {
-    const bloodDiv = document.getElementById('arrow-icon'); // dropdown display
+    const bloodDiv = document.getElementById('arrow-icon');
     const dropdown = document.getElementById('dropdown');
-    bloodDiv.childNodes[0].nodeValue = value; // update dropdown text
-
-    // Update first div blood type text
+    if (bloodDiv.childNodes[0]) bloodDiv.childNodes[0].nodeValue = value;
+    else bloodDiv.innerText = value;
     const bloodTypeText = document.querySelector('.bloodtype-text');
-    bloodTypeText.innerText = value; // set the text
-
+    if (bloodTypeText) bloodTypeText.innerText = value;
     dropdown.style.display = "none";
     document.body.classList.remove('dropdown-open');
+    
+    saveBloodType(value);
 }
 
 function selectState(element, value) {
     const stateDiv = document.getElementById('state-icon');
     const dropdown = document.getElementById('stateDropdown');
-    stateDiv.childNodes[0].nodeValue = value;
+    if (stateDiv.childNodes[0]) stateDiv.childNodes[0].nodeValue = value;
+    else stateDiv.innerText = value;
     if (value === 'Urgent') {
         stateDiv.style.color = '#E33E3E';
     } else {
         stateDiv.style.color = '#EA9A60';
     }
     dropdown.style.display = "none";
+    
+    saveState(value);
 }
 
 // Close dropdowns when clicking outside
@@ -295,53 +295,20 @@ document.addEventListener('click', function(e) {
     }
 });
 // For edit button
-// For edit button
-const editBtn = document.querySelector('.edit2-div');
 const wrapper = document.querySelector('.dd-wrapper'); // second-div info wrapper
-let isEditing = false;
 
-editBtn.onclick = (e) => {
-    e.stopPropagation(); // prevent dropdown close
-    
-    const buttonText = editBtn.querySelector('.edit2'); // your text span inside button
 
-    if (!isEditing) {
-        // Start editing
-        isEditing = true;
-        buttonText.innerText = "Save"; // change button text
 
-        const items = wrapper.querySelectorAll('.dd-item');
 
-        items.forEach((item, index) => {
-            const input = document.createElement('input');
-            input.value = item.innerText;
-            input.className = 'edit-input';
-            input.dataset.index = index;
+// editbtn
 
-            item.innerHTML = '';
-            item.appendChild(input);
-        });
 
-    } else {
-        // Save changes
-        const inputs = wrapper.querySelectorAll('.edit-input');
-        const items = wrapper.querySelectorAll('.dd-item');
 
-        inputs.forEach((input, i) => {
-            items[i].innerHTML = input.value; // update item text
-        });
 
-        // ALSO update first div
-        const nameDiv = document.querySelector('.name');
-        const locationDiv = document.querySelector('.position span');
 
-        nameDiv.innerText = items[0].innerText; // Full Name
-        locationDiv.innerText = items[4].innerText; // Location
 
-        isEditing = false;
-        buttonText.innerText = "Edit"; // change back to Edit
-    }
-};
+
+
 document.addEventListener('DOMContentLoaded', function() {
     const sm1Img = document.querySelector('.sm1-img');
     const sm2Img = document.querySelector('.sm2-img');
@@ -429,5 +396,167 @@ if (logoutBtn) {
         window.location.href = 'log-out.html';
     });
 }
-});     
+});    
+
+async function saveBloodType(newType) {
+    const session = JSON.parse(localStorage.getItem("currentUserSession"));
+    const userId = session?.userId;
+    if (!userId) {
+        console.error("No userId found");
+        return;
+    }
+    try {
+        const response = await fetch(`http://localhost:3000/searchers/update/${userId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ blood_type_research: newType })
+        });
+        if (response.ok) {
+            console.log("Blood type saved:", newType);
+        } else {
+            console.error("Failed to save blood type");
+        }
+    } catch (err) {
+        console.error("Error saving blood type:", err);
+    }
+}
+
+// (Urgent/Stable)
+async function saveState(newState) {
+    const session = JSON.parse(localStorage.getItem("currentUserSession"));
+    const userId = session?.userId;
+    if (!userId) {
+        console.error("No userId found");
+        return;
+    }
+    const isUrgent = (newState === "Urgent") ? 1 : 0;
+    try {
+        const response = await fetch(`http://localhost:3000/searchers/update/${userId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ is_urgent: isUrgent })
+        });
+        if (response.ok) {
+            console.log("State saved:", newState);
+        } else {
+            console.error("Failed to save state");
+        }
+    } catch (err) {
+        console.error("Error saving state:", err);
+    }
+}
+
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    const editBtn = document.querySelector('.edit2-div');
+    let isEdited = false;
+
+    if (!editBtn) {
+        console.error("❌ edit button not found");
+        return;
+    }
+
+    editBtn.addEventListener("click", async () => {
+
+        console.log("CLICK 🔥");
+
+        const fields = [
+            "infoFullName",
+            "infoDob",
+            "infoPhone",
+            "infoEmail",
+            "infoLocation"
+        ];
+
+        const map = {
+            infoFullName: "full_name",
+            infoDob: "date_of_birth",
+            infoPhone: "telephon",
+            infoEmail: "email",
+            infoLocation: "location"
+        };
+
+        if (!isEdited) {
+            console.log("EDIT MODE");
+
+            fields.forEach(id => {
+                const el = document.getElementById(id);
+                const key = map[id];
+                const value = currentProfileData[key] || "";
+
+                el.innerHTML = `<input value="${value}" />`;
+            });
+
+            editBtn.querySelector('.edit2').innerText = "Save";
+            isEdited = true;
+
+        } else {
+            console.log("SAVE MODE 🚀");
+
+            const updatedData = {};
+
+            fields.forEach(id => {
+                const key = map[id];
+                const input = document.querySelector(`#${id} input`);
+
+                if (input && input.value.trim() !== "") {
+                    updatedData[key] = input.value;
+                } else {
+                    updatedData[key] = currentProfileData[key];
+                }
+            });
+
+const bloodTypeElem = document.querySelector('.bloodtype-text');
+if (!bloodTypeElem) console.error("bloodtype-text not found");
+updatedData.blood_type_research = bloodTypeElem ? bloodTypeElem.innerText.trim() : currentProfileData.blood_type_research;
+
+const stateElem = document.getElementById('state-icon');
+const stateText = stateElem ? stateElem.innerText.trim() : "Stable";
+updatedData.is_urgent = (stateText === "Urgent") ? 1 : 0;
+
+            console.log("SENDING DATA:", updatedData);
+
+            const session = JSON.parse(localStorage.getItem("currentUserSession"));
+            const userId = session?.userId;
+
+console.log("📤 Sending update with userId:", userId);
+console.log("📦 Payload:", updatedData);
+
+            const response = await fetch(`http://localhost:3000/searchers/update/${userId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(updatedData)
+            });
+
+            if (!response.ok) {
+    const errorText = await response.text();
+    console.error("❌ Server error:", response.status, errorText);
+    alert("Update failed: " + errorText);
+} else {
+    const result = await response.json();
+    console.log("Update success:", result);
+}
+
+            console.log("STATUS:", response.status);
+
+            await loadSearcherProfile();
+
+            const btn = document.querySelector('.edit2-div');
+console.log(btn);
+btn.click();     
+
+const newBlood = document.querySelector('.bloodtype-text').innerText;
+const newState = document.getElementById('state-icon').innerText;
+console.log("Reloaded profile: Blood =", newBlood, ", State =", newState);
+
+            editBtn.querySelector('.edit2').innerText = "Edit";
+            isEdited = false;
+        }
+    });
+});
+
+
     loadSearcherProfile(); 
