@@ -17,6 +17,25 @@ function getWilayaNameById(id) {
     return (index >= 0 && index < wilayas.length) ? wilayas[index] : "Unknown";
 }
 
+function formatDate(dateString) {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`; 
+}
+
+function isValidDate(dateString) {
+    if (!dateString) return false;
+    const regex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!regex.test(dateString)) return false;
+    const date = new Date(dateString);
+    return date instanceof Date && !isNaN(date) && 
+           dateString === date.toISOString().split('T')[0];
+}
+
 async function loadSearcherProfile() {
     const user = JSON.parse(localStorage.getItem("currentUserSession"));
     if (!user?.userId) {
@@ -70,10 +89,12 @@ async function loadSearcherProfile() {
         const ddItems = document.querySelectorAll('.dd-wrapper .dd-item');
         if (ddItems.length >= 5) {
             ddItems[0].innerText = data.full_name;
-            ddItems[1].innerText = data.date_of_birth || "";
+            ddItems[1].innerText =  formatDate(data.date_of_birth) || "";
             ddItems[2].innerText = data.telephon || "";
             ddItems[3].innerText = data.email || "";
             ddItems[4].innerText = locationName;
+        if (ddItems[5]) ddItems[5].innerText = data.Hospital_name || "";
+
         }
 
         const bloodBox = document.getElementById('arrow-icon');
@@ -97,9 +118,7 @@ async function loadSearcherProfile() {
     }
 }
 // Data
-let requests = [
-    
-];
+let requests = [];
 
 // Show list dynamically
 function showList() {
@@ -459,14 +478,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     editBtn.addEventListener("click", async () => {
 
-        console.log("CLICK 🔥");
 
         const fields = [
             "infoFullName",
             "infoDob",
             "infoPhone",
             "infoEmail",
-            "infoLocation"
+            "infoLocation",
+            "infoHospital"
         ];
 
         const map = {
@@ -474,25 +493,29 @@ document.addEventListener("DOMContentLoaded", () => {
             infoDob: "date_of_birth",
             infoPhone: "telephon",
             infoEmail: "email",
-            infoLocation: "location"
+            infoLocation: "location",
+            infoHospital: "Hospital_name"
         };
 
         if (!isEdited) {
             console.log("EDIT MODE");
 
-            fields.forEach(id => {
-                const el = document.getElementById(id);
-                const key = map[id];
-                const value = currentProfileData[key] || "";
-
-                el.innerHTML = `<input value="${value}" />`;
-            });
+fields.forEach(id => {
+    const el = document.getElementById(id);
+    const key = map[id];
+    let value = currentProfileData[key] || "";
+    
+    if (key === "date_of_birth") {
+        value = formatDate(value);
+    }
+    
+    el.innerHTML = `<input value="${value}" />`;
+});
 
             editBtn.querySelector('.edit2').innerText = "Save";
             isEdited = true;
 
         } else {
-            console.log("SAVE MODE 🚀");
 
             const updatedData = {};
 
@@ -515,13 +538,17 @@ const stateElem = document.getElementById('state-icon');
 const stateText = stateElem ? stateElem.innerText.trim() : "Stable";
 updatedData.is_urgent = (stateText === "Urgent") ? 1 : 0;
 
+// التحقق من صحة تاريخ الميلاد
+if (updatedData.date_of_birth && !isValidDate(updatedData.date_of_birth)) {
+    alert("Please enter a valid date in format YYYY-MM-DD (e.g., 2000-11-20)");
+    return;  // إيقاف الإرسال
+}
+
             console.log("SENDING DATA:", updatedData);
 
             const session = JSON.parse(localStorage.getItem("currentUserSession"));
             const userId = session?.userId;
 
-console.log("📤 Sending update with userId:", userId);
-console.log("📦 Payload:", updatedData);
 
             const response = await fetch(`http://localhost:3000/searchers/update/${userId}`, {
                 method: "PUT",
@@ -533,24 +560,16 @@ console.log("📦 Payload:", updatedData);
 
             if (!response.ok) {
     const errorText = await response.text();
-    console.error("❌ Server error:", response.status, errorText);
     alert("Update failed: " + errorText);
 } else {
     const result = await response.json();
     console.log("Update success:", result);
 }
 
-            console.log("STATUS:", response.status);
-
-            await loadSearcherProfile();
-
-            const btn = document.querySelector('.edit2-div');
-console.log(btn);
-btn.click();     
+await loadSearcherProfile();
 
 const newBlood = document.querySelector('.bloodtype-text').innerText;
 const newState = document.getElementById('state-icon').innerText;
-console.log("Reloaded profile: Blood =", newBlood, ", State =", newState);
 
             editBtn.querySelector('.edit2').innerText = "Edit";
             isEdited = false;
