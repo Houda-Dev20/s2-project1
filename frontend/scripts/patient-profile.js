@@ -421,7 +421,7 @@ async function saveBloodType(newType) {
     }
 }
 
-// (Urgent/Stable)
+//(Urgent/Stable)
 async function saveState(newState) {
     const session = JSON.parse(localStorage.getItem("currentUserSession"));
     const userId = session?.userId;

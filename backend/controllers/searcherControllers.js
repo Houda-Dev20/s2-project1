@@ -123,8 +123,8 @@ const updateSearcher = async (req, res) => {
         const updates = req.body;
 console.log("UPDATES RECEIVED:", updates);
 
-console.log("🔹 blood_type_research:", updates.blood_type_research);
-console.log("🔹 is_urgent:", updates.is_urgent);
+console.log("blood_type_research:", updates.blood_type_research);
+console.log("is_urgent:", updates.is_urgent);
 
         if (Object.keys(updates).length === 0) {
             return res.status(400).json({ message: "No data provided" });
