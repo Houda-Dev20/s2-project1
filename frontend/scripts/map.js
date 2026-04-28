@@ -35,13 +35,102 @@ function createBloodIcon(type) {
     });
 }
 
-// 4. THE LOOP
-donations.forEach(function(donor) {
-    // We create a marker at the lat/lng and use our icon function
-    L.marker([donor.lat, donor.lng], { 
-        icon: createBloodIcon(donor.type) 
-    }).addTo(map);
-});
+// 4. THE LOOP WITH POPUPS
+
+async function initMapWithData() {
+    try {
+        // 1. Fetch data from your backend
+        const response = await fetch('http://localhost:3000/searchers/map-data');
+        if (!response.ok) throw new Error('Network response was not ok');
+        
+        const searchers = await response.json();
+        
+        // 2. Get the current center of the map to calculate distances
+        const mapCenter = map.getCenter();
+
+        searchers.forEach(person => {
+            // Validate coordinates exist to prevent Leaflet errors
+            if (!person.latitude || !person.longitude) return;
+
+            const personLatLng = L.latLng(person.latitude, person.longitude);
+
+            // 3. Calculate real-time distance (meters to km)
+            const distance = (mapCenter.distanceTo(personLatLng) / 1000).toFixed(1);
+
+            // 4. Create the custom blood drop marker
+            const marker = L.marker([person.latitude, person.longitude], { 
+                icon: createBloodIcon(person.blood_type_research) 
+            }).addTo(map);
+
+            // 5. Format the "Created At" date
+            const dateStr = new Date(person.created_at).toLocaleDateString('en-GB', {
+                day: '2-digit', 
+                month: 'short', 
+                year: 'numeric'
+            });
+
+            // 6. Build the Popup HTML (Matching your Figma exactly)
+            const popupContent = `
+                <div class="donor-card-popup">
+                    <div class="card-header">
+                        <img src="images/Rectangle.svg" class="card-avatar" alt="Profile">
+                        <div class="card-title-group">
+                            <div class="name-row">
+                                <span class="card-name">${person.full_name}</span>
+                                <span class="blood-badge">${person.blood_type_research}</span>
+                            </div>
+                            ${person.is_urgent ? '<div class="urgency-badge">High Urgency</div>' : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="card-details">
+                        <div class="detail-row">
+                            <img src="images/Vector P.svg" class="icon">
+                            <span class="text-main">Nearby, Sétif</span>
+                            <span class="text-sub dis">${distance} km away</span>
+                        </div>
+
+                        <div class="detail-row">
+                            <img src="images/uil_hospital.svg" class="icon">
+                            <span class="text-main">${person.Hospital_name || 'General Hospital'}</span>
+                        </div>
+
+                        <div class="detail-row">
+                            <img src="images/material-symbols-light_post-add.svg" class="icon">
+                            <span class="text-sub text-sub1">Request Sent</span>
+                            <span class="text-sub date">${dateStr}</span>
+                        </div>
+                    </div>
+                    
+                    <button class="view-request-btn" onclick="goToRequest(${person.id})">
+                        View Request >
+                    </button>
+                </div>
+            `;
+
+            // 7. Bind and Style the Popup
+            marker.bindPopup(popupContent, {
+                closeButton: false,
+                className: 'custom-leaflet-popup',
+                minWidth: 400,
+                maxWidth: 400,
+                offset: [0, -70]
+            });
+        });
+
+    } catch (err) {
+        console.error("Critical Error: Could not load searcher data onto map:", err);
+    }
+}
+
+// Global function to handle button clicks inside the popup
+function goToRequest(id) {
+    console.log("Navigating to request ID:", id);
+    window.location.href = `request-details.html?id=${id}`;
+}
+
+// Call the function to start
+initMapWithData();
 document.addEventListener('DOMContentLoaded', function() {
     const currentPage = window.location.pathname.split('/').pop() ;
     
