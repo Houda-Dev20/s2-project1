@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeDrop - Donation Request</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/donate.css">
+    <link rel="stylesheet" href="styles/notifications.css">
+</head>
+<body>
+
+     <header class="header">
+        <div class="left-section">
+            <img class="logo" src="images/Blur.svg" alt="logo">
+            <img class="logo1" src="images/LifeDrop.svg" alt="logo1">
+        </div>
+
+        <nav class="middle-section">
+            <a href="home.html" class="taps active">Home</a>
+            <a href="map.html" class="taps">Map</a>
+            <a href="search.html" class="taps">Search</a>
+        </nav>
+
+        <div class="right-section">
+            <div class="notif-wrapper">
+                <button class="notif-trigger" id="notifBtn">
+                    <img class="bell-img" src="images/bell.svg" alt="notifications">
+                    <div class="red-dot" id="notifBadge"></div>
+                </button>
+
+                <div class="dropdown-container" id="notifDropdown">
+                <div id="notifList"></div>    
+                  <button class="mark-read-btn" id="markReadBtn">Mark all as read</button>
+
+                    <div class="empty-state" id="emptyState">
+                        <div class="check-icon-large">
+                            <img class="large-notif-img" src="images/gg_check-o.svg" alt="caught-up">
+                        </div>
+                        <h3 class="empty-title">You’re All Caught Up</h3>
+                        <p class="empty-desc">No new notifications for now</p>
+                    </div>
+                </div>
+            </div>
+
+            <button class="profile" id="profile">
+                <img class="profile-img" src="" alt="profile-picture">
+            </button>
+        </div>
+    </header>
+      <div id="notifModal" class="modal-overlay">
+    <div class="frame-33">
+        <div class="vector-circle">
+            <img src="images/Vector-heart.svg" alt="heart"> </div>
+        
+        <h2 class="modal-title">DONOR MATCH FOUND!</h2>
+
+        <div class="donor-info">
+            <img src="images/donor-avatar.png" id="modalImg" class="donor-img">
+            <div class="donor-text">
+                <span id="modalName" class="donor-name">Abd El-Malek Zerarga</span>
+                <span id="modalLocation" class="donor-loc">El-Eulma, Sétif</span>
+            </div>
+        </div>
+
+        <p class="modal-msg">Hello, I am nearby and I can be at EPSP</p>
+
+        <div class="modal-buttons">
+            <button class="btn-accept">Accept Request</button>
+            <button class="btn-cancel" id="closeModal">Cancel</button>
+        </div>
+    </div>
+</div>
+    <main class="details-container">
+        <div class="donation-card">
+            <div class="card-header">
+                <span class="urgency-badge">DONATE REQUEST</span>
+                <div class="profile-img-container">
+                    <img src="https://ui-avatars.com/api/?name=Sara+Boussife&background=FDECEA&color=E8433A&size=128" alt="Sara Boussife">
+                </div>
+                <h2>Sara Boussife</h2>
+                <span class="blood-type-tag">O+ Blood Type</span>
+            </div>
+
+            <div class="card-body">
+                <div class="info-field">
+                    <label>PHONE NUMBER</label>
+                    <p>0612 34 56 78</p>
+                </div>
+                <div class="info-field">
+                    <label>EMAIL</label>
+                    <p>SaraBoussife06@gmail.com</p>
+                </div>
+                <div class="info-field">
+                    <label>LOCATION</label>
+                    <p>El-Eulma, Setif — Algeria</p>
+                </div>
+
+                <button class="btn-donate">Request Help now</button>
+                <p class="footer-note">Request blood donation through one press of button</p>
+            </div>
+        </div>
+    </main>
+
+    <div class="footer">
+        <div class="elm-div">
+            <a class="elm" href="">Privacy Policy</a>
+            <a class="elm" href="">Terms of services</a>
+        </div>
+        <div class="sm-div">
+        <a href="#">
+            <img src="images/Vector27.svg" alt="" class="sm1-img">
+        </a>
+         <a href="#">
+            <img src="images/Vector24.svg" alt="" class="sm2-img">
+        </a>
+         <a href="#">
+            <img src="images/Vector26.svg" alt="" class="sm3-img">
+        </a>
+        
+         <a href="#">
+            <img src="images/Vector25.svg" alt="" class="sm4-img">
+        </a>
+        
+        </div>
+    </div>
+<script src="scripts/notifications.js"></script>
+<script src="scripts/donate.js"></script>
+
+</body>
+</html>
