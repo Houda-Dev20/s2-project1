@@ -17,7 +17,6 @@
 <link rel="stylesheet" href="styles/notifications.css">
 </head>
 <body>
-
   <header class="header">
         <div class="left-section">
             <img class="logo" src="images/Blur.svg" alt="logo">
@@ -27,7 +26,7 @@
         <nav class="middle-section">
             <a href="home.html" class="taps ">Home</a>
             <a href="map.html" class="taps">Map</a>
-            <a href="search.html" class="taps active">Search</a>
+            <a href="search.html" class="taps">Search</a>
         </nav>
 
         <div class="right-section">
@@ -56,6 +55,30 @@
             </button>
         </div>
     </header>
+    <div id="notifModal" class="modal-overlay">
+    <div class="frame-33">
+        <div class="vector-circle">
+            <img src="images/Vector-heart.svg" alt="heart"> 
+        </div>
+        
+        <h2 class="modal-title">DONOR MATCH FOUND!</h2>
+
+        <div class="donor-info">
+            <img src="" id="modalImg" class="donor-img">
+            <div class="donor-text">
+                <span id="modalName" class="donor-name">Abd El-Malek Zerarga</span>
+                <span id="modalLocation" class="donor-loc">El-Eulma, Sétif</span>
+            </div>
+        </div>
+
+        <p class="modal-msg">Hello, I am nearby and I can be at EPSP</p>
+
+        <div class="modal-buttons">
+            <button class="btn-accept">Accept Request</button>
+            <button class="btn-cancel" id="closeModal">Cancel</button>
+        </div>
+    </div>
+</div>
 
 <!-- MAIN -->
 <main>
