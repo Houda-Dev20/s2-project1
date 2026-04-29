@@ -1,37 +1,23 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const notifBtn = document.getElementById('notifBtn');
-    const notifDropdown = document.getElementById('notifDropdown');
-    const modal = document.getElementById('notifModal');
-    const closeModal = document.getElementById('closeModal');
 
-    // Toggle Notification Dropdown
-    notifBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        notifDropdown.classList.toggle('active');
+    // Accordion behavior (optional — since yours is always open now)
+    const items = document.querySelectorAll('.accordion-item');
+
+    items.forEach(item => {
+        const header = item.querySelector('.accordion-header');
+
+        if (!header) return;
+
+        header.addEventListener('click', () => {
+            const content = item.querySelector('.accordion-content');
+
+            // Toggle visibility (only if you want collapsible behavior)
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+            } else {
+                content.style.display = 'none';
+            }
+        });
     });
 
-    // Close dropdown when clicking outside
-    window.addEventListener('click', () => {
-        notifDropdown.classList.remove('active');
-    });
-
-    // Mockup trigger for the Donor Match Modal 
-    // (In production, this would be triggered by a real-time event/socket)
-    const triggerModalSample = () => {
-        modal.style.display = 'flex';
-    };
-
-    closeModal.addEventListener('click', () => {
-        modal.style.display = 'none';
-    });
-
-    // Mark as Read functionality
-    const markReadBtn = document.getElementById('markReadBtn');
-    const badge = document.getElementById('notifBadge');
-    
-    markReadBtn.addEventListener('click', () => {
-        badge.style.display = 'none';
-        document.getElementById('notifList').innerHTML = '';
-        document.getElementById('emptyState').style.display = 'block';
-    });
 });
