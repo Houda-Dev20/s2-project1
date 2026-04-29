@@ -6,6 +6,8 @@ const { ALGERIA_WILAYAS } = require('../utils/constants');
 
 const pendingRegistrations = new Map();
 
+const pendingEmailChanges = new Map();
+
 setInterval(() => {
     const now = Date.now();
     let cleanedCount = 0;
@@ -134,9 +136,12 @@ console.log("is_urgent:", updates.is_urgent);
             return res.status(400).json({ message: "Invalid full name format" });
         }
 
-        if (updates.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(updates.email)) {
-            return res.status(400).json({ message: "Invalid email address" });
-        }
+        // 🚫 منع أي تعديل للإيميل نهائياً
+if ("email" in updates) {
+    return res.status(400).json({
+        message: "Use /request-email-change to update email"
+    });
+}
 
         if (updates.telephon && !/^\d{10}$/.test(updates.telephon)) {
             return res.status(400).json({ message: "Invalid phone number" });
@@ -155,11 +160,29 @@ console.log("is_urgent:", updates.is_urgent);
             updates.password = await bcrypt.hash(updates.password, 10);
         }
 
-        const fields = Object.keys(updates)
-            .map(key => `${key}=?`)
-            .join(", ");
+const allowedFields = [
+    "full_name",
+    "telephon",
+    "location",
+    "date_of_birth",
+    "Hospital_name",
+    "blood_type_research",
+    "is_urgent"
+];
 
-        const values = Object.values(updates);
+const filteredUpdates = {};
+
+for (let key of allowedFields) {
+    if (updates[key] !== undefined) {
+        filteredUpdates[key] = updates[key];
+    }
+}
+
+const fields = Object.keys(filteredUpdates)
+    .map(key => `${key}=?`)
+    .join(", ");
+
+const values = Object.values(filteredUpdates);
 
         console.log("UPDATES:", updates);
 
@@ -321,24 +344,29 @@ const resendCode = async (req, res) => {
 
 
 const searchSearchers = (req, res) => {
+    const { blood_type, location, is_urgent } = req.body;
 
-    const { blood_type, location } = req.body;
-
-    const sql = `
-        SELECT full_name, telephon, blood_type, location
+    let sql = `
+        SELECT full_name, telephon, blood_type_research, location, is_urgent, date_of_birth, email
         FROM searchers
-        WHERE blood_type = ? AND location = ?
+        WHERE blood_type_research = ? AND location = ?
     `;
+    const params = [blood_type, location];
 
-    db.query(sql, [blood_type, location], (err, result) => {
+    // إذا تم إرسال is_urgent (0 أو 1)، نضيف الشرط
+    if (is_urgent !== undefined && (is_urgent === 0 || is_urgent === 1)) {
+        sql += " AND is_urgent = ?";
+        params.push(is_urgent);
+    }
 
+    db.query(sql, params, (err, result) => {
         if (err) {
+            console.error(err);
             return res.status(500).json({
                 success: false,
                 message: "Erreur dans la recherche"
             });
         }
-
         res.status(200).json({
             success: true,
             searchers: result
@@ -478,4 +506,71 @@ const getSearcherProfile = (req, res) => {
     });
 };
 
-module.exports = { addSearcher, updateSearcher, deactivateSearcher, verifyAndSave , searchSearchers, getAllSearchers, loginSearcher, logoutSearcher, resendCode, activateSearcher, disactivateSearcher, getSearcherProfile };
+// طلب تغيير البريد (إرسال رمز التحقق)
+const requestEmailChange = async (req, res) => {
+    const { id } = req.params;  // نصي
+    const { new_email } = req.body;
+
+    if (!new_email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(new_email)) {
+        return res.status(400).json({ message: "Invalid email address" });
+    }
+
+    // تحقق من أن البريد الجديد غير مستخدم
+    const emailCheck = await new Promise((resolve) => {
+        db.query("SELECT id FROM searchers WHERE email = ?", [new_email], (err, result) => {
+            resolve(result && result.length > 0);
+        });
+    });
+    if (emailCheck) {
+        return res.status(400).json({ message: "Email already in use" });
+    }
+
+    const verification_code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + 60 * 1000;
+
+
+    // 🔑 التخزين بالمفتاح النصي (نفس req.params.id)
+    pendingEmailChanges.set(id, {
+        new_email,
+        verification_code,
+        expiresAt
+    });
+
+    const emailSent = await sendVerificationEmail(new_email, verification_code, 'searcher');
+    if (!emailSent) {
+        pendingEmailChanges.delete(id);
+        return res.status(500).json({ message: "Failed to send verification email" });
+    }
+
+    res.json({ message: "Verification code sent to new email", email: new_email });
+};
+
+// تأكيد الرمز وتحديث البريد
+const confirmEmailChange = (req, res) => {
+    const { id } = req.params;   // نصي
+    const { verification_code } = req.body;
+
+    // 🔑 البحث باستخدام المفتاح النصي
+    const pending = pendingEmailChanges.get(id);
+    if (!pending) {
+        return res.status(404).json({ message: "No pending email change request" });
+    }
+    if (pending.expiresAt < Date.now()) {
+        pendingEmailChanges.delete(id);
+        return res.status(400).json({ message: "Verification code expired" });
+    }
+    if (pending.verification_code !== verification_code) {
+        return res.status(400).json({ message: "Invalid verification code" });
+    }
+
+    db.query("UPDATE searchers SET email = ? WHERE id = ?", [pending.new_email, parseInt(id)], (err) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ message: "Database error" });
+        }
+        pendingEmailChanges.delete(id);
+        res.json({ message: "Email updated successfully", email: pending.new_email });
+    });
+};
+
+module.exports = { requestEmailChange, confirmEmailChange, addSearcher, updateSearcher, deactivateSearcher, verifyAndSave , searchSearchers, getAllSearchers, loginSearcher, logoutSearcher, resendCode, activateSearcher, disactivateSearcher, getSearcherProfile };

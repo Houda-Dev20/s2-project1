@@ -70,7 +70,6 @@ verifyBtn.addEventListener('click', async function (e) {
   addRipple(e, this);
 
   const code = [...inputs].map(i => i.value).join('');
-
   verifyBtn.textContent = 'Verifying...';
   verifyBtn.disabled = true;
 
@@ -78,58 +77,74 @@ verifyBtn.addEventListener('click', async function (e) {
     const email = new URLSearchParams(window.location.search).get("email");
     const type = new URLSearchParams(window.location.search).get("type");
 
+    // ========== حالة تغيير البريد الإلكتروني ==========
+    if (type === "email-change") {
+      const userId = new URLSearchParams(window.location.search).get("userId");
+      const role = new URLSearchParams(window.location.search).get("role");
+      const confirmUrl = role === 'searcher'
+        ? `http://localhost:3000/searchers/confirm-email-change/${userId}`
+        : `http://localhost:3000/donors/confirm-email-change/${userId}`;
+      const confirmRes = await fetch(confirmUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ verification_code: code })
+      });
+      if (!confirmRes.ok) {
+        const errMsg = await confirmRes.text();
+        throw new Error(errMsg);
+      }
+      await confirmRes.json();
+      alert("Email updated successfully! Please log in again.");
+      localStorage.removeItem("currentUserSession");
+      window.location.href = "login.html";
+      return;
+    }
+
+    // ========== التسجيل العادي ==========
     const url = type === "searcher"
       ? "http://localhost:3000/searchers/verify"
       : "http://localhost:3000/donors/verify";
 
     const response = await fetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        email: email,
-        verification_code: code
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, verification_code: code })
     });
 
-const data = await response.json();
+    const data = await response.json();
 
-if (!response.ok) {
-  throw new Error(data.message || "Verification failed");
-}
+    if (!response.ok) {
+      throw new Error(data.message || "Verification failed");
+    }
 
-let userId, userName;
-if (type === "searcher") {
-    userId = data.searcherId;
-    userName = data.searcher.full_name;
-} else {
-    userId = data.donorId;
-    userName = data.donor.full_name;
-}
+    let userId, userName;
+    if (type === "searcher") {
+      userId = data.searcherId;
+      userName = data.searcher.full_name;
+    } else {
+      userId = data.donorId;
+      userName = data.donor.full_name;
+    }
 
-localStorage.setItem("currentUserSession", JSON.stringify({
-    userId: userId,
-    userName: userName,
-     userType: type
-}))
+    localStorage.setItem("currentUserSession", JSON.stringify({
+      userId: userId,
+      userName: userName,
+      userType: type
+    }));
 
-formView.style.display = 'none';
-successView.classList.add('show');
+    formView.style.display = 'none';
+    successView.classList.add('show');
 
-setTimeout(() => {
-  const type = new URLSearchParams(window.location.search).get("type");
-
-  if (type === "searcher") {
-    window.location.href = "patient-profile.html";
-  } else {
-    window.location.href = "donor-profile.html";
-  }
-}, 2000);
+    setTimeout(() => {
+      if (type === "searcher") {
+        window.location.href = "patient-profile.html";
+      } else {
+        window.location.href = "donor-profile.html";
+      }
+    }, 2000);
 
   } catch (err) {
     alert(err.message);
-
     verifyBtn.textContent = 'Verify';
     verifyBtn.disabled = false;
   }

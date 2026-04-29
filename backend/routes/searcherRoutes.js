@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const { deactivateSearcher, addSearcher, updateSearcher, searchSearchers, verifyAndSave, getAllSearchers, loginSearcher, logoutSearcher, getSearcherProfile, activateSearcher, disactivateSearcher } = require('../controllers/searcherControllers');
+const { deactivateSearcher, addSearcher, updateSearcher, searchSearchers, verifyAndSave, getAllSearchers, loginSearcher, logoutSearcher, getSearcherProfile, activateSearcher, disactivateSearcher, requestEmailChange, confirmEmailChange } = require('../controllers/searcherControllers');
 const { validateSearcher, checkValidation } = require("../validators/searcherValidator");
 
 router.post("/register", validateSearcher, checkValidation, addSearcher);
@@ -15,7 +15,8 @@ router.post("/logout", logoutSearcher );
 router.put("/activate-searcher/:id", activateSearcher);
 router.put("/deactivate-searcher/:id", disactivateSearcher);
 router.get("/profile/:id", getSearcherProfile);
-
+router.post("/request-email-change/:id", requestEmailChange);
+router.post("/confirm-email-change/:id", confirmEmailChange);
 
 
 module.exports = router;
