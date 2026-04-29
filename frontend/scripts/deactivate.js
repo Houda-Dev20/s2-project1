@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const deactivateBtn = document.getElementById('deactivateBtn');
 
     function validateForm() {
-        const isPasswordTyped = passwordInput.value.trim().length > 0;
+        const isPasswordTyped = passwordInput.value.trim().length >=8;
         const isCheckboxChecked = checkbox.checked;
 
         if (isPasswordTyped && isCheckboxChecked) {
