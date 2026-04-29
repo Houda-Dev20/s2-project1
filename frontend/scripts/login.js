@@ -1,90 +1,87 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-const google=document.getElementById("google");
-google.addEventListener("click", () => {
-     window.location.href = ""
-});
+    const form = document.getElementById("login-form");
 
-const eyeBtn=document.getElementById("eye-btn");
-const eyeIcon = document.getElementById("eye-icon");
-const passwordInput = document.getElementById('password-input');
-eyeBtn.addEventListener('click',function(){
-     if(passwordInput.type === 'password'){
-          passwordInput.type='text';//so the default eye won't appear and when it changes to text it will be visible
-          eyeIcon.src='images/Group.svg'
-     }else {
-           passwordInput.type = 'password';
-           eyeIcon.src ="images/basil_eye-closed-outline.svg"
-     }
-});
-const openBtn =document.getElementById("join");//to get join btn in login page
-const donor =document.getElementById("closeModal1");//to get donor btn in popup page
-const searcher =document.getElementById("closeModal2");//to get searcher btn in popup page
-const modal =document.getElementById("modal");//to get popup id in popup page
-const closeBtn=document.getElementById("closeModel");//to get cross btn in popup
+    const eyeBtn = document.getElementById("eye-btn");
+    const eyeIcon = document.getElementById("eye-icon");
+    const passwordInput = document.getElementById("password-input");
 
-openBtn.addEventListener("click",()=>{
- modal.classList.add("open");
-});
-donor.addEventListener("click", () => {
-    window.location.href = "http://127.0.0.1:5500/donor-signup.html"; 
-});
-searcher.addEventListener("click", () => {
-    window.location.href = "http://127.0.0.1:5500/request-blood.html"; 
-});
-closeBtn.addEventListener("click",()=>{
- modal.classList.remove("open");
-});
-
-//api
-const form = document.getElementById("login-form");
-
-form.addEventListener("submit", async function(e) {
-    e.preventDefault();
-
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password-input").value;
-
-    try {
-
-        let response = await fetch("http://localhost:3000/donors/login", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ email, password })
-        });
-
-        let data = await response.json();
-
-        if (data.success) {
-            localStorage.setItem("user", JSON.stringify(data.donor));
-            alert("Login successful (donor)");
-            return;
-        }
-
-        response = await fetch("http://localhost:3000/searchers/login", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ email, password })
-        });
-
-        data = await response.json();
-
-        if (data.success) {
-            localStorage.setItem("user", JSON.stringify(data.searcher));
-            alert("Login successful (searcher)");
+    // 👁 toggle password visibility
+    eyeBtn.addEventListener("click", function () {
+        if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+            eyeIcon.src = "images/Group.svg";
         } else {
-                    console.log(err);
-            alert("Invalid email or password");
+            passwordInput.type = "password";
+            eyeIcon.src = "images/basil_eye-closed-outline.svg";
         }
+    });
 
-    } catch (err) {
-        console.log(err);
-        alert("Server error");
-    }
-}); 
+    // popup logic
+    const openBtn = document.getElementById("join");
+    const donor = document.getElementById("closeModal1");
+    const searcher = document.getElementById("closeModal2");
+    const modal = document.getElementById("modal");
+    const closeBtn = document.getElementById("closeModel");
+
+    openBtn.addEventListener("click", () => {
+        modal.classList.add("open");
+    });
+
+    donor.addEventListener("click", () => {
+        window.location.href = "http://127.0.0.1:5500/donor-signup.html";
+    });
+
+    searcher.addEventListener("click", () => {
+        window.location.href = "http://127.0.0.1:5500/request-blood.html";
+    });
+
+    closeBtn.addEventListener("click", () => {
+        modal.classList.remove("open");
+    });
+
+    // =========================
+    // LOGIN API (FIXED)
+    // =========================
+    form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const email = document.getElementById("email").value;
+        const password = passwordInput.value;
+
+        try {
+            const response = await fetch("http://localhost:3000/searchers/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // ✅ save token (ONLY if backend sends it)
+                if (data.token) {
+                    localStorage.setItem("token", data.token);
+                }
+
+                // save user
+                localStorage.setItem("user", JSON.stringify(data.searcher));
+
+                alert("Login successful");
+
+                // optional redirect
+                // window.location.href = "home.html";
+
+            } else {
+                alert(data.message || "Invalid email or password");
+            }
+
+        } catch (err) {
+            console.error(err);
+            alert("Server error");
+        }
+    });
 
 });
