@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LifeDrop — Search</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+  <link rel="stylesheet" href="styles/search_donor.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tharlon&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles/notifications.css">
+</head>
+<body>
+
+  <header class="header">
+        <div class="left-section">
+            <img class="logo" src="images/Blur.svg" alt="logo">
+            <img class="logo1" src="images/LifeDrop.svg" alt="logo1">
+        </div>
+
+        <nav class="middle-section">
+            <a href="home.html" class="taps ">Home</a>
+            <a href="map.html" class="taps">Map</a>
+            <a href="search.html" class="taps active">Search</a>
+        </nav>
+
+        <div class="right-section">
+            <div class="notif-wrapper">
+                <button class="notif-trigger" id="notifBtn">
+                    <img class="bell-img" src="images/bell.svg" alt="notifications">
+                    <div class="red-dot" id="notifBadge"></div>
+                </button>
+
+                <div class="dropdown-container" id="notifDropdown">
+                <div id="notifList"></div>    
+                  <button class="mark-read-btn" id="markReadBtn">Mark all as read</button>
+
+                    <div class="empty-state" id="emptyState">
+                        <div class="check-icon-large">
+                            <img class="large-notif-img" src="images/gg_check-o.svg" alt="caught-up">
+                        </div>
+                        <h3 class="empty-title">You’re All Caught Up</h3>
+                        <p class="empty-desc">No new notifications for now</p>
+                    </div>
+                </div>
+            </div>
+
+            <button class="profile" id="profile">
+                <img class="profile-img" src="" alt="profile-picture">
+            </button>
+        </div>
+    </header>
+
+<!-- MAIN -->
+<main>
+
+  <!-- FILTERS -->
+  <div class="filters">
+
+    <!-- BLOOD TYPE -->
+    <div class="filter-group">
+      <label>Blood Type</label>
+      <div class="blood-picker-wrap">
+        <div class="blood-display" id="bloodDisplay" onclick="toggleBloodPicker()">
+        <img src="images/BlurBlur.svg" alt="Blood Icon" class="Blood-icon">
+          <span id="bloodLabel">Select Blood Type</span>
+          <svg class="chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="blood-dropdown" id="bloodDropdown">
+          <div class="blood-grid">
+            <button class="blood-btn" onclick="selectBlood('O+')">O+</button>
+            <button class="blood-btn" onclick="selectBlood('O-')">O-</button>
+            <button class="blood-btn" onclick="selectBlood('A+')">A+</button>
+            <button class="blood-btn" onclick="selectBlood('A-')">A-</button>
+            <button class="blood-btn" onclick="selectBlood('B+')">B+</button>
+            <button class="blood-btn" onclick="selectBlood('B-')">B-</button>
+            <button class="blood-btn" onclick="selectBlood('AB+')">AB+</button>
+            <button class="blood-btn" onclick="selectBlood('AB-')">AB-</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOCATION — 69 wilayas -->
+    <div class="filter-group">
+      <label>Location</label>
+      <div class="select-wrap">
+          <img src="images/VectorLocation.svg" alt="Location Icon" class="Location-icon">        
+          <select id="location">
+            <option value="">Select Location</option>
+          <option>01 - Adrar</option>
+          <option>02 - Chlef</option>
+          <option>03 - Laghouat</option>
+          <option>04 - Oum El Bouaghi</option>
+          <option>05 - Batna</option>
+          <option>06 - Béjaïa</option>
+          <option>07 - Biskra</option>
+          <option>08 - Béchar</option>
+          <option>09 - Blida</option>
+          <option>10 - Bouira</option>
+          <option>11 - Tamanrasset</option>
+          <option>12 - Tébessa</option>
+          <option>13 - Tlemcen</option>
+          <option>14 - Tiaret</option>
+          <option>15 - Tizi Ouzou</option>
+          <option>16 - Alger</option>
+          <option>17 - Djelfa</option>
+          <option>18 - Jijel</option>
+          <option>19 - Sétif</option>
+          <option>20 - Saïda</option>
+          <option>21 - Skikda</option>
+          <option>22 - Sidi Bel Abbès</option>
+          <option>23 - Annaba</option>
+          <option>24 - Guelma</option>
+          <option>25 - Constantine</option>
+          <option>26 - Médéa</option>
+          <option>27 - Mostaganem</option>
+          <option>28 - M'Sila</option>
+          <option>29 - Mascara</option>
+          <option>30 - Ouargla</option>
+          <option>31 - Oran</option>
+          <option>32 - El Bayadh</option>
+          <option>33 - Illizi</option>
+          <option>34 - Bordj Bou Arréridj</option>
+          <option>35 - Boumerdès</option>
+          <option>36 - El Tarf</option>
+          <option>37 - Tindouf</option>
+          <option>38 - Tissemsilt</option>
+          <option>39 - El Oued</option>
+          <option>40 - Khenchela</option>
+          <option>41 - Souk Ahras</option>
+          <option>42 - Tipaza</option>
+          <option>43 - Mila</option>
+          <option>44 - Aïn Defla</option>
+          <option>45 - Naâma</option>
+          <option>46 - Aïn Témouchent</option>
+          <option>47 - Ghardaïa</option>
+          <option>48 - Relizane</option>
+          <option>49 - Timimoun</option>
+          <option>50 - Bordj Badji Mokhtar</option>
+          <option>51 - Ouled Djellal</option>
+          <option>52 - Béni Abbès</option>
+          <option>53 - In Salah</option>
+          <option>54 - In Guezzam</option>
+          <option>55 - Touggourt</option>
+          <option>56 - Djanet</option>
+          <option>57 - El M'Ghair</option>
+          <option>58 - El Menia</option>
+          <option>59 - Aflou</option>
+          <option>60 - Brika</option>
+          <option>61 - Ksar El Hilaline</option>
+          <option>62 - Messaad</option>
+          <option>63 - Ain Oussera</option>
+          <option>64 - Bou Saâda</option>
+          <option>65 - El Abiodh Sidi Cheikh</option>
+          <option>66 - El Kantara</option>
+          <option>67 - Bir El Ater</option>
+          <option>68 - Ksar El Boukhari</option>
+          <option>69 - Aricha</option>
+        </select>
+        <svg class="chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- URGENCY -->
+  
+
+  </div>
+
+ <div class="cards-grid">
+    <div class="info-placeholder">🔍 Select blood type and location to see results.</div>
+</div>
+
+  </div>
+</main>
+
+<!-- FOOTER -->
+<div class="footer">
+        <div class="elm-div">
+            <a class="elm" href="">Privacy Policy</a>
+            <a class="elm" href="">Terms of services</a>
+        </div>
+        <div class="sm-div">
+        <a href="#">
+            <img src="images/Vector27.svg" alt="" class="sm1-img">
+        </a>
+         <a href="#">
+            <img src="images/Vector24.svg" alt="" class="sm2-img">
+        </a>
+         <a href="#">
+            <img src="images/Vector26.svg" alt="" class="sm3-img">
+        </a>
+        
+         <a href="#">
+            <img src="images/Vector25.svg" alt="" class="sm4-img">
+        </a>
+        
+        </div>
+    </div>  
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="scripts/search_donor.js"></script>
+<script src="scripts/notifications.js"></script>
+</body>
+</html>

@@ -15,6 +15,16 @@ function getWilayaNameById(id) {
     return (index >= 0 && index < wilayas.length) ? wilayas[index] : "Unknown";
 }
 
+function formatDate(dateString) {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`; 
+}
+
 async function loadDonorData() {
     console.log("Loading donor data...");
     const user = JSON.parse(localStorage.getItem("currentUserSession"));
@@ -37,7 +47,7 @@ async function loadDonorData() {
         document.getElementById("topLocation").innerText = locationName;
 
         document.getElementById("fullName").innerText = data.full_name;
-        document.getElementById("birthDate").innerText = data.date_of_birth;
+        document.getElementById("birthDate").innerText = formatDate(data.date_of_birth);
         document.getElementById("phone").innerText = data.telephon;
         document.getElementById("email").innerText = data.email;
         document.getElementById("location").innerText = locationName;
@@ -84,51 +94,6 @@ function showDonations() {
     container.innerHTML = html;
 }
 
-function setupInfoEdit() {
-    const editBtn = document.querySelector('.edit-btn-small');
-    const personalCard = document.getElementById('personalCard');
-    const topName = document.getElementById('topName');
-    const topLocation = document.getElementById('topLocation');
-
-    if (!editBtn || !personalCard) return;
-    
-    let isEditing = false;
-    
-    editBtn.onclick = function() {
-        const rows = personalCard.querySelectorAll('.data-row');
-        
-        if (!isEditing) {
-            rows.forEach(row => {
-                const valueSpan = row.querySelector('span:last-child');
-                const currentText = valueSpan.innerText;
-                valueSpan.innerHTML = `<input type="text" value="${currentText.replace(/"/g, '&quot;')}" style="border:1px solid #ddd; width:100%; padding: 5px;">`;
-            });
-            this.innerHTML = "Save";
-            isEditing = true;
-        } else {
-            rows.forEach(row => {
-                const input = row.querySelector('input');
-                const valueSpan = row.querySelector('span:last-child');
-                const label = row.querySelector('span:first-child').innerText.toLowerCase();
-                
-                if (input) {
-                    const newValue = input.value;
-                    valueSpan.innerText = newValue;
-                    
-                    if (label.includes("name") && topName) {
-                        topName.innerText = newValue;
-                    }
-                    if (label.includes("location") && topLocation) {
-                        topLocation.innerText = newValue;
-                    }
-                }
-            });
-            this.innerHTML = `<img src="images/VectorPen.svg" class="icon-small"> Edit`;
-            isEditing = false;
-        }
-    };
-}
-
 function setupPhotoEdit() {
     const editBtn = document.querySelector('.btn-edit');
     const avatarImg = document.querySelector('.main-avatar');
@@ -164,6 +129,226 @@ function setupFooterHover() {
         }
     });
 }
+
+// دالة اختيار الزمرة وتحديث الواجهة
+function selectBloodType(type) {
+    const bloodDisplay = document.querySelector('.value strong');
+    const topBadge = document.querySelector('.blood-badge');
+
+    if (bloodDisplay) bloodDisplay.innerText = type;
+    if (topBadge) topBadge.innerText = type;
+if (bloodContainer) {
+        bloodContainer.style.border = "none";
+        bloodContainer.style.borderRadius = "0";
+        bloodContainer.style.backgroundColor = "transparent";
+    }
+    // إغلاق القائمة بعد الاختيار
+    document.getElementById('bloodDropdown').style.display = 'none';
+    
+    console.log("Selected Blood Type:", type);
+    // هنا يمكنك إضافة fetch لتحديث البيانات في السيرفر
+}
+
+function setupDonorInfoEdit() {
+    const editBtn = document.querySelector('.edit-btn-small');
+    const personalCard = document.getElementById('personalCard');
+    const topName = document.getElementById('topName');
+    const topLocationSpan = document.getElementById('topLocation');
+
+    if (!editBtn || !personalCard) {
+        console.error("Edit button or personal card not found");
+        return;
+    }
+
+    let isEditing = false;
+
+    editBtn.onclick = async function() {
+        const rows = personalCard.querySelectorAll('.data-row');
+        
+        if (!isEditing) {
+            // EDIT MODE: تحويل النصوص إلى حقول إدخال
+            rows.forEach(row => {
+                const valueSpan = row.querySelector('span:last-child');
+                const label = row.querySelector('span:first-child').innerText.toLowerCase();
+                
+                // 👉 التحقق من أن هذا هو حقل الموقع
+                if (label.includes("location")) {
+                    // الحصول على رقم الولاية المخزن في data-wilaya-id
+                    const wilayaId = document.getElementById("location").getAttribute("data-wilaya-id");
+                    // التأكد من وجود الرقم وعرضه بدلاً من الاسم
+                    if (wilayaId && wilayaId !== "Unknown") {
+                        valueSpan.innerHTML = `<input type="text" value="${wilayaId}" style="border:1px solid #ddd; width:100%; padding: 5px;">`;
+                    } else {
+                        // إذا لم يكن هناك رقم نعرض النص الحالي كحل بديل
+                        const currentText = valueSpan.innerText;
+                        valueSpan.innerHTML = `<input type="text" value="${currentText.replace(/"/g, '&quot;')}" style="border:1px solid #ddd; width:100%; padding: 5px;">`;
+                    }
+                } else {
+                    // باقي الحقول تبقى كما هي
+                    const currentText = valueSpan.innerText;
+                    valueSpan.innerHTML = `<input type="text" value="${currentText.replace(/"/g, '&quot;')}" style="border:1px solid #ddd; width:100%; padding: 5px;">`;
+                }
+            });
+            this.innerHTML = "Save";
+            isEditing = true;
+        } else {
+            // ... باقي كود التخزين كما هو دون تغيير
+            // (نفس الكود السابق الذي يحول الاسم أو الرقم إلى wilayaNumber)
+            // لضمان عدم تغيير أي شيء هنا، سأكرره كما هو موجود مسبقاً
+            const updatedData = {};
+            let locationInputValue = "";
+            
+            rows.forEach(row => {
+                const input = row.querySelector('input');
+                const valueSpan = row.querySelector('span:last-child');
+                const label = row.querySelector('span:first-child').innerText.toLowerCase();
+                
+                if (input) {
+                    const newValue = input.value.trim();
+                    valueSpan.innerText = newValue;
+                    
+                    if (label.includes("name")) {
+                        updatedData.full_name = newValue;
+                        if (topName) topName.innerText = newValue;
+                    }
+                    if (label.includes("birth")) {
+                        updatedData.date_of_birth = newValue;
+                    }
+                    if (label.includes("phone")) {
+                        updatedData.telephon = newValue;
+                    }
+                    if (label.includes("email")) {
+                        updatedData.email = newValue;
+                    }
+                    if (label.includes("location")) {
+                        locationInputValue = newValue;
+                    }
+                }
+            });
+            
+            // تحويل قيمة الموقع إلى رقم (1-58)
+            let wilayaNumber = null;
+            if (locationInputValue) {
+                const asNumber = parseInt(locationInputValue, 10);
+                if (!isNaN(asNumber) && asNumber >= 1 && asNumber <= 58) {
+                    wilayaNumber = asNumber;
+                } else {
+                    const index = wilayas.findIndex(w => w.toLowerCase() === locationInputValue.toLowerCase());
+                    if (index !== -1) {
+                        wilayaNumber = index + 1;
+                    } else {
+                        alert("Invalid location. Please enter a valid wilaya number (1-58) or name.");
+                        return;
+                    }
+                }
+                updatedData.location = wilayaNumber;
+            }
+            
+            const session = JSON.parse(localStorage.getItem("currentUserSession"));
+            const userId = session?.userId;
+            if (!userId) {
+                alert("User not found, please login again.");
+                return;
+            }
+            
+            try {
+                const response = await fetch(`http://localhost:3000/donors/update/${userId}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(updatedData)
+                });
+                
+                if (!response.ok) {
+                    const errDetails = await response.text();
+                    console.error("Server error:", errDetails);
+                    throw new Error(errDetails);
+                }
+                console.log("Profile updated successfully");
+                await loadDonorData();
+            } catch (err) {
+                console.error("Update error:", err);
+                alert("Failed to update profile: " + err.message);
+                await loadDonorData();
+            }
+            
+            this.innerHTML = `<img src="images/VectorPen.svg" class="icon-small"> Edit`;
+            isEditing = false;
+        }
+    };
+}
+
+
+// Add this to your donor-profile.js
+// Inside donor-profile.js
+function setupLogout() {
+    const logoutBtn = document.querySelector('.logout-item');
+    if (!logoutBtn) return;
+    logoutBtn.addEventListener('click', function() {
+        const user = JSON.parse(localStorage.getItem("currentUserSession"));
+        const id = user ? user.userId : null;
+        
+        const name = document.getElementById('topName').innerText;
+        const bloodType = document.querySelector('.blood-badge').innerText;
+        const profilePic = document.querySelector('.main-avatar').src;
+        
+        let email = "";
+        const rows = document.querySelectorAll('.data-row');
+        rows.forEach(row => {
+            if(row.innerText.toLowerCase().includes('email')) {
+                const emailSpan = row.querySelector('span:last-child');
+                if(emailSpan) email = emailSpan.innerText;
+            }
+        });
+        
+        const sessionData = {
+            userId: id,
+            userName: name,
+            userEmail: email,
+            userBlood: bloodType,
+            userPic: profilePic
+        };
+        localStorage.setItem('currentUserSession', JSON.stringify(sessionData));
+        window.location.href = 'log-out.html';
+    });
+}
+
+async function saveBloodType(newType) {
+    const session = JSON.parse(localStorage.getItem("currentUserSession"));
+    const userId = session?.userId;
+    if (!userId) {
+        console.error("No userId found");
+        return;
+    }
+    try {
+        const response = await fetch(`http://localhost:3000/donors/update/${userId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ blood_type: newType })
+        });
+        if (response.ok) {
+            console.log("Blood type saved:", newType);
+        } else {
+            const errText = await response.text();
+            console.error("Failed to save blood type:", errText);
+        }
+    } catch (err) {
+        console.error("Error saving blood type:", err);
+    }
+}
+
+function selectBloodType(type) {
+    const bloodDisplay = document.querySelector('.value strong');
+    const topBadge = document.querySelector('.blood-badge');
+
+    if (bloodDisplay) bloodDisplay.innerText = type;
+    if (topBadge) topBadge.innerText = type;
+
+    const dropdown = document.getElementById('bloodDropdown');
+    if (dropdown) dropdown.style.display = 'none';
+
+    saveBloodType(type);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const penIcon = document.querySelector('.pen-icon');
     const bloodContainer = penIcon ? penIcon.closest('.value') : null;
@@ -257,8 +442,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
-
-
 function resetBloodContainer() {
     const bloodContainer = document.querySelector('.value');
     const dropdown = document.getElementById('bloodDropdown');
@@ -330,64 +513,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// دالة اختيار الزمرة وتحديث الواجهة
-function selectBloodType(type) {
-    const bloodDisplay = document.querySelector('.value strong');
-    const topBadge = document.querySelector('.blood-badge');
-
-    if (bloodDisplay) bloodDisplay.innerText = type;
-    if (topBadge) topBadge.innerText = type;
-if (bloodContainer) {
-        bloodContainer.style.border = "none";
-        bloodContainer.style.borderRadius = "0";
-        bloodContainer.style.backgroundColor = "transparent";
-    }
-    // إغلاق القائمة بعد الاختيار
-    document.getElementById('bloodDropdown').style.display = 'none';
-    
-    console.log("Selected Blood Type:", type);
-    // هنا يمكنك إضافة fetch لتحديث البيانات في السيرفر
-}
-
-
-// Add this to your donor-profile.js
-// Inside donor-profile.js
-function setupLogout() {
-    const logoutBtn = document.querySelector('.logout-item');
-    if (!logoutBtn) return;
-    logoutBtn.addEventListener('click', function() {
-        const user = JSON.parse(localStorage.getItem("currentUserSession"));
-        const id = user ? user.userId : null;
-        
-        const name = document.getElementById('topName').innerText;
-        const bloodType = document.querySelector('.blood-badge').innerText;
-        const profilePic = document.querySelector('.main-avatar').src;
-        
-        let email = "";
-        const rows = document.querySelectorAll('.data-row');
-        rows.forEach(row => {
-            if(row.innerText.toLowerCase().includes('email')) {
-                const emailSpan = row.querySelector('span:last-child');
-                if(emailSpan) email = emailSpan.innerText;
-            }
-        });
-        
-        const sessionData = {
-            userId: id,
-            userName: name,
-            userEmail: email,
-            userBlood: bloodType,
-            userPic: profilePic
-        };
-        localStorage.setItem('currentUserSession', JSON.stringify(sessionData));
-        window.location.href = 'log-out.html';
-    });
-}
-
 document.addEventListener('DOMContentLoaded', () => {
     showDonations();
     setupPhotoEdit();
-    setupInfoEdit();
+    setupDonorInfoEdit();   // دالة تعديل المعلومات الشخصية
     setupFooterHover();
     setupLogout();
     loadDonorData();  
