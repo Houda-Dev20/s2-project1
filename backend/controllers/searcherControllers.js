@@ -1,4 +1,4 @@
-const db=require('../config/db');
+﻿const db=require('../config/db');
 const bcrypt = require('bcrypt');
 
 const sendVerificationEmail = require("../utils/sendEmail");
@@ -18,7 +18,7 @@ setInterval(() => {
         }
     }
     if (cleanedCount > 0) {
-        console.log(`🧹 Cleaned ${cleanedCount} expired pending registrations`);
+        console.log(`ًں§¹ Cleaned ${cleanedCount} expired pending registrations`);
     }
 }, 60 * 1000);
 
@@ -107,7 +107,7 @@ message: "Invalid location. Please select a valid wilaya number between 1 and 58
         }
 
                 res.status(200).json({ 
-            message: "✓ Verification code sent to your email. Please check your inbox.",
+            message: "âœ“ Verification code sent to your email. Please check your inbox.",
             email: email,
             expiresIn: "1 minutes",
             nextStep: "POST /api/searchers/verify with your email and code"
@@ -136,7 +136,7 @@ console.log("is_urgent:", updates.is_urgent);
             return res.status(400).json({ message: "Invalid full name format" });
         }
 
-        // 🚫 منع أي تعديل للإيميل نهائياً
+        // ًںڑ« ظ…ظ†ط¹ ط£ظٹ طھط¹ط¯ظٹظ„ ظ„ظ„ط¥ظٹظ…ظٹظ„ ظ†ظ‡ط§ط¦ظٹط§ظ‹
 if ("email" in updates) {
     return res.status(400).json({
         message: "Use /request-email-change to update email"
@@ -296,7 +296,7 @@ if (!email || !verification_code) {
             pendingRegistrations.delete(email);
 
             res.status(201).json({
-                message: "✓ Registration completed successfully!",
+                message: "âœ“ Registration completed successfully!",
                 searcherId: result.insertId,
                 searcher: {
                     id: result.insertId,
@@ -337,7 +337,7 @@ const resendCode = async (req, res) => {
     }
 
     res.json({ 
-        message: "✓ New verification code sent to your email",
+        message: "âœ“ New verification code sent to your email",
         expiresIn: "1 minutes"
     });
 };
@@ -347,13 +347,13 @@ const searchSearchers = (req, res) => {
     const { blood_type, location, is_urgent } = req.body;
 
     let sql = `
-        SELECT full_name, telephon, blood_type_research, location, is_urgent, date_of_birth, email
+        SELECT id, full_name, telephon, blood_type_research, location, is_urgent, date_of_birth, email
         FROM searchers
         WHERE blood_type_research = ? AND location = ?
     `;
     const params = [blood_type, location];
 
-    // إذا تم إرسال is_urgent (0 أو 1)، نضيف الشرط
+    // ط¥ط°ط§ طھظ… ط¥ط±ط³ط§ظ„ is_urgent (0 ط£ظˆ 1)طŒ ظ†ط¶ظٹظپ ط§ظ„ط´ط±ط·
     if (is_urgent !== undefined && (is_urgent === 0 || is_urgent === 1)) {
         sql += " AND is_urgent = ?";
         params.push(is_urgent);
@@ -506,16 +506,16 @@ const getSearcherProfile = (req, res) => {
     });
 };
 
-// طلب تغيير البريد (إرسال رمز التحقق)
+// ط·ظ„ط¨ طھط؛ظٹظٹط± ط§ظ„ط¨ط±ظٹط¯ (ط¥ط±ط³ط§ظ„ ط±ظ…ط² ط§ظ„طھط­ظ‚ظ‚)
 const requestEmailChange = async (req, res) => {
-    const { id } = req.params;  // نصي
+    const { id } = req.params;  // ظ†طµظٹ
     const { new_email } = req.body;
 
     if (!new_email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(new_email)) {
         return res.status(400).json({ message: "Invalid email address" });
     }
 
-    // تحقق من أن البريد الجديد غير مستخدم
+    // طھط­ظ‚ظ‚ ظ…ظ† ط£ظ† ط§ظ„ط¨ط±ظٹط¯ ط§ظ„ط¬ط¯ظٹط¯ ط؛ظٹط± ظ…ط³طھط®ط¯ظ…
     const emailCheck = await new Promise((resolve) => {
         db.query("SELECT id FROM searchers WHERE email = ?", [new_email], (err, result) => {
             resolve(result && result.length > 0);
@@ -529,7 +529,7 @@ const requestEmailChange = async (req, res) => {
     const expiresAt = Date.now() + 60 * 1000;
 
 
-    // 🔑 التخزين بالمفتاح النصي (نفس req.params.id)
+    // ًں”‘ ط§ظ„طھط®ط²ظٹظ† ط¨ط§ظ„ظ…ظپطھط§ط­ ط§ظ„ظ†طµظٹ (ظ†ظپط³ req.params.id)
     pendingEmailChanges.set(id, {
         new_email,
         verification_code,
@@ -545,12 +545,12 @@ const requestEmailChange = async (req, res) => {
     res.json({ message: "Verification code sent to new email", email: new_email });
 };
 
-// تأكيد الرمز وتحديث البريد
+// طھط£ظƒظٹط¯ ط§ظ„ط±ظ…ط² ظˆطھط­ط¯ظٹط« ط§ظ„ط¨ط±ظٹط¯
 const confirmEmailChange = (req, res) => {
-    const { id } = req.params;   // نصي
+    const { id } = req.params;   // ظ†طµظٹ
     const { verification_code } = req.body;
 
-    // 🔑 البحث باستخدام المفتاح النصي
+    // ًں”‘ ط§ظ„ط¨ط­ط« ط¨ط§ط³طھط®ط¯ط§ظ… ط§ظ„ظ…ظپطھط§ط­ ط§ظ„ظ†طµظٹ
     const pending = pendingEmailChanges.get(id);
     if (!pending) {
         return res.status(404).json({ message: "No pending email change request" });

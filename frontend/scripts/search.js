@@ -209,8 +209,7 @@ async function performSearch() {
                             </span>
                         </div>
                         <div class="map-preview"><div class="map-placeholder">🗺️ Map preview</div></div>
-                        <button class="btn-view" onclick="alert('Contact ${searcher.full_name} at ${searcher.telephon}')">View Request →</button>
-                    </div>
+<button class="btn-view" onclick="window.location.href='donate.html?searcherId=${searcher.id}'">View Request →</button>                    </div>
                 </div>
             `;
         });
