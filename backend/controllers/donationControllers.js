@@ -1,5 +1,5 @@
 ﻿const db = require('../config/db');
-const { createDonationRequestNotification } = require('./notificationController');
+const { createDonationRequestNotification, createRequestAcceptedNotification } = require('./notificationController');
 
 const handleDonation = (req, res) => {
     const { id_donor, id_searcher } = req.body;
@@ -8,33 +8,21 @@ const handleDonation = (req, res) => {
         return res.status(400).json({ message: "Missing donor or searcher ID" });
     }
 
-    // التحقق من وجود المتبرع
     db.query("SELECT * FROM donors WHERE id = ?", [id_donor], (err, donorResult) => {
         if (err) return res.status(500).json({ message: "Database error" });
-        if (donorResult.length === 0) {
-            return res.status(404).json({ message: "Donor not found" });
-        }
+        if (donorResult.length === 0) return res.status(404).json({ message: "Donor not found" });
         const donor = donorResult[0];
 
-        // التحقق من وجود المحتاج
         db.query("SELECT * FROM searchers WHERE id = ?", [id_searcher], (err, searcherResult) => {
             if (err) return res.status(500).json({ message: "Database error" });
-            if (searcherResult.length === 0) {
-                return res.status(404).json({ message: "Searcher not found" });
-            }
+            if (searcherResult.length === 0) return res.status(404).json({ message: "Searcher not found" });
             const searcher = searcherResult[0];
 
-            // التحقق من توافق فصيلة الدم
             function isCompatible(donorBlood, requiredBlood) {
                 const compat = {
-                    'O-': ['O-'],
-                    'O+': ['O+', 'O-'],
-                    'A-': ['A-', 'O-'],
-                    'A+': ['A+', 'A-', 'O+', 'O-'],
-                    'B-': ['B-', 'O-'],
-                    'B+': ['B+', 'B-', 'O+', 'O-'],
-                    'AB-': ['AB-', 'A-', 'B-', 'O-'],
-                    'AB+': ['AB+', 'AB-', 'A+', 'A-', 'B+', 'B-', 'O+', 'O-']
+                    'O-': ['O-'], 'O+': ['O+', 'O-'], 'A-': ['A-', 'O-'], 'A+': ['A+', 'A-', 'O+', 'O-'],
+                    'B-': ['B-', 'O-'], 'B+': ['B+', 'B-', 'O+', 'O-'],
+                    'AB-': ['AB-', 'A-', 'B-', 'O-'], 'AB+': ['AB+', 'AB-', 'A+', 'A-', 'B+', 'B-', 'O+', 'O-']
                 };
                 return compat[donorBlood]?.includes(requiredBlood) || false;
             }
@@ -45,26 +33,39 @@ const handleDonation = (req, res) => {
 
             const today = new Date().toISOString().split('T')[0];
             db.query(
-                "INSERT INTO donation (id_donor, id_searcher, donation_date) VALUES (?, ?, ?)",
+                "INSERT INTO donations (id_donor, id_searcher, donation_date, status) VALUES (?, ?, ?, 'pending')",
                 [id_donor, id_searcher, today],
                 (err, result) => {
                     if (err) {
                         console.error(err);
-                        return res.status(500).json({ message: "Error saving donation" });
+                        return res.status(500).json({ message: "Error saving donations" });
                     }
-
-                    // ✅ إنشاء إشعار للمحتاج
-                    createDonationRequestNotification(
-                        id_searcher,
-                        donor.full_name,
-                        donor.blood_type
-                    );
-
-                    res.json({ message: "Donation successful", donationId: result.insertId });
+                    const donationId = result.insertId;
+                    createDonationRequestNotification(id_searcher, donor.full_name, donor.blood_type, donationId);
+                    res.json({ message: "donations successful", donationId: donationId });
                 }
             );
         });
     });
 };
 
-module.exports = { handleDonation };
+const acceptDonation = (req, res) => {
+    const { id } = req.params;
+    db.query("UPDATE donations SET status = 'accepted' WHERE id = ?", [id], (err, result) => {
+        if (err) return res.status(500).json({ message: "Database error" });
+        if (result.affectedRows === 0) return res.status(404).json({ message: "donations not found" });
+        db.query(
+            "SELECT d.id_donor, s.full_name AS searcher_name FROM donations d JOIN searchers s ON d.id_searcher = s.id WHERE d.id = ?",
+            [id],
+            (err, rows) => {
+                if (err) return res.status(500).json({ message: "Error fetching details" });
+                if (rows.length === 0) return res.status(404).json({ message: "Details not found" });
+                createRequestAcceptedNotification(rows[0].id_donor, rows[0].searcher_name);
+                res.json({ message: "donations accepted, notification sent" });
+            }
+        );
+    });
+};
+
+module.exports = { handleDonation, acceptDonation };
+

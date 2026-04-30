@@ -82,7 +82,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const donorId = donorSession.userId;
 
                 try {
-                    // إزالة الشرطة المائلة: /donations بدلاً من /donations/
                     const donationRes = await fetch("http://localhost:3000/donations", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
