@@ -1,4 +1,4 @@
-﻿const db=require('../config/db');
+const db=require('../config/db');
 const bcrypt = require('bcrypt');
 
 const sendVerificationEmail = require("../utils/sendEmail");
@@ -17,7 +17,7 @@ setInterval(() => {
         }
     }
     if (cleanedCount > 0) {
-        console.log(`ًں§¹ Cleaned ${cleanedCount} expired pending registrations`);
+        console.log(`🧹 Cleaned ${cleanedCount} expired pending registrations`);
     }
 }, 60 * 1000);
 
@@ -68,18 +68,6 @@ if (emailExists) {
     });
 }
 
-                // 🔍 التحقق من أن البريد غير مسجل كمحتاج
-        const searcherEmailCheck = await new Promise((resolve) => {
-            db.query("SELECT id FROM searchers WHERE email = ?", [email], (err, result) => {
-                resolve(result && result.length > 0);
-            });
-        });
-        if (searcherEmailCheck) {
-            return res.status(400).json({ 
-                message: "This email is already registered as a blood requester. Please use a different email or login."
-            });
-        }
-
 const phoneCheckQuery = `SELECT telephon FROM donors WHERE telephon = ?`;
 const phoneExists = await new Promise((resolve) => {
     db.query(phoneCheckQuery, [telephon], (err, result) => {
@@ -121,7 +109,7 @@ pendingDonors.set(email, {
 
 
          res.status(200).json({ 
-            message: "âœ“ Verification code sent to your email. Please check your inbox.",
+            message: "✓ Verification code sent to your email. Please check your inbox.",
             email: email,
             expiresIn: "1 minutes",
             nextStep: "POST /api/donors/verify with your email and code"
@@ -311,7 +299,7 @@ const verifyAndSaveDonor = (req, res) => {
             pendingDonors.delete(email);
 
             res.status(201).json({
-                message: "âœ“ Donor registration completed successfully!",
+                message: "✓ Donor registration completed successfully!",
                 donorId: result.insertId,
                 donor: {
                     id: result.insertId,
@@ -353,7 +341,7 @@ const resendCode = async (req, res) => {
     }
 
     res.json({ 
-        message: "âœ“ New verification code sent to your email",
+        message: "✓ New verification code sent to your email",
         expiresIn: "1 minutes"
     });
 };

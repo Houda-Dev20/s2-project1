@@ -1,4 +1,4 @@
-let currentProfileData = {};
+﻿let currentProfileData = {};
 
 const wilayas = [
     "Adrar","Chlef","Laghouat","Oum El Bouaghi","Batna","Bejaia","Biskra","Bechar",
@@ -36,7 +36,14 @@ function isValidDate(dateString) {
 }
 
 async function loadSearcherProfile() {
+
     const user = JSON.parse(localStorage.getItem("currentUserSession"));
+if (user && user.userType !== "searcher") {
+    alert("This page is for patients only. Please log out and log in as a patient.");
+    window.location.href = "login.html";
+    return;
+}
+
     if (!user?.userId) {
         console.error("No user session");
         alert("Please log in again.");
@@ -414,11 +421,11 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("Update failed: " + txt);
         } else {
             console.log("Update success");
-            await loadSearcherProfile();
+            await loadSearcherProfile(); if (typeof fetchNotifications === "function") fetchNotifications();
         }
         editBtn.querySelector('.edit2').innerText = "Edit";
         isEdited = false;
     });
 });
 
-loadSearcherProfile();
+loadSearcherProfile(); if (typeof fetchNotifications === "function") fetchNotifications();

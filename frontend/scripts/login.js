@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+﻿document.addEventListener("DOMContentLoaded", () => {
 
 const google=document.getElementById("google");
 google.addEventListener("click", () => {
@@ -10,33 +10,32 @@ const eyeIcon = document.getElementById("eye-icon");
 const passwordInput = document.getElementById('password-input');
 eyeBtn.addEventListener('click',function(){
      if(passwordInput.type === 'password'){
-          passwordInput.type='text';//so the default eye won't appear and when it changes to text it will be visible
+          passwordInput.type='text';
           eyeIcon.src='images/Group.svg'
      }else {
            passwordInput.type = 'password';
            eyeIcon.src ="images/basil_eye-closed-outline.svg"
      }
 });
-const openBtn =document.getElementById("join");//to get join btn in login page
-const donor =document.getElementById("closeModal1");//to get donor btn in popup page
-const searcher =document.getElementById("closeModal2");//to get searcher btn in popup page
-const modal =document.getElementById("modal");//to get popup id in popup page
-const closeBtn=document.getElementById("closeModel");//to get cross btn in popup
+const openBtn =document.getElementById("join");
+const donor =document.getElementById("closeModal1");
+const searcher =document.getElementById("closeModal2");
+const modal =document.getElementById("modal");
+const closeBtn=document.getElementById("closeModel");
 
 openBtn.addEventListener("click",()=>{
  modal.classList.add("open");
 });
 donor.addEventListener("click", () => {
-    window.location.href = "http://127.0.0.1:5500/donor-signup.html"; 
+    window.location.href = "donor-signup.html"; 
 });
 searcher.addEventListener("click", () => {
-    window.location.href = "http://127.0.0.1:5500/request-blood.html"; 
+    window.location.href = "request-blood.html"; 
 });
 closeBtn.addEventListener("click",()=>{
  modal.classList.remove("open");
 });
 
-//api
 const form = document.getElementById("login-form");
 
 form.addEventListener("submit", async function(e) {
@@ -58,8 +57,13 @@ form.addEventListener("submit", async function(e) {
         let data = await response.json();
 
         if (data.success) {
-            localStorage.setItem("user", JSON.stringify(data.donor));
+            localStorage.setItem("currentUserSession", JSON.stringify({
+                userId: data.donor.id,
+                userName: data.donor.full_name,
+                userType: "donor"
+            }));
             alert("Login successful (donor)");
+            window.location.href = "donor-profile.html";
             return;
         }
 
@@ -74,10 +78,14 @@ form.addEventListener("submit", async function(e) {
         data = await response.json();
 
         if (data.success) {
-            localStorage.setItem("user", JSON.stringify(data.searcher));
+            localStorage.setItem("currentUserSession", JSON.stringify({
+                userId: data.searcher.id,
+                userName: data.searcher.full_name,
+                userType: "searcher"
+            }));
             alert("Login successful (searcher)");
+            window.location.href = "patient-profile.html";
         } else {
-                    console.log(err);
             alert("Invalid email or password");
         }
 

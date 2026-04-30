@@ -1,4 +1,5 @@
-const db = require('../config/db');
+﻿const db = require('../config/db');
+const { createDonationRequestNotification } = require('./notificationController');
 
 const handleDonation = (req, res) => {
     const { id_donor, id_searcher } = req.body;
@@ -15,7 +16,7 @@ const handleDonation = (req, res) => {
         }
         const donor = donorResult[0];
 
-        // التحقق من وجود المحتاج وجلب فصيلة دمه المطلوبة
+        // التحقق من وجود المحتاج
         db.query("SELECT * FROM searchers WHERE id = ?", [id_searcher], (err, searcherResult) => {
             if (err) return res.status(500).json({ message: "Database error" });
             if (searcherResult.length === 0) {
@@ -23,7 +24,7 @@ const handleDonation = (req, res) => {
             }
             const searcher = searcherResult[0];
 
-            // التحقق من توافق فصيلة الدم (دالة بسيطة)
+            // التحقق من توافق فصيلة الدم
             function isCompatible(donorBlood, requiredBlood) {
                 const compat = {
                     'O-': ['O-'],
@@ -39,9 +40,7 @@ const handleDonation = (req, res) => {
             }
 
             if (!isCompatible(donor.blood_type, searcher.blood_type_research)) {
-                return res.status(400).json({
-                    message: "Incompatible blood types"
-                });
+                return res.status(400).json({ message: "Incompatible blood types" });
             }
 
             const today = new Date().toISOString().split('T')[0];
@@ -53,6 +52,14 @@ const handleDonation = (req, res) => {
                         console.error(err);
                         return res.status(500).json({ message: "Error saving donation" });
                     }
+
+                    // ✅ إنشاء إشعار للمحتاج
+                    createDonationRequestNotification(
+                        id_searcher,
+                        donor.full_name,
+                        donor.blood_type
+                    );
+
                     res.json({ message: "Donation successful", donationId: result.insertId });
                 }
             );

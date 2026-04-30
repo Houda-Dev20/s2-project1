@@ -37,7 +37,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (infoFields.length >= 4) {
             infoFields[0].querySelector("p").innerText = searcher.telephon;
             infoFields[1].querySelector("p").innerText = searcher.email;
-            // الحصول على اسم الولاية من الرقم باستخدام try-catch (قد لا يكون المسار موجوداً)
             let locationName = searcher.location;
             try {
                 const wilayaRes = await fetch(`http://localhost:3000/utils/wilaya/${searcher.location}`);
@@ -70,14 +69,21 @@ document.addEventListener("DOMContentLoaded", async () => {
             donateBtn.addEventListener("click", async () => {
                 const donorSession = JSON.parse(localStorage.getItem("currentUserSession"));
                 if (!donorSession || !donorSession.userId) {
-                    alert("You must be logged in as a donor to donate.");
+                    alert("You must be logged in to donate.");
+                    window.location.href = "login.html";
+                    return;
+                }
+                // التحقق من أن المستخدم متبرع وليس محتاج
+                if (donorSession.userType === "searcher") {
+                    alert("Only donors can donate. Please log in as a donor.");
                     window.location.href = "login.html";
                     return;
                 }
                 const donorId = donorSession.userId;
 
                 try {
-                    const donationRes = await fetch("http://localhost:3000/donations/", {
+                    // إزالة الشرطة المائلة: /donations بدلاً من /donations/
+                    const donationRes = await fetch("http://localhost:3000/donations", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ id_donor: donorId, id_searcher: searcherId })
@@ -100,6 +106,21 @@ document.addEventListener("DOMContentLoaded", async () => {
         alert("Error loading donation details: " + error.message);
     }
 });
+
+function getWilayaName(id) {
+    const wilayas = [
+        "Adrar","Chlef","Laghouat","Oum El Bouaghi","Batna","Bejaia","Biskra","Bechar",
+        "Blida","Bouira","Tamanrasset","Tebessa","Tlemcen","Tiaret","Tizi Ouzou","Algiers",
+        "Djelfa","Jijel","Setif","Saida","Skikda","Sidi Bel Abbes","Annaba","Guelma",
+        "Constantine","Medea","Mostaganem","Msila","Mascara","Ouargla","Oran","El Bayadh",
+        "Illizi","Bordj Bou Arreridj","Boumerdes","El Tarf","Tindouf","Tissemsilt",
+        "El Oued","Khenchela","Souk Ahras","Tipaza","Mila","Ain Defla","Naama",
+        "Ain Temouchent","Ghardaia","Relizane","Timimoun","Bordj Badji Mokhtar","Ouled Djellal",
+        "Beni Abbes","In Salah","In Guezzam","Touggourt","Djanet","El M'Ghair","El Meniaa"
+    ];
+    const idx = parseInt(id) - 1;
+    return (idx >= 0 && idx < wilayas.length) ? wilayas[idx] : "Unknown";
+}
 
 function setupFooterHover() {
     const socialIcons = [

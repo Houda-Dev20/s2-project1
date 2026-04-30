@@ -26,9 +26,15 @@ function formatDate(dateString) {
 }
 
 async function loadDonorData() {
+
     console.log("Loading donor data...");
     const user = JSON.parse(localStorage.getItem("currentUserSession"));
 
+    if (user && user.userType !== "donor") {
+    alert("This page is for donors only. Please log out and log in as a donor.");
+    window.location.href = "login.html";
+    return;
+}
     if (!user || !user.userId) {
         console.error("No user session found or missing userId");
         return;

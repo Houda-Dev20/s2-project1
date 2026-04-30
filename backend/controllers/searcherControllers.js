@@ -68,6 +68,18 @@ message: "Invalid location. Please select a valid wilaya number between 1 and 58
             });
         }
 
+                // 🔍 التحقق من أن البريد غير مسجل كمتبرع
+        const donorEmailCheck = await new Promise((resolve) => {
+            db.query("SELECT id FROM donors WHERE email = ?", [email], (err, result) => {
+                resolve(result && result.length > 0);
+            });
+        });
+        if (donorEmailCheck) {
+            return res.status(400).json({ 
+                message: "This email is already registered as a blood donor. Please use a different email or login."
+            });
+        }
+
                 const phoneCheckQuery = `SELECT telephon FROM searchers WHERE telephon = ?`;
         const phoneExists = await new Promise((resolve) => {
             db.query(phoneCheckQuery, [telephon], (err, result) => {
@@ -342,18 +354,16 @@ const resendCode = async (req, res) => {
     });
 };
 
-
 const searchSearchers = (req, res) => {
     const { blood_type, location, is_urgent } = req.body;
 
     let sql = `
         SELECT id, full_name, telephon, blood_type_research, location, is_urgent, date_of_birth, email
         FROM searchers
-        WHERE blood_type_research = ? AND location = ?
+        WHERE blood_type_research = ? AND location = ? AND is_active = 1
     `;
     const params = [blood_type, location];
 
-    // ط¥ط°ط§ طھظ… ط¥ط±ط³ط§ظ„ is_urgent (0 ط£ظˆ 1)طŒ ظ†ط¶ظٹظپ ط§ظ„ط´ط±ط·
     if (is_urgent !== undefined && (is_urgent === 0 || is_urgent === 1)) {
         sql += " AND is_urgent = ?";
         params.push(is_urgent);
@@ -574,3 +584,4 @@ const confirmEmailChange = (req, res) => {
 };
 
 module.exports = { requestEmailChange, confirmEmailChange, addSearcher, updateSearcher, deactivateSearcher, verifyAndSave , searchSearchers, getAllSearchers, loginSearcher, logoutSearcher, resendCode, activateSearcher, disactivateSearcher, getSearcherProfile };
+

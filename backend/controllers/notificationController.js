@@ -75,14 +75,13 @@ const markAsRead = (req, res) => {
 };
 
 const markAllAsRead = (req, res) => {
-    const { user_id } = req.params;
+    const { id } = req.params;
 
     db.query(
         "UPDATE notifications SET is_read = 1 WHERE user_id = ?",
-        [donor_id],
+        [user_id],
         (err) => {
             if (err) return res.status(500).json({ message: "error" });
-
             res.json({ message: "All notifications marked as read" });
         }
     );
