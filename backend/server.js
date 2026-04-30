@@ -24,6 +24,9 @@ app.use("/admin", adminRoutes);
 const notificationRoutes = require("./routes/notificationRoutes");
 app.use("/notifications", notificationRoutes);
 
+const donationRoutes = require("./routes/donationRoutes");
+app.use("/donations", donationRoutes);
+
 app.listen(3000, () => {
 console.log("Server running on port 3000");
 });

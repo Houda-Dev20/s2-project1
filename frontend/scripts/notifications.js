@@ -167,20 +167,34 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // LIST CLICK (Interaction based on state)
-    if (elements.list) {
-        elements.list.addEventListener('click', (e) => {
-            const item = e.target.closest('.notif-item');
-            if (!item) return;
+   // LIST CLICK (Zero HTML changes)
+if (elements.list) {
+    elements.list.addEventListener('click', (e) => {
+        const item = e.target.closest('.notif-item');
+        if (!item) return;
 
-            const type = item.getAttribute('data-type');
-            
-            // Only open modal if it's a Request
-            if (type === "REQUEST") {
-                if (elements.modal) elements.modal.style.display = 'flex';
-                if (elements.dropdown) elements.dropdown.classList.remove('active');
-            }
-        });
-    }
+        const type = item.getAttribute('data-type');
+        
+        // Target existing classes since we aren't adding IDs
+        const modalTitle = document.querySelector('.modal-title');
+        const modalMsg = document.querySelector('.modal-msg');
+        const acceptBtn = document.querySelector('.btn-accept');
+
+        if (type === "REQUEST") {
+            modalTitle.innerText = "DONOR MATCH FOUND!";
+            modalMsg.innerText = "Hello, I am nearby and I can be at EPSP";
+            acceptBtn.innerText = "Accept Request";
+        } 
+        else if (type === "ACCEPT") {
+            modalTitle.innerText = "PATIENT WANTS YOUR HELP!!";
+            modalMsg.innerText = "Hello, I am nearby and I need blood.";
+            acceptBtn.innerText = "Accept Request"; 
+        }
+
+        if (elements.modal) elements.modal.style.display = 'flex';
+        if (elements.dropdown) elements.dropdown.classList.remove('active');
+    });
+}
 
     // DROPDOWN & MARK READ
     if (elements.notifBtn) {

@@ -17,7 +17,6 @@
 <link rel="stylesheet" href="styles/notifications.css">
 </head>
 <body>
-
   <header class="header">
         <div class="left-section">
             <img class="logo" src="images/Blur.svg" alt="logo">
@@ -27,7 +26,7 @@
         <nav class="middle-section">
             <a href="home.html" class="taps ">Home</a>
             <a href="map.html" class="taps">Map</a>
-            <a href="search.html" class="taps active">Search</a>
+            <a href="search.html" class="taps">Search</a>
         </nav>
 
         <div class="right-section">
@@ -56,6 +55,30 @@
             </button>
         </div>
     </header>
+    <div id="notifModal" class="modal-overlay">
+    <div class="frame-33">
+        <div class="vector-circle">
+            <img src="images/Vector-heart.svg" alt="heart"> 
+        </div>
+        
+        <h2 class="modal-title">DONOR MATCH FOUND!</h2>
+
+        <div class="donor-info">
+            <img src="" id="modalImg" class="donor-img">
+            <div class="donor-text">
+                <span id="modalName" class="donor-name">Abd El-Malek Zerarga</span>
+                <span id="modalLocation" class="donor-loc">El-Eulma, Sétif</span>
+            </div>
+        </div>
+
+        <p class="modal-msg">Hello, I am nearby and I can be at EPSP</p>
+
+        <div class="modal-buttons">
+            <button class="btn-accept">Accept Request</button>
+            <button class="btn-cancel" id="closeModal">Cancel</button>
+        </div>
+    </div>
+</div>
 
 <!-- MAIN -->
 <main>
@@ -94,7 +117,7 @@
       <label>Location</label>
       <div class="select-wrap">
           <img src="images/VectorLocation.svg" alt="Location Icon" class="Location-icon">        
-          <select>
+          <select id="location">
             <option value="">Select Location</option>
           <option>01 - Adrar</option>
           <option>02 - Chlef</option>
@@ -176,7 +199,7 @@
     <div class="filter-group">
       <label>Urgency</label>
       <div class="select-wrap">
-        <select>
+        <select id="urgentStatus">
           <option value="">Any Urgency</option>
           <option>High Urgency</option>
           <option>Stable</option>
@@ -189,130 +212,9 @@
 
   </div>
 
-  <!-- CARDS -->
-  <div class="cards-grid">
-
-    <!-- Card 1 -->
-    <div class="card">
-      <div class="card-header">
-     <img src="https://ui-avatars.com/api/?name=Ahlam+Naseri&background=FDECEA&color=E8433A&bold=true" 
-     class="avatar-sm" alt="Ahlam Naseri Profile"> 
-        <div class="card-meta">
-          <div class="card-name">
-            Ahlam Naseri
-            <span class="blood-badge">O+</span>
-          </div>
-          <span class="urgency-tag high">High Urgency</span>
-        </div>
-      </div>
-      <div class="card-location">
-          <img src="images/VectorLocation.svg" alt="Location" class="Loc">        
-          EL-khroub, Constantine
-      </div>
-      <div class="request-box">
-        <div class="request-info">
-          <div class="hospital-name">
-            <img src="images\uil_hospital.svg" alt="" class="hospital-icon">
-            Hospital Ali Mendjli
-         </div>
-          <div class="req-date">15 Apr 2026</div>
-        </div>
-        <div class="req-meta">
-          <span>
-            <img src="images\material-symbols-light_post-add.svg" alt="" class="post-icon">
-            Posted 2 days ago
-          </span>
-          <span>
-            <img src="images/VectorLocation.svg" alt="Location" class="metre">
-            12 km away
-          </span>
-        </div>
-        <div class="map-preview"><div id="map1"></div></div>
-        <button class="btn-view" onclick="goToPage()">View Request &#x2192;</button>
-      </div>
-    </div>
-
-    <!-- Card 2 -->
-    <div class="card">
-      <div class="card-header">
-<img src="https://ui-avatars.com/api/?name=Niema+DDerghal&background=FDECEA&color=E8433A&bold=true" 
-     class="avatar-sm" alt="Niema Derghal profile">
-          <div class="card-meta">
-          <div class="card-name">
-            Niema Derghal
-            <span class="blood-badge a-plus">A+</span>
-          </div>
-          <span class="urgency-tag stable">Stable</span>
-        </div>
-      </div>
-      <div class="card-location">
-        <img src="images/VectorLocation.svg" alt="Location" class="Loc">
-        EL Eulma, Sétif
-      </div>
-      <div class="request-box">
-        <div class="request-info">
-          <div class="hospital-name">
-           <img src="images\uil_hospital.svg" alt="" class="hospital-icon">
-            Clinique Zammit
-          </div>
-          <div class="req-date">02 Fev 2026</div>
-        </div>
-        <div class="req-meta">
-          <span>
-            <img src="images\material-symbols-light_post-add.svg" alt="" class="post-icon">
-            Posted a month ago
-          </span>
-          <span>
-           <img src="images/VectorLocation.svg" alt="Location" class="metre">
-            70 km away
-          </span>
-        </div>
-       <div class="map-preview">
-       <div id="map2"></div> </div>
-       <button class="btn-view" onclick="goToPage()">View Request &#x2192;</button>
-        
-      </div>
-    </div>
-
-    <!-- Card 3 -->
-    <div class="card">
-      <div class="card-header">
-         <img src="https://ui-avatars.com/api/?name=Salim+Hamdi&background=FDECEA&color=E8433A&bold=true" 
-            class="avatar-sm" alt="Salim Hamdi Profile">
-             <div class="card-meta">
-          <div class="card-name">
-            Salim Hamdi
-            <span class="blood-badge ab">AB+</span>
-          </div>
-          <span class="urgency-tag stable">Stable</span>
-        </div>
-      </div>
-      <div class="card-location">
-        <img src="images/VectorLocation.svg" alt="Location" class="Loc">
-        Batna, Batna
-      </div>
-      <div class="request-box">
-        <div class="request-info">
-          <div class="hospital-name">
-            <img src="images\uil_hospital.svg" alt="" class="hospital-icon">
-            Clinique Les Rosiers
-          </div>
-          <div class="req-date">13 Mar 2026</div>
-        </div>
-        <div class="req-meta">
-          <span>
-            <img src="images\material-symbols-light_post-add.svg" alt="" class="post-icon">
-            Posted two months ago
-          </span>
-          <span>
-            <img src="images/VectorLocation.svg" alt="Location" class="metre">
-            3.6 km away
-          </span>
-        </div>
-        <div class="map-preview"><div id="map3"></div></div>
-        <button class="btn-view" onclick="goToPage()">View Request &#x2192;</button>
-      </div>
-    </div>
+ <div class="cards-grid">
+    <div class="info-placeholder">🔍 Select blood type and location to see results.</div>
+</div>
 
   </div>
 </main>

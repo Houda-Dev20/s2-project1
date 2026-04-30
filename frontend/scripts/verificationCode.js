@@ -67,67 +67,70 @@ function updateBtn() {
 verifyBtn.addEventListener('click', async function(e) {
     addRipple(e, this);
 
-    const code = [...inputs].map(i => i.value).join('');
+  const code = [...inputs].map(i => i.value).join('');
 
-    verifyBtn.textContent = 'Verifying...';
-    verifyBtn.disabled = true;
+  verifyBtn.textContent = 'Verifying...';
+  verifyBtn.disabled = true;
 
     try {
         const email = window.verifyEmail;
         const type = window.verifyType;
 
-        const url = type === "searcher"
-            ? "http://localhost:3000/searchers/verify"
-            : "http://localhost:3000/donors/verify";
+    const url = type === "searcher"
+      ? "http://localhost:3000/searchers/verify"
+      : "http://localhost:3000/donors/verify";
 
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                email: email,
-                verification_code: code
-            })
-        });
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: email,
+        verification_code: code
+      })
+    });
 
-        const data = await response.json();
+const data = await response.json();
 
-        if (!response.ok) {
-            throw new Error(data.message || "Verification failed");
-        }
+if (!response.ok) {
+  throw new Error(data.message || "Verification failed");
+}
 
-        let userId, userName;
-        if (type === "searcher") {
-            userId = data.searcherId;
-            userName = data.searcher.full_name;
-        } else {
-            userId = data.donorId;
-            userName = data.donor.full_name;
-        }
+let userId, userName;
+if (type === "searcher") {
+    userId = data.searcherId;
+    userName = data.searcher.full_name;
+} else {
+    userId = data.donorId;
+    userName = data.donor.full_name;
+}
 
-        localStorage.setItem("currentUserSession", JSON.stringify({
-            userId: userId,
-            userName: userName,
-            userType: type
-        }));
+localStorage.setItem("currentUserSession", JSON.stringify({
+    userId: userId,
+    userName: userName,
+     userType: type
+}))
 
-        formView.style.display = 'none';
-        successView.classList.add('show');
+formView.style.display = 'none';
+successView.classList.add('show');
 
-        setTimeout(() => {
-            if (type === "searcher") {
-                window.location.href = "patient-profile.html";
-            } else {
-                window.location.href = "donor-profile.html";
-            }
-        }, 2000);
+setTimeout(() => {
+  const type = new URLSearchParams(window.location.search).get("type");
 
-    } catch (err) {
-        alert(err.message);
-        verifyBtn.textContent = 'Verify';
-        verifyBtn.disabled = false;
-    }
+  if (type === "searcher") {
+    window.location.href = "patient-profile.html";
+  } else {
+    window.location.href = "donor-profile.html";
+  }
+}, 2000);
+
+  } catch (err) {
+    alert(err.message);
+
+    verifyBtn.textContent = 'Verify';
+    verifyBtn.disabled = false;
+  }
 });
 
 function addRipple(e, btn) {

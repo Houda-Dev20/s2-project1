@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmDeleteBtn = document.querySelector('.btn-confirm-delete');
 
     function validateForm() {
-        const isPasswordTyped = passwordInput.value.trim().length > 0;
+        const isPasswordTyped = passwordInput.value.trim().length >=8;
         const isCheckboxChecked = checkbox.checked;
 
         if (isPasswordTyped && isCheckboxChecked) {
