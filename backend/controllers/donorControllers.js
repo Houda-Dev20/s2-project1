@@ -375,6 +375,8 @@ const loginDonor = (req, res) => {
             { expiresIn: '24h' }
         );
 
+        db.query("UPDATE donors SET is_active = 1 WHERE id = ?", [donor.id], (err) => { if (err) console.log(err); });
+        
         res.status(200).json({
             success: true,
             message: "Login successful",

@@ -168,6 +168,9 @@ const loginSearcher = (req, res) => {
         const match = await bcrypt.compare(password, searcher.password);
         if (!match) return res.status(401).json({ success: false, message: "Incorrect password" });
         const token = jwt.sign({ id: searcher.id, email: searcher.email }, process.env.JWT_SECRET || "fallback", { expiresIn: '24h' });
+
+db.query("UPDATE searchers SET is_active = 1 WHERE id = ?", [searcher.id], (err) => { if (err) console.log(err); });
+
         res.status(200).json({ success: true, message: "Login successful", searcher: { id: searcher.id, full_name: searcher.full_name, email: searcher.email, telephon: searcher.telephon, blood_type: searcher.blood_type, location: searcher.location }, token });
     });
 };
