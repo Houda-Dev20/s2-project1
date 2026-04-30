@@ -1,6 +1,6 @@
 ﻿const db = require('../config/db');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');  // 👈 تمت الإضافة
+const jwt = require('jsonwebtoken');
 
 const sendVerificationEmail = require("../utils/sendEmail");
 const { ALGERIA_WILAYAS } = require('../utils/constants');
@@ -12,37 +12,23 @@ const resetPasswordRequests = new Map();
 setInterval(() => {
     const now = Date.now();
     let cleanedCount = 0;
-<<<<<<< HEAD
-
-=======
-    
->>>>>>> 0ee6041baa6672e4e50305da783fc2112d33c2c8
     for (const [email, data] of pendingDonors.entries()) {
         if (data.expiresAt < now) {
             pendingDonors.delete(email);
             cleanedCount++;
         }
     }
-<<<<<<< HEAD
-
-=======
-    
->>>>>>> 0ee6041baa6672e4e50305da783fc2112d33c2c8
     for (const [email, data] of resetPasswordRequests.entries()) {
         if (data.expiresAt < now) {
             resetPasswordRequests.delete(email);
             cleanedCount++;
         }
     }
-<<<<<<< HEAD
-
-=======
-    
->>>>>>> 0ee6041baa6672e4e50305da783fc2112d33c2c8
     if (cleanedCount > 0) {
         console.log(`🧹 Cleaned ${cleanedCount} expired requests`);
     }
 }, 60 * 1000);
+
 const addDonor = async (req, res) => {
     try {
         const {
@@ -56,16 +42,7 @@ const addDonor = async (req, res) => {
             available
         } = req.body;
 
-<<<<<<< HEAD
         console.log("Email:", email);
-=======
-
-console.log("Email:", email);
-
-
-
-
->>>>>>> 0ee6041baa6672e4e50305da783fc2112d33c2c8
 
         if (!/^[A-Za-z\s]+$/.test(full_name)) {
             return res.status(400).json({ message: "Invalid full name" });
@@ -82,9 +59,7 @@ console.log("Email:", email);
 
         const wilayaNumber = parseInt(location);
         if (!ALGERIA_WILAYAS.includes(wilayaNumber)) {
-            return res.status(400).json({
-                message: "Invalid location. Please select a valid wilaya number between 1 and 58."
-            });
+            return res.status(400).json({ message: "Invalid location. Please select a valid wilaya number between 1 and 58." });
         }
 
         const emailCheckQuery = `SELECT email FROM donors WHERE email = ?`;
@@ -118,7 +93,6 @@ console.log("Email:", email);
             });
         }
 
-<<<<<<< HEAD
         pendingDonors.set(email, {
             full_name,
             blood_type,
@@ -130,27 +104,6 @@ console.log("Email:", email);
             available,
             verification_code,
             expiresAt: Date.now() + 60 * 1000
-=======
-pendingDonors.set(email, {
-    full_name,
-    blood_type,
-    telephon,
-    email,
-    hashedPassword,
-    location: wilayaNumber,
-    date_of_birth,
-    available,
-    verification_code,
-    expiresAt: Date.now() + 60 * 1000
-});
-
-
-         res.status(200).json({ 
-            message: "✓ Verification code sent to your email. Please check your inbox.",
-            email: email,
-            expiresIn: "2 minutes",
-            nextStep: "POST /api/donors/verify with your email and code"
->>>>>>> 0ee6041baa6672e4e50305da783fc2112d33c2c8
         });
 
         res.status(200).json({
@@ -332,10 +285,11 @@ const resendCode = async (req, res) => {
     const { email } = req.body;
     console.log("Email received:", email);
     console.log("Pending donors:", Array.from(pendingDonors.keys()));
-<<<<<<< HEAD
+
     if (!email) {
         return res.status(400).json({ message: "Email is required" });
     }
+
     const pending = pendingDonors.get(email);
     if (!pending) {
         console.log("❌ No pending found for:", email);
@@ -343,45 +297,22 @@ const resendCode = async (req, res) => {
             message: "No pending registration found. Please register again."
         });
     }
+
     console.log("✅ Pending found, generating new code...");
     const newCode = Math.floor(100000 + Math.random() * 900000).toString();
     console.log("New code:", newCode);
+
     pending.verification_code = newCode;
     pending.expiresAt = Date.now() + (60 * 1000);
     pendingDonors.set(email, pending);
-    const emailSent = await sendVerificationEmail(email, newCode);
-    console.log("Email sent:", emailSent);
-=======
-
-    if (!email) {
-        return res.status(400).json({ message: "Email is required" });
-    }
-
-    const pending = pendingDonors.get(email);
-
-    if (!pending) {
-        console.log("❌ No pending found for:", email);
-        return res.status(404).json({ 
-            message: "No pending registration found. Please register again."
-        });
-    }
-
-    console.log("✅ Pending found, generating new code...");
-
-    const newCode = Math.floor(100000 + Math.random() * 900000).toString();
-    console.log("New code:", newCode);
-    
-    pending.verification_code = newCode;
-    pending.expiresAt = Date.now() + (60 * 1000);  
-    pendingDonors.set(email, pending);
 
     const emailSent = await sendVerificationEmail(email, newCode);
     console.log("Email sent:", emailSent);
 
->>>>>>> 0ee6041baa6672e4e50305da783fc2112d33c2c8
     if (!emailSent) {
         return res.status(500).json({ message: "Failed to send verification email" });
     }
+
     res.json({
         message: "✓ New verification code sent to your email",
         expiresIn: "1 minutes"
@@ -437,12 +368,13 @@ const loginDonor = (req, res) => {
         if (!donor.is_verified) {
             return res.status(403).json({ message: "Please verify your email first" });
         }
-        // توليد token (تأكد من وجود JWT_SECRET في .env)
+
         const token = jwt.sign(
             { id: donor.id, email: donor.email },
             process.env.JWT_SECRET || process.env.ESI_SBA_SECRET_KEY || "fallback_secret_key",
             { expiresIn: '24h' }
         );
+
         res.status(200).json({
             success: true,
             message: "Login successful",
@@ -499,109 +431,53 @@ const getDonorProfile = (req, res) => {
 const forgotPassword = async (req, res) => {
     try {
         const { email } = req.body;
-        if (!email) return res.status(400).json({ message: "Email is required" });
-        const checkQuery = "SELECT id, email FROM donors WHERE email = ?";
-        db.query(checkQuery, [email], async (err, result) => {
-            if (err) return res.status(500).json({ message: "Database error" });
-            if (result.length === 0) return res.status(404).json({ message: "Email not found" });
-            const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
-            resetPasswordRequests.set(email, {
-                code: resetCode,
-                expiresAt: Date.now() + 15 * 60 * 1000,
-                donorId: result[0].id
-            });
-            const emailSent = await sendVerificationEmail(email, resetCode, "reset");
-            if (!emailSent) return res.status(500).json({ message: "Failed to send reset code" });
-            res.json({ message: "Reset code sent to your email", expiresIn: "15 minutes" });
-        });
-    } catch (error) {
-        res.status(500).json({ message: "Server error" });
-    }
-};
-
-<<<<<<< HEAD
-const verifyResetCode = (req, res) => {
-    try {
-        const { email, otp } = req.body;
-        if (!email || !otp) return res.status(400).json({ message: "Email and code are required" });
-        const resetRequest = resetPasswordRequests.get(email);
-        if (!resetRequest) return res.status(404).json({ message: "No reset request found" });
-        if (resetRequest.expiresAt < Date.now()) {
-            resetPasswordRequests.delete(email);
-            return res.status(400).json({ message: "Reset code has expired" });
-        }
-        if (resetRequest.code !== otp) return res.status(400).json({ message: "Invalid code" });
-        res.json({ message: "Code verified successfully" });
-=======
-const forgotPassword = async (req, res) => {
-    try {
-        const { email } = req.body;
 
         if (!email) {
             return res.status(400).json({ message: "Email is required" });
         }
 
         const checkQuery = "SELECT id, email FROM donors WHERE email = ?";
-        
         db.query(checkQuery, [email], async (err, result) => {
-            if (err) {
-                return res.status(500).json({ message: "Database error" });
-            }
-
-            if (result.length === 0) {
-                return res.status(404).json({ message: "Email not found" });
-            }
+            if (err) return res.status(500).json({ message: "Database error" });
+            if (result.length === 0) return res.status(404).json({ message: "Email not found" });
 
             const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
-
             resetPasswordRequests.set(email, {
                 code: resetCode,
-                expiresAt: Date.now() + 15 * 60 * 1000, // 15 دقيقة
+                expiresAt: Date.now() + 15 * 60 * 1000,
                 donorId: result[0].id
             });
 
             const emailSent = await sendVerificationEmail(email, resetCode, "reset");
-            
             if (!emailSent) {
                 return res.status(500).json({ message: "Failed to send reset code" });
             }
 
             res.json({ message: "Reset code sent to your email", expiresIn: "15 minutes" });
         });
-
->>>>>>> 0ee6041baa6672e4e50305da783fc2112d33c2c8
     } catch (error) {
         res.status(500).json({ message: "Server error" });
     }
 };
-<<<<<<< HEAD
-=======
 
 const verifyResetCode = (req, res) => {
     try {
         const { email, otp } = req.body;
-
         if (!email || !otp) {
             return res.status(400).json({ message: "Email and code are required" });
         }
-
         const resetRequest = resetPasswordRequests.get(email);
-
         if (!resetRequest) {
             return res.status(404).json({ message: "No reset request found" });
         }
-
         if (resetRequest.expiresAt < Date.now()) {
             resetPasswordRequests.delete(email);
             return res.status(400).json({ message: "Reset code has expired" });
         }
-
         if (resetRequest.code !== otp) {
             return res.status(400).json({ message: "Invalid code" });
         }
-
         res.json({ message: "Code verified successfully" });
-
     } catch (error) {
         res.status(500).json({ message: "Server error" });
     }
@@ -610,88 +486,32 @@ const verifyResetCode = (req, res) => {
 const resetPassword = async (req, res) => {
     try {
         const { email, otp, newPassword } = req.body;
-
         if (!email || !otp || !newPassword) {
             return res.status(400).json({ message: "Email, code and new password are required" });
         }
-
         if (newPassword.length < 6) {
             return res.status(400).json({ message: "Password must be at least 6 characters" });
         }
-
         const resetRequest = resetPasswordRequests.get(email);
-
         if (!resetRequest) {
             return res.status(404).json({ message: "No reset request found" });
         }
-
         if (resetRequest.expiresAt < Date.now()) {
             resetPasswordRequests.delete(email);
             return res.status(400).json({ message: "Reset code has expired" });
         }
-
         if (resetRequest.code !== otp) {
             return res.status(400).json({ message: "Invalid code" });
         }
-
         const hashedPassword = await bcrypt.hash(newPassword, 10);
-
         const updateQuery = "UPDATE donors SET password = ? WHERE email = ?";
-        
         db.query(updateQuery, [hashedPassword, email], (err, result) => {
             if (err) {
                 return res.status(500).json({ message: "Error updating password" });
             }
-
             if (result.affectedRows === 0) {
                 return res.status(404).json({ message: "Donor not found" });
             }
-
-            resetPasswordRequests.delete(email);
-
-            res.json({ message: "Password reset successfully" });
-        });
-
-    } catch (error) {
-        res.status(500).json({ message: "Server error" });
-    }
-};
-
-module.exports = { deactivateDonor,
-                   addDonor,
-                   updateDonor ,
-                   verifyAndSaveDonor,
-                   searchDonors,
-                   getAllDonors,
-                   loginDonor,
-                   logoutDonor,
-                   getDonorProfile,
-                   activateDonor,
-                   disactivateDonor,
-                   resendCode,
-                   forgotPassword,     
-                   verifyResetCode,    
-                   resetPassword
-         }; 
->>>>>>> 0ee6041baa6672e4e50305da783fc2112d33c2c8
-
-const resetPassword = async (req, res) => {
-    try {
-        const { email, otp, newPassword } = req.body;
-        if (!email || !otp || !newPassword) return res.status(400).json({ message: "Email, code and new password are required" });
-        if (newPassword.length < 6) return res.status(400).json({ message: "Password must be at least 6 characters" });
-        const resetRequest = resetPasswordRequests.get(email);
-        if (!resetRequest) return res.status(404).json({ message: "No reset request found" });
-        if (resetRequest.expiresAt < Date.now()) {
-            resetPasswordRequests.delete(email);
-            return res.status(400).json({ message: "Reset code has expired" });
-        }
-        if (resetRequest.code !== otp) return res.status(400).json({ message: "Invalid code" });
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-        const updateQuery = "UPDATE donors SET password = ? WHERE email = ?";
-        db.query(updateQuery, [hashedPassword, email], (err, result) => {
-            if (err) return res.status(500).json({ message: "Error updating password" });
-            if (result.affectedRows === 0) return res.status(404).json({ message: "Donor not found" });
             resetPasswordRequests.delete(email);
             res.json({ message: "Password reset successfully" });
         });

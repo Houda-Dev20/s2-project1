@@ -1,7 +1,7 @@
 ﻿{
   "name": "blood-donation-backend",
   "version": "1.0.0",
-  "description": "Backend for LifeDrop platform",
+  "description": "Backend for LifeDrop blood donation platform",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
