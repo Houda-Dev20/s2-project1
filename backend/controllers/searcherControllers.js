@@ -294,7 +294,7 @@ const resendCode = async (req, res) => {
         return res.status(400).json({ message: "Email is required" });
     }
 
-    const pending = pendingRegistrations.get(email);
+    const pending = pendingDonors.get(email);
 
     if (!pending) {
         return res.status(404).json({ 
@@ -305,7 +305,7 @@ const resendCode = async (req, res) => {
     const newCode = Math.floor(100000 + Math.random() * 900000).toString();
     pending.verification_code = newCode;
     pending.expiresAt = Date.now() + (60 * 1000);  
-    pendingRegistrations.set(email, pending);
+    pendingDonors.set(email, pending);
 
     const emailSent = await sendVerificationEmail(email, newCode);
 

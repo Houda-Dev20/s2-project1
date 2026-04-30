@@ -168,7 +168,8 @@ async function sendData(url, dataObject) {
         alert(result.message);
 
         if (result.id) {
-    localStorage.setItem("currentUserSession", JSON.stringify({
+        localStorage.setItem("currentUserSession", JSON.stringify({
+
         userId: result.id,
         userName: dataObject.full_name
     }));

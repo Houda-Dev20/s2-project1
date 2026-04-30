@@ -105,6 +105,7 @@ body {
 .main-avatar {
     width: 120px !important;
     height: 120px !important;
+    border-radius: 50%;
     object-fit: cover;
 }
 
@@ -285,7 +286,6 @@ body {
     flex-direction: column;
     border: 1px solid #EEE8EA;
     border-radius: 12px;
-    overflow: hidden;
     background-color: #fff;
     box-shadow: 0px 4px 40px 0px rgba(0, 0, 0, 0.15);
 }
