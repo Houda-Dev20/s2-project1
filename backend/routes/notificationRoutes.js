@@ -1,4 +1,4 @@
-const express = require("express");
+﻿const express = require("express");
 const router = express.Router();
 
 const {
@@ -10,7 +10,7 @@ const {
 
 router.get("/:id", getNotifications);
 router.put("/read/:id", markAsRead);
-router.put("/read-all/:user_id ", markAllAsRead);
+router.put("/read-all/:user_id", markAllAsRead);
 router.get("/unread/:id", getUnreadCount);
 
 module.exports = router;

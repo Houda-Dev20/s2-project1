@@ -53,15 +53,24 @@ const acceptDonation = (req, res) => {
     const { id } = req.params;
     db.query("UPDATE donations SET status = 'accepted' WHERE id = ?", [id], (err, result) => {
         if (err) return res.status(500).json({ message: "Database error" });
-        if (result.affectedRows === 0) return res.status(404).json({ message: "donations not found" });
+        if (result.affectedRows === 0) return res.status(404).json({ message: "Donation not found" });
+        
+        // جلب id_donor واسم المحتاج
         db.query(
             "SELECT d.id_donor, s.full_name AS searcher_name FROM donations d JOIN searchers s ON d.id_searcher = s.id WHERE d.id = ?",
             [id],
             (err, rows) => {
                 if (err) return res.status(500).json({ message: "Error fetching details" });
                 if (rows.length === 0) return res.status(404).json({ message: "Details not found" });
+                
+                // 🧹 حذف إشعار طلب التبرع الذي كان قد أُرسل للمحتاج
+                db.query("DELETE FROM notifications WHERE donation_id = ? AND type = 'donation_request'", [id], (delErr) => {
+                    if (delErr) console.error("Error deleting donation_request notification:", delErr);
+                });
+                
+                // إرسال إشعار قبول للمتبرع
                 createRequestAcceptedNotification(rows[0].id_donor, rows[0].searcher_name);
-                res.json({ message: "donations accepted, notification sent" });
+                res.json({ message: "Donation accepted, notification sent" });
             }
         );
     });

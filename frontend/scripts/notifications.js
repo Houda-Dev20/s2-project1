@@ -43,7 +43,16 @@ function updateUnreadCount(notifications) {
 
 function renderNotifications(notifications) {
     if (!elements.list) return;
-    if (!notifications.length) {
+    const user = getCurrentUser();
+    const isDonor = user?.userType === 'donor';
+    // تصفية الإشعارات حسب نوع المستخدم وحالة القراءة (غير مقروء فقط)
+    let filtered = notifications.filter(n => !n.is_read); // فقط غير المقروءة
+    if (isDonor) {
+        filtered = filtered.filter(n => n.type === 'request_accepted');
+    } else if (user?.userType === 'searcher') {
+        filtered = filtered.filter(n => n.type === 'donation_request');
+    }
+    if (!filtered.length) {
         elements.list.innerHTML = "";
         if (elements.empty) elements.empty.style.display = 'flex';
         if (elements.markBtn) elements.markBtn.style.display = 'none';
@@ -51,7 +60,7 @@ function renderNotifications(notifications) {
     }
     elements.empty.style.display = 'none';
     elements.markBtn.style.display = 'block';
-    elements.list.innerHTML = notifications.map(notif => `
+    elements.list.innerHTML = filtered.map(notif => `
         <div class="notif-item" data-id="${notif.id}" data-type="${notif.type}" data-donation-id="${notif.donation_id || ''}" data-read="${notif.is_read}">
             <div class="icon-circle ${notif.type === 'donation_request' ? 'red-bg' : 'green-bg'}">
                 <img src="images/${notif.type === 'donation_request' ? 'Frame 170.svg' : 'Frame 171.svg'}" alt="icon">
@@ -78,9 +87,18 @@ async function markAllAsRead() {
     const user = getCurrentUser();
     if (!user?.userId) return;
     try {
-        await fetch(`http://localhost:3000/notifications/read-all/${user.userId}`, { method: 'PUT' });
-        fetchNotifications();
-    } catch(e) {}
+        const response = await fetch(`http://localhost:3000/notifications/read-all/${user.userId}`, { method: 'PUT' });
+        console.log("Mark all response status:", response.status);
+        const data = await response.json();
+        console.log("Mark all response data:", data);
+        if (response.ok) {
+            fetchNotifications();
+        } else {
+            console.error("Failed to mark all as read:", data);
+        }
+    } catch(e) {
+        console.error("Error in markAllAsRead:", e);
+    }
 }
 
 function toggleDropdown(e) {
@@ -131,3 +149,5 @@ document.addEventListener('click', (e) => {
 if (document.getElementById('closeModal')) {
     document.getElementById('closeModal').onclick = () => { if (elements.modal) elements.modal.style.display = 'none'; };
 }
+
+
