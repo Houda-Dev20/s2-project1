@@ -3,16 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LifeDrop - Home</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@200;300;600&display=swap" rel="stylesheet">
+    <title>LifeDrop - Donation Request</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/donate.css">
     <link rel="stylesheet" href="styles/notifications.css">
 </head>
 <body>
 
-    <header class="header">
+     <header class="header">
         <div class="left-section">
             <img class="logo" src="images/Blur.svg" alt="logo">
             <img class="logo1" src="images/LifeDrop.svg" alt="logo1">
@@ -29,7 +27,6 @@
                 <button class="notif-trigger" id="notifBtn">
                     <img class="bell-img" src="images/bell.svg" alt="notifications">
                     <div class="red-dot" id="notifBadge"></div>
-                    
                 </button>
 
                 <div class="dropdown-container" id="notifDropdown">
@@ -51,16 +48,15 @@
             </button>
         </div>
     </header>
-    <div id="notifModal" class="modal-overlay">
+      <div id="notifModal" class="modal-overlay">
     <div class="frame-33">
         <div class="vector-circle">
-            <img src="images/Vector-heart.svg" alt="heart"> 
-        </div>
+            <img src="images/Vector-heart.svg" alt="heart"> </div>
         
         <h2 class="modal-title">DONOR MATCH FOUND!</h2>
 
         <div class="donor-info">
-            <img src="" id="modalImg" class="donor-img">
+            <img src="images/donor-avatar.png" id="modalImg" class="donor-img">
             <div class="donor-text">
                 <span id="modalName" class="donor-name">Abd El-Malek Zerarga</span>
                 <span id="modalLocation" class="donor-loc">El-Eulma, Sétif</span>
@@ -75,6 +71,61 @@
         </div>
     </div>
 </div>
-    <script src="scripts/notifications.js"></script>
+    <main class="details-container">
+        <div class="donation-card">
+            <div class="card-header">
+                <span class="urgency-badge">DONATE REQUEST</span>
+                <div class="profile-img-container">
+                    <img src="https://ui-avatars.com/api/?name=Sara+Boussife&background=FDECEA&color=E8433A&size=128" alt="Sara Boussife">
+                </div>
+                <h2>Sara Boussife</h2>
+                <span class="blood-type-tag">O+ Blood Type</span>
+            </div>
+
+            <div class="card-body">
+                <div class="info-field">
+                    <label>PHONE NUMBER</label>
+                    <p>0612 34 56 78</p>
+                </div>
+                <div class="info-field">
+                    <label>EMAIL</label>
+                    <p>SaraBoussife06@gmail.com</p>
+                </div>
+                <div class="info-field">
+                    <label>LOCATION</label>
+                    <p>El-Eulma, Setif — Algeria</p>
+                </div>
+
+                <button class="btn-donate">Request Help now</button>
+                <p class="footer-note">Request blood donation through one press of button</p>
+            </div>
+        </div>
+    </main>
+
+    <div class="footer">
+        <div class="elm-div">
+            <a class="elm" href="">Privacy Policy</a>
+            <a class="elm" href="">Terms of services</a>
+        </div>
+        <div class="sm-div">
+        <a href="#">
+            <img src="images/Vector27.svg" alt="" class="sm1-img">
+        </a>
+         <a href="#">
+            <img src="images/Vector24.svg" alt="" class="sm2-img">
+        </a>
+         <a href="#">
+            <img src="images/Vector26.svg" alt="" class="sm3-img">
+        </a>
+        
+         <a href="#">
+            <img src="images/Vector25.svg" alt="" class="sm4-img">
+        </a>
+        
+        </div>
+    </div>
+<script src="scripts/notifications.js"></script>
+<script src="scripts/donate.js"></script>
+
 </body>
 </html>

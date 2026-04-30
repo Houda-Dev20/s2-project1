@@ -247,20 +247,17 @@ span{
     width: 100%;
     color: inherit;
 }
-.second-div{
-    background-color:#FFFFFF ;
+.second-div {
+    background-color: #FFFFFF;
     width: 618px;
-    height: 323px;
-    border-width: 1px;
-    opacity: 1;
+    height: 323px; /* Kept exactly as you requested */
     border: 1px solid #EEE8EA;
     box-shadow: 0px 4px 12px 0px #0000000D;
     display: flex;
     flex-direction: column;
     border-radius: 20px;
     padding: 0px;
-    overflow: hidden;
-    
+    overflow: hidden; 
 }
 .title{
     display: flex;
@@ -319,22 +316,20 @@ span{
 }
 .personal-info {
     display: flex;
-    margin: 0px;
-    padding: 20px 0 20px 25px; 
-    background-color: white;
-    margin-top: 9px;
-   
-    
+    margin: 20px 25px 0 25px; /* Push down 15px from title, 25px sides */
+    padding: 0; /* FIX: Removed the old 20px vertical padding */
+    box-shadow: 0px 4px 40px 0px #00000026;
+    border-radius: 10px;
 }
+
+
   .dt-wrapper {
     width: 280px;
     display: flex;
     flex-direction: column;
-    box-shadow: 0px 4px 40px 0px #00000026;
-    border-radius: 10px;
-    margin-bottom: 100px;
-    
-}  
+    margin-bottom: 0px; /* FIX: Remove the old 100px margin */
+    box-shadow: none;   /* Clear the old half-shadow */
+} 
 
 .dt-item{
     width: 280px;
@@ -667,30 +662,41 @@ span{
     gap:35px;
     margin-top: 15px;
 }
-.fifth-div{
-     width: 618px;
-    height: 192px;
+.fifth-div {
+    width: 618px;
+    height: 192px; /* Keeping your exact height */
     border-radius: 20px;
     background: #FFFFFF;
-    box-shadow: 0px 4px 12px 0px #00000000;
+    box-shadow: 0px 4px 12px 0px #0000000D; /* Parent shadow */
     margin-top: -80px;
+    overflow: hidden; /* Contains everything neatly */
 }
 .security-options {
     list-style: none; 
-    margin-left: -11px;
-    margin-top:30px; 
-   
+    margin: 15px 25px 0 25px; /* Centers the block and gives shadow room */
+    padding: 0;
+box-shadow: 0px 4px 40px 0px #00000026;
+    border-radius: 10px;
 }
-.security-btn{
-    width: 562px;
+.security-btn {
+    width: 100%; /* FIX: Flexibly fits the container instead of fixed width */
     height: 40px;
     background: #FFFFFF;
     border: 1px solid #EEE8EA;
     display: flex;
     align-items: center;
-    gap:8px;
+    gap: 8px;
     padding-left: 10px;
     position: relative;
+    box-sizing: border-box; /* FIX: Keeps padding from breaking the width */
+}
+
+/* Removes the double border where the two buttons touch */
+.security-options li:nth-child(2) .security-btn {
+    border-top: none; 
+}
+.security-btn1{
+    width: 568px;
 }
 .security-btn:hover{
    box-shadow: 1000px 0px 4px 0px #00000026 inset;

@@ -1,9 +1,10 @@
+
 ﻿const db=require('../config/db');
 const bcrypt = require('bcrypt');
 
 const sendVerificationEmail = require("../utils/sendEmail");
 const { ALGERIA_WILAYAS } = require('../utils/constants');
-
+const jwt = require("jsonwebtoken");
 const pendingRegistrations = new Map();
 
 const pendingEmailChanges = new Map();
@@ -35,7 +36,7 @@ const addSearcher = async (req, res) => {
             is_urgent
         } = req.body;
 
-       if (!/^[A-Za-z\s]+$/.test(full_name)) {
+        if (!/^[A-Za-z\s]+$/.test(full_name)) {
             return res.status(400).json({ message: "Invalid full name" });
         }
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -48,14 +49,15 @@ const addSearcher = async (req, res) => {
             return res.status(400).json({ message: "Invalid phone number" });
         }
 
-    const wilayaNumber = parseInt(location);
+        const wilayaNumber = parseInt(location);
 
-    if (!ALGERIA_WILAYAS.includes(wilayaNumber)) {
-        return res.status(400).json({ 
-message: "Invalid location. Please select a valid wilaya number between 1 and 58."});
-    }
+        if (!ALGERIA_WILAYAS.includes(wilayaNumber)) {
+            return res.status(400).json({
+                message: "Invalid location. Please select a valid wilaya number between 1 and 58."
+            });
+        }
 
-            const emailCheckQuery = `SELECT email FROM searchers WHERE email = ?`;
+        const emailCheckQuery = `SELECT email FROM searchers WHERE email = ?`;
         const emailExists = await new Promise((resolve) => {
             db.query(emailCheckQuery, [email], (err, result) => {
                 resolve(result && result.length > 0);
@@ -63,11 +65,12 @@ message: "Invalid location. Please select a valid wilaya number between 1 and 58
         });
 
         if (emailExists) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 message: "Email already registered. Please login instead."
             });
         }
 
+<<<<<<< HEAD
                 // 🔍 التحقق من أن البريد غير مسجل كمتبرع
         const donorEmailCheck = await new Promise((resolve) => {
             db.query("SELECT id FROM donors WHERE email = ?", [email], (err, result) => {
@@ -81,6 +84,9 @@ message: "Invalid location. Please select a valid wilaya number between 1 and 58
         }
 
                 const phoneCheckQuery = `SELECT telephon FROM searchers WHERE telephon = ?`;
+=======
+        const phoneCheckQuery = `SELECT telephon FROM searchers WHERE telephon = ?`;
+>>>>>>> fec63f1219b24b90e943cda1ba90e2614902c1d0
         const phoneExists = await new Promise((resolve) => {
             db.query(phoneCheckQuery, [telephon], (err, result) => {
                 resolve(result && result.length > 0);
@@ -88,15 +94,15 @@ message: "Invalid location. Please select a valid wilaya number between 1 and 58
         });
 
         if (phoneExists) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 message: "Phone number already registered."
             });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10); 
+        const hashedPassword = await bcrypt.hash(password, 10);
         const verification_code = Math.floor(100000 + Math.random() * 900000).toString();
 
-                pendingRegistrations.set(email, {
+        pendingRegistrations.set(email, {
             full_name,
             blood_type_research,
             telephon,
@@ -113,18 +119,19 @@ message: "Invalid location. Please select a valid wilaya number between 1 and 58
 
         if (!emailSent) {
             pendingRegistrations.delete(email);
-            return res.status(500).json({ 
+            return res.status(500).json({
                 message: "Failed to send verification email. Please try again."
             });
         }
 
-                res.status(200).json({ 
-            message: "âœ“ Verification code sent to your email. Please check your inbox.",
+
+        res.status(200).json({
+            message: "✓ Verification code sent to your email. Please check your inbox.",
             email: email,
             expiresIn: "1 minutes",
             nextStep: "POST /api/searchers/verify with your email and code"
         });
-                
+
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Server error" });
@@ -135,10 +142,10 @@ const updateSearcher = async (req, res) => {
     try {
         const { id } = req.params;
         const updates = req.body;
-console.log("UPDATES RECEIVED:", updates);
+        console.log("UPDATES RECEIVED:", updates);
 
-console.log("blood_type_research:", updates.blood_type_research);
-console.log("is_urgent:", updates.is_urgent);
+        console.log("blood_type_research:", updates.blood_type_research);
+        console.log("is_urgent:", updates.is_urgent);
 
         if (Object.keys(updates).length === 0) {
             return res.status(400).json({ message: "No data provided" });
@@ -148,7 +155,6 @@ console.log("is_urgent:", updates.is_urgent);
             return res.status(400).json({ message: "Invalid full name format" });
         }
 
-        // ًںڑ« ظ…ظ†ط¹ ط£ظٹ طھط¹ط¯ظٹظ„ ظ„ظ„ط¥ظٹظ…ظٹظ„ ظ†ظ‡ط§ط¦ظٹط§ظ‹
 if ("email" in updates) {
     return res.status(400).json({
         message: "Use /request-email-change to update email"
@@ -238,47 +244,47 @@ function deactivateSearcher(req, res) {
     });
 }
 
-const verifyAndSave  = (req, res) => {
+const verifyAndSave = (req, res) => {
 
-const { email, verification_code } = req.body;
+    const { email, verification_code } = req.body;
 
-if (!email || !verification_code) {
-  return res.status(400).json({
-    message: "Email and code are required"
-  });
-}
+    if (!email || !verification_code) {
+        return res.status(400).json({
+            message: "Email and code are required"
+        });
+    }
 
     const pending = pendingRegistrations.get(email);
 
     if (!pending) {
-        return res.status(404).json({ 
+        return res.status(404).json({
             message: "No pending registration found. Please register again.",
             hint: "Verification code expires after 1 minutes"
         });
     }
 
-        if (pending.expiresAt < Date.now()) {
+    if (pending.expiresAt < Date.now()) {
         pendingRegistrations.delete(email);
-        return res.status(400).json({ 
+        return res.status(400).json({
             message: "Verification code has expired. Please register again.",
             reason: "Code is only valid for 1 minute"
         });
     }
 
-        if (pending.verification_code  !== verification_code) {
-        return res.status(400).json({ 
+    if (pending.verification_code !== verification_code) {
+        return res.status(400).json({
             message: "Invalid verification code. Please try again.",
             attempts: "You have limited attempts"
         });
     }
 
-        const query = `
+    const query = `
         INSERT INTO searchers
         (full_name, blood_type_research, telephon, email, password, verification_code, is_verified, location, date_of_birth, is_urgent)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
-        db.query(
+    db.query(
         query,
         [
             pending.full_name,
@@ -287,20 +293,20 @@ if (!email || !verification_code) {
             email,
             pending.hashedPassword,
             pending.verification_code,
-            true,  
+            true,
             pending.location,
             pending.date_of_birth,
             pending.is_urgent
         ],
-        (err, result) =>{
+        (err, result) => {
             if (err) {
                 console.error(err);
                 if (err.code === 'ER_DUP_ENTRY') {
-                    return res.status(400).json({ 
+                    return res.status(400).json({
                         message: "Email or phone already exists"
                     });
                 }
-                return res.status(500).json({ 
+                return res.status(500).json({
                     message: "Error saving user to database"
                 });
             }
@@ -316,7 +322,7 @@ if (!email || !verification_code) {
                     blood_type_research: pending.blood_type_research,
                     email: email
                 },
-            savedToDatabase: true
+                savedToDatabase: true
             });
         }
     );
@@ -332,14 +338,14 @@ const resendCode = async (req, res) => {
     const pending = pendingRegistrations.get(email);
 
     if (!pending) {
-        return res.status(404).json({ 
+        return res.status(404).json({
             message: "No pending registration found. Please register again."
         });
     }
 
     const newCode = Math.floor(100000 + Math.random() * 900000).toString();
     pending.verification_code = newCode;
-    pending.expiresAt = Date.now() + (60 * 1000);  
+    pending.expiresAt = Date.now() + (60 * 1000);
     pendingRegistrations.set(email, pending);
 
     const emailSent = await sendVerificationEmail(email, newCode);
@@ -348,8 +354,9 @@ const resendCode = async (req, res) => {
         return res.status(500).json({ message: "Failed to send verification email" });
     }
 
-    res.json({ 
-        message: "âœ“ New verification code sent to your email",
+
+    res.json({
+        message: "✓ New verification code sent to your email",
         expiresIn: "1 minutes"
     });
 };
@@ -386,25 +393,25 @@ const searchSearchers = (req, res) => {
 
 const getAllSearchers = (req, res) => {
 
-const sql = `
+    const sql = `
 SELECT *
 FROM searchers
 `;
 
-db.query(sql, (err, result) => {
+    db.query(sql, (err, result) => {
 
-if (err) {
-return res.status(500).json({
-message: "Error retrieving searchers"
-});
-}
+        if (err) {
+            return res.status(500).json({
+                message: "Error retrieving searchers"
+            });
+        }
 
-res.status(200).json({
-success: true,
-searchers: result
-});
+        res.status(200).json({
+            success: true,
+            searchers: result
+        });
 
-});
+    });
 
 };
 
@@ -421,6 +428,7 @@ const loginSearcher = (req, res) => {
                 message: "Database error"
             });
         }
+
         if (result.length === 0) {
             return res.status(404).json({
                 success: false,
@@ -437,9 +445,17 @@ const loginSearcher = (req, res) => {
                 message: "Incorrect password"
             });
         }
+
+        const token = jwt.sign(
+            { id: searcher.id, email: searcher.email },
+            "SECRET_KEY",
+            { expiresIn: "7d" }
+        );
+
         res.status(200).json({
             success: true,
             message: "Login successful",
+            token,   
             searcher: {
                 id: searcher.id,
                 full_name: searcher.full_name,
@@ -515,17 +531,15 @@ const getSearcherProfile = (req, res) => {
         res.json(result[0]);
     });
 };
-
-// ط·ظ„ط¨ طھط؛ظٹظٹط± ط§ظ„ط¨ط±ظٹط¯ (ط¥ط±ط³ط§ظ„ ط±ظ…ط² ط§ظ„طھط­ظ‚ظ‚)
 const requestEmailChange = async (req, res) => {
-    const { id } = req.params;  // ظ†طµظٹ
+    const { id } = req.params;  
     const { new_email } = req.body;
 
     if (!new_email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(new_email)) {
         return res.status(400).json({ message: "Invalid email address" });
     }
 
-    // طھط­ظ‚ظ‚ ظ…ظ† ط£ظ† ط§ظ„ط¨ط±ظٹط¯ ط§ظ„ط¬ط¯ظٹط¯ ط؛ظٹط± ظ…ط³طھط®ط¯ظ…
+
     const emailCheck = await new Promise((resolve) => {
         db.query("SELECT id FROM searchers WHERE email = ?", [new_email], (err, result) => {
             resolve(result && result.length > 0);
@@ -539,7 +553,6 @@ const requestEmailChange = async (req, res) => {
     const expiresAt = Date.now() + 60 * 1000;
 
 
-    // ًں”‘ ط§ظ„طھط®ط²ظٹظ† ط¨ط§ظ„ظ…ظپطھط§ط­ ط§ظ„ظ†طµظٹ (ظ†ظپط³ req.params.id)
     pendingEmailChanges.set(id, {
         new_email,
         verification_code,
@@ -555,12 +568,11 @@ const requestEmailChange = async (req, res) => {
     res.json({ message: "Verification code sent to new email", email: new_email });
 };
 
-// طھط£ظƒظٹط¯ ط§ظ„ط±ظ…ط² ظˆطھط­ط¯ظٹط« ط§ظ„ط¨ط±ظٹط¯
+
 const confirmEmailChange = (req, res) => {
-    const { id } = req.params;   // ظ†طµظٹ
+    const { id } = req.params;  
     const { verification_code } = req.body;
 
-    // ًں”‘ ط§ظ„ط¨ط­ط« ط¨ط§ط³طھط®ط¯ط§ظ… ط§ظ„ظ…ظپطھط§ط­ ط§ظ„ظ†طµظٹ
     const pending = pendingEmailChanges.get(id);
     if (!pending) {
         return res.status(404).json({ message: "No pending email change request" });
@@ -583,5 +595,24 @@ const confirmEmailChange = (req, res) => {
     });
 };
 
+<<<<<<< HEAD
 module.exports = { requestEmailChange, confirmEmailChange, addSearcher, updateSearcher, deactivateSearcher, verifyAndSave , searchSearchers, getAllSearchers, loginSearcher, logoutSearcher, resendCode, activateSearcher, disactivateSearcher, getSearcherProfile };
 
+=======
+module.exports = {
+    requestEmailChange,
+    confirmEmailChange,
+    addSearcher,
+    updateSearcher,
+    deactivateSearcher,
+    verifyAndSave,
+    searchSearchers,
+    getAllSearchers,
+    loginSearcher,
+    logoutSearcher,
+    resendCode,
+    activateSearcher,
+    disactivateSearcher,
+    getSearcherProfile
+};
+>>>>>>> fec63f1219b24b90e943cda1ba90e2614902c1d0
