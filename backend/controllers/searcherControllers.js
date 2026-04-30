@@ -235,6 +235,7 @@ const verifyAndSave = (req, res) => {
 
 const resendCode = async (req, res) => {
     const { email } = req.body;
+<<<<<<< HEAD
     if (!email) return res.status(400).json({ message: "Email is required" });
     const pending = pendingRegistrations.get(email);
     if (!pending) return res.status(404).json({ message: "No pending registration found. Please register again." });
@@ -242,6 +243,29 @@ const resendCode = async (req, res) => {
     pending.verification_code = newCode;
     pending.expiresAt = Date.now() + 60 * 1000;
     pendingRegistrations.set(email, pending);
+=======
+
+    if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+    }
+
+    const pending = pendingDonors.get(email);
+
+    if (!pending) {
+        return res.status(404).json({
+            message: "No pending registration found. Please register again."
+        });
+    }
+
+    const newCode = Math.floor(100000 + Math.random() * 900000).toString();
+    pending.verification_code = newCode;
+    pending.expiresAt = Date.now() + (60 * 1000);  
+    pendingDonors.set(email, pending);
+
+    pendingRegistrations.set(email, pending);
+fec63f1219b24b90e943cda1ba90e2614902c1d0
+
+>>>>>>> 0ee6041baa6672e4e50305da783fc2112d33c2c8
     const emailSent = await sendVerificationEmail(email, newCode);
     if (!emailSent) return res.status(500).json({ message: "Failed to send verification email" });
     res.json({ message: "✓ New verification code sent to your email", expiresIn: "1 minutes" });

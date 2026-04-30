@@ -3,6 +3,8 @@ const router = express.Router();
 
 const { deactivateSearcher, addSearcher, updateSearcher, searchSearchers, verifyAndSave, getAllSearchers, loginSearcher, logoutSearcher, getSearcherProfile, activateSearcher, disactivateSearcher, requestEmailChange, confirmEmailChange } = require('../controllers/searcherControllers');
 const { validateSearcher, checkValidation } = require("../validators/searcherValidator");
+const { forgotPassword, verifyResetCode, resetPassword,resendCode } = require('../controllers/donorControllers');
+
 
 router.post("/register", validateSearcher, checkValidation, addSearcher);
 router.put("/update/:id", updateSearcher);
@@ -15,6 +17,13 @@ router.post("/logout", logoutSearcher );
 router.put("/activate-searcher/:id", activateSearcher);
 router.put("/deactivate-searcher/:id", disactivateSearcher);
 router.get("/profile/:id", getSearcherProfile);
+
+router.post("/forgot-password", forgotPassword);
+router.post("/verify-reset-code", verifyResetCode);
+router.post("/reset-password", resetPassword);
+router.post("/resend-code", resendCode);
+
+
 router.post("/request-email-change/:id", requestEmailChange);
 router.post("/confirm-email-change/:id", confirmEmailChange);
 
