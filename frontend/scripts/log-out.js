@@ -1,68 +1,80 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // 1. Get the unified data from localStorage
-    const dataString = localStorage.getItem('currentUserSession');
-    
-   
-
-    const userData = JSON.parse(dataString);
-
-    // 2. Select the UI elements on the Log Out page
-    const nameDisplay = document.querySelector('.user-name');
-    const emailDisplay = document.querySelector('.user-email');
-    const badgeDisplay = document.querySelector('.donor-badge span');
-    const avatarContainer = document.querySelector('.avatar-inner');
-
-    // 3. Update Text Content
-    if (nameDisplay) nameDisplay.innerText = userData.userName || "User";
-    if (emailDisplay) emailDisplay.innerText = userData.userEmail || "No email provided";
-    
-    // Update Badge (e.g., "O+ Donor")
-    if (badgeDisplay && userData.userBlood) {
-        badgeDisplay.innerText = `${userData.userBlood} Donor`;
+﻿document.addEventListener('DOMContentLoaded', function() {
+    // جلب بيانات المستخدم من localStorage
+    const userDataStr = localStorage.getItem('currentUserSession');
+    let userData = null;
+    try {
+        userData = JSON.parse(userDataStr);
+    } catch(e) {
+        console.error("Failed to parse user data", e);
     }
 
-    // 4. Handle Avatar (Image vs. Initials)
-    if (avatarContainer) {
-        // Check if the picture is a custom upload (not the default Ellipse image)
-        const hasCustomPhoto = userData.userPic && 
-                               !userData.userPic.includes('Ellipse') && 
-                               userData.userPic.startsWith('blob:'); // blob indicates a recent upload
+    // عناصر الصفحة
+    const nameDisplay = document.querySelector('.user-name');
+    const emailDisplay = document.querySelector('.user-email');
+    const badgeSpan = document.querySelector('.donor-badge span');
+    const avatarContainer = document.querySelector('.avatar-inner');
 
-        if (hasCustomPhoto) {
-            avatarContainer.innerHTML = `
-                <img src="${userData.userPic}" 
-                     style="width:100%; height:100%; border-radius:50%; object-fit:cover;" 
-                     alt="Profile">`;
-        } else if (userData.userName) {
-            // Fallback: Generate Initials
+    // تحديث الاسم
+    if (nameDisplay && userData && userData.userName) {
+        nameDisplay.innerText = userData.userName;
+    } else if (nameDisplay) {
+        nameDisplay.innerText = "User";
+    }
+
+    // تحديث البريد الإلكتروني
+    if (emailDisplay && userData && userData.userEmail) {
+        emailDisplay.innerText = userData.userEmail;
+    } else if (emailDisplay) {
+        emailDisplay.innerText = "No email provided";
+    }
+
+    // تحديث شارة فصيلة الدم
+    if (badgeSpan && userData && userData.userBlood) {
+        badgeSpan.innerText = `${userData.userBlood} Donor`;
+    } else if (badgeSpan) {
+        badgeSpan.innerText = "Donor";
+    }
+
+    // تحديث الصورة (إذا كانت موجودة) أو الأحرف الأولى
+    if (avatarContainer) {
+        // إذا كانت الصورة موجودة في localStorage (وليست الصورة الافتراضية)
+        if (userData && userData.userPic && !userData.userPic.includes('Ellipse')) {
+            avatarContainer.innerHTML = `<img src="${userData.userPic}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;" alt="Profile">`;
+        } else if (userData && userData.userName) {
+            // استخراج الأحرف الأولى
             const initials = userData.userName
                 .split(' ')
                 .map(word => word[0])
                 .join('')
-                .toUpperCase();
+                .toUpperCase()
+                .substring(0, 2);
             avatarContainer.innerText = initials;
             avatarContainer.style.display = 'flex';
             avatarContainer.style.alignItems = 'center';
             avatarContainer.style.justifyContent = 'center';
+            avatarContainer.style.fontSize = '24px';
+            avatarContainer.style.fontWeight = 'bold';
+        } else {
+            avatarContainer.innerText = '?';
         }
     }
 });
+
+// زر تسجيل الخروج وزر الإلغاء
 document.addEventListener('DOMContentLoaded', function () {
-
-    const logoutBtn = document.getElementById("logoutBtn");
-
+    const logoutBtn = document.querySelector(".btn-logout");
     if (logoutBtn) {
         logoutBtn.addEventListener("click", () => {
-
-            
             localStorage.removeItem("currentUserSession");
-
-            
             alert("Logged out successfully");
-
-        
-            window.location.href = "login.html";
+            window.location.href = "home.html";
         });
     }
 
+    const cancelBtn = document.querySelector(".btn-cancel1");
+    if (cancelBtn) {
+        cancelBtn.addEventListener("click", () => {
+            window.history.back();
+        });
+    }
 });

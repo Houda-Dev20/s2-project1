@@ -8,6 +8,7 @@ const { createEligibilityNotification } = require("./notificationController");
 
 const pendingDonors = new Map();
 const resetPasswordRequests = new Map();
+const pendingDonorEmailChanges = new Map();
 
 setInterval(() => {
     const now = Date.now();
@@ -371,10 +372,10 @@ const loginDonor = (req, res) => {
 if (!donor.is_active) {
             return res.status(403).json({ success: false, message: "Your account has been deactivated" });
         }
-       
+
 
         db.query("UPDATE donors SET is_active = 1 WHERE id = ?", [donor.id], (err) => { if (err) console.log(err); });
-        
+
         res.status(200).json({
             success: true,
             message: "Login successful",
@@ -386,7 +387,7 @@ if (!donor.is_active) {
                 blood_type: donor.blood_type,
                 location: donor.location
             },
-         
+
         });
     });
 };
@@ -521,6 +522,71 @@ const resetPassword = async (req, res) => {
 };
 
 
+
+// طلب تغيير البريد للمتبرع (إرسال رمز التحقق)
+const requestEmailChangeDonor = async (req, res) => {
+    const { id } = req.params;
+    const { new_email } = req.body;
+
+    if (!new_email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(new_email)) {
+        return res.status(400).json({ message: "Invalid email address" });
+    }
+
+    // التحقق من أن البريد الجديد غير مستخدم في جدول donors
+    const emailCheck = await new Promise((resolve) => {
+        db.query("SELECT id FROM donors WHERE email = ?", [new_email], (err, result) => {
+            resolve(result && result.length > 0);
+        });
+    });
+    if (emailCheck) {
+        return res.status(400).json({ message: "Email already in use" });
+    }
+
+    const verification_code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + 60 * 1000; 
+
+    pendingDonorEmailChanges.set(id, {
+        new_email,
+        verification_code,
+        expiresAt
+    });
+
+    const emailSent = await sendVerificationEmail(new_email, verification_code, 'donor');
+    if (!emailSent) {
+        pendingDonorEmailChanges.delete(id);
+        return res.status(500).json({ message: "Failed to send verification email" });
+    }
+
+    res.json({ message: "Verification code sent to new email", email: new_email });
+};
+
+// تأكيد الرمز وتحديث البريد للمتبرع
+const confirmEmailChangeDonor = (req, res) => {
+    const { id } = req.params;
+    const { verification_code } = req.body;
+
+    const pending = pendingDonorEmailChanges.get(id);
+    if (!pending) {
+        return res.status(404).json({ message: "No pending email change request" });
+    }
+    if (pending.expiresAt < Date.now()) {
+        pendingDonorEmailChanges.delete(id);
+        return res.status(400).json({ message: "Verification code expired" });
+    }
+    if (pending.verification_code !== verification_code) {
+        return res.status(400).json({ message: "Invalid verification code" });
+    }
+
+    db.query("UPDATE donors SET email = ? WHERE id = ?", [pending.new_email, id], (err) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ message: "Database error" });
+        }
+        pendingDonorEmailChanges.delete(id);
+        res.json({ message: "Email updated successfully", email: pending.new_email });
+    });
+};
+
 module.exports = {
     deactivateDonor,
     addDonor,
@@ -537,5 +603,6 @@ module.exports = {
     forgotPassword,
     verifyResetCode,
     resetPassword,
+    confirmEmailChangeDonor,
+    requestEmailChangeDonor
 };
-

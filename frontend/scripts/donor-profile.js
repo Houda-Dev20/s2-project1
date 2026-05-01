@@ -223,6 +223,11 @@ function setupDonorInfoEdit() {
     editBtn.onclick = async function() {
         const rows = personalCard.querySelectorAll('.data-row');
         if (!isEditing) {
+            // EDIT MODE: تخزين البريد الأصلي
+            const originalEmailSpan = document.getElementById('email');
+            const originalEmail = originalEmailSpan ? originalEmailSpan.innerText : "";
+            editBtn.setAttribute('data-original-email', originalEmail);
+            
             rows.forEach(row => {
                 const valueSpan = row.querySelector('span:last-child');
                 const label = row.querySelector('span:first-child').innerText.toLowerCase();
@@ -242,8 +247,13 @@ function setupDonorInfoEdit() {
             this.innerHTML = "Save";
             isEditing = true;
         } else {
+            // SAVE MODE: جمع البيانات
             const updatedData = {};
             let locationInputValue = "";
+            let emailChanged = false;
+            let newEmailValue = "";
+            const originalEmail = editBtn.getAttribute('data-original-email');
+            
             rows.forEach(row => {
                 const input = row.querySelector('input');
                 const valueSpan = row.querySelector('span:last-child');
@@ -257,10 +267,39 @@ function setupDonorInfoEdit() {
                     }
                     if (label.includes("birth")) updatedData.date_of_birth = newValue;
                     if (label.includes("phone")) updatedData.telephon = newValue;
-                    if (label.includes("email")) updatedData.email = newValue;
+                    if (label.includes("email")) {
+                        if (newValue !== originalEmail) {
+                            emailChanged = true;
+                            newEmailValue = newValue;
+                        }
+                    }
                     if (label.includes("location")) locationInputValue = newValue;
                 }
             });
+            
+            // إذا تغير البريد
+            if (emailChanged) {
+                const session = JSON.parse(localStorage.getItem("currentUserSession"));
+                const userId = session?.userId;
+                if (!userId) { alert("User not found"); return; }
+                const changeUrl = `http://localhost:3000/donors/request-email-change/${userId}`;
+                try {
+                    const res = await fetch(changeUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ new_email: newEmailValue })
+                    });
+                    if (!res.ok) throw new Error(await res.text());
+                    alert("Verification code sent to your new email. Please check your inbox.");
+                    window.location.href = `verificationCode.html?email=${encodeURIComponent(newEmailValue)}&type=email-change&userId=${userId}&role=donor`;
+                    return;
+                } catch(err) {
+                    alert("Error requesting email change: " + err.message);
+                    return;
+                }
+            }
+            
+            // تحويل اسم الولاية إلى رقم
             let wilayaNumber = null;
             if (locationInputValue) {
                 const asNumber = parseInt(locationInputValue, 10);
@@ -276,6 +315,10 @@ function setupDonorInfoEdit() {
                 }
                 updatedData.location = wilayaNumber;
             }
+            
+            // إزالة البريد من البيانات (لأنه لم يتغير أو تمت معالجته)
+            delete updatedData.email;
+            
             const session = JSON.parse(localStorage.getItem("currentUserSession"));
             const userId = session?.userId;
             if (!userId) {
@@ -408,6 +451,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupLogout();
     loadDonorData();
 });
+
 
 
 

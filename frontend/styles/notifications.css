@@ -483,3 +483,9 @@ box-shadow: 0px 4px 20px 0px #00000040;
 .icon-circle.green-bg {
     background-color: #9FCBB5;
 }
+
+
+/* √ÌﬁÊ‰… „„Ì“… ·≈‘⁄«—«  nearby_patient */
+.notif-item .icon-circle.nearby-bg {
+    background-color: #FFA500; /* »— ﬁ«·Ì */
+}
