@@ -109,7 +109,8 @@ if (type === "searcher") {
 localStorage.setItem("currentUserSession", JSON.stringify({
     userId: userId,
     userName: userName,
-     userType: type
+     userType: type,
+    userEmail: emqil
 }))
 
 formView.style.display = 'none';

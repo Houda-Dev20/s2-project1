@@ -7,9 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmDeleteBtn = document.querySelector('.btn-confirm-delete');
 
     function validateForm() {
-        const isPasswordTyped = passwordInput.value.trim().length >=8;
+        const isPasswordTyped = passwordInput.value.trim().length >= 8;
         const isCheckboxChecked = checkbox.checked;
-
         if (isPasswordTyped && isCheckboxChecked) {
             deactivateBtn.disabled = false;
             deactivateBtn.classList.add('active');
@@ -39,49 +38,70 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     confirmDeleteBtn.addEventListener('click', async () => {
-        let donorId = localStorage.getItem('donorId');
-        
-        if (!donorId) {
-            const session = JSON.parse(localStorage.getItem('currentUserSession') || '{}');
-            donorId = session.userId;
-        }
-        
-        if (!donorId) {
+        const session = JSON.parse(localStorage.getItem('currentUserSession') || '{}');
+        const userId = session.userId;
+        const userType = session.userType;
+        const userEmail = session.userEmail;
+
+        if (!userId) {
             alert('Please login first');
             modal.style.display = 'none';
             return;
         }
-        
+
         const enteredPassword = passwordInput.value.trim();
-        
+
         if (!enteredPassword) {
             alert('Please enter your password to confirm');
-            modal.style.display = 'none';
             return;
         }
-        
+
         try {
-            const response = await fetch(`http://localhost:3000/donors/deactivate/${donorId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
+            // 1. تحقق من الباسوورد
+            const verifyUrl = userType === 'searcher'
+                ? 'http://localhost:3000/searchers/login'
+                : 'http://localhost:3000/donors/login';
+
+            const verifyRes = await fetch(verifyUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: userEmail, password: enteredPassword })
             });
-            
+
+            const verifyData = await verifyRes.json();
+
+            // ❌ باسوورد غلط — ابقى في الصفحة
+            if (!verifyData.success) {
+                alert('Incorrect password. Please try again.');
+                modal.style.display = 'none';
+                return;
+            }
+
+            // ✅ باسوورد صح — دير deactivate
+            const deactivateUrl = userType === 'searcher'
+                ? `http://localhost:3000/searchers/deactivate/${userId}`
+                : `http://localhost:3000/donors/deactivate/${userId}`;
+
+            const response = await fetch(deactivateUrl, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
             const data = await response.json();
-            
+
             if (response.ok) {
                 alert('Account deactivated successfully');
                 localStorage.clear();
-                window.location.href = 'login.html';
+                window.location.href = 'home.html'; // ✅ يروح لـ home فقط إذا نجح
             } else {
                 alert(data.message || 'Failed to deactivate account');
+                modal.style.display = 'none';
             }
+
         } catch (error) {
             console.error('Error:', error);
             alert('Network error. Please try again.');
+            modal.style.display = 'none';
         }
-        
-        modal.style.display = 'none';
     });
 });
