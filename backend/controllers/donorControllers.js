@@ -322,7 +322,7 @@ const resendCode = async (req, res) => {
 const searchDonors = (req, res) => {
     const { blood_type, location } = req.body;
     const sql = `
-        SELECT full_name, telephon, blood_type, location
+        SELECT id, full_name, telephon, blood_type, location
         FROM donors
         WHERE blood_type = ? AND location = ?
     `;
@@ -538,3 +538,4 @@ module.exports = {
     verifyResetCode,
     resetPassword,
 };
+

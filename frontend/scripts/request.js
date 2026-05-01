@@ -1,103 +1,96 @@
-// frontend/scripts/donate.js
+﻿
+// قائمة الولايات لتحويل الرقم إلى اسم
+const wilayasList = [
+    "Adrar","Chlef","Laghouat","Oum El Bouaghi","Batna","Bejaia","Biskra","Bechar",
+    "Blida","Bouira","Tamanrasset","Tebessa","Tlemcen","Tiaret","Tizi Ouzou","Algiers",
+    "Djelfa","Jijel","Setif","Saida","Skikda","Sidi Bel Abbes","Annaba","Guelma",
+    "Constantine","Medea","Mostaganem","Msila","Mascara","Ouargla","Oran","El Bayadh",
+    "Illizi","Bordj Bou Arreridj","Boumerdes","El Tarf","Tindouf","Tissemsilt",
+    "El Oued","Khenchela","Souk Ahras","Tipaza","Mila","Ain Defla","Naama",
+    "Ain Temouchent","Ghardaia","Relizane","Timimoun","Bordj Badji Mokhtar","Ouled Djellal",
+    "Beni Abbes","In Salah","In Guezzam","Touggourt","Djanet","El M'Ghair","El Meniaa"
+];
+
+function getWilayaNameById(id) {
+    const numericId = parseInt(id, 10);
+    if (isNaN(numericId) || numericId < 1 || numericId > wilayasList.length) return "Unknown";
+    return wilayasList[numericId - 1];
+}
+
+// frontend/scripts/request.js
 
 document.addEventListener("DOMContentLoaded", async () => {
-    console.log("donate.js loaded");
+    console.log("request.js loaded");
     const urlParams = new URLSearchParams(window.location.search);
-    const searcherId = urlParams.get("searcherId");
-    console.log("searcherId:", searcherId);
+    const donorId = urlParams.get("donorId");
+    console.log("donorId:", donorId);
 
-    if (!searcherId || searcherId === "undefined") {
-        alert("No valid searcher specified.");
+    if (!donorId || donorId === "undefined") {
+        alert("No valid donor specified.");
         return;
     }
 
     try {
-        const response = await fetch(`http://localhost:3000/searchers/profile/${searcherId}`);
-        if (!response.ok) throw new Error("Failed to load searcher data");
-        const searcher = await response.json();
-        console.log("Searcher data:", searcher);
+        const response = await fetch(`http://localhost:3000/donors/profile/${donorId}`);
+        if (!response.ok) throw new Error("Failed to load donor data");
+        const donor = await response.json();
+        console.log("Donor data:", donor);
 
-        // تحديث الصورة
         const profileImg = document.querySelector(".profile-img-container img");
         if (profileImg) {
-            profileImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(searcher.full_name)}&background=FDECEA&color=E8433A&size=128`;
-            profileImg.alt = searcher.full_name;
+            profileImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(donor.full_name)}&background=FDECEA&color=E8433A&size=128`;
+            profileImg.alt = donor.full_name;
         }
 
-        // تحديث الاسم
         const nameEl = document.querySelector(".card-header h2");
-        if (nameEl) nameEl.innerText = searcher.full_name;
+        if (nameEl) nameEl.innerText = donor.full_name;
 
-        // تحديث فصيلة الدم
         const bloodTag = document.querySelector(".blood-type-tag");
-        if (bloodTag) bloodTag.innerHTML = `${searcher.blood_type_research} Blood Type`;
+        if (bloodTag) bloodTag.innerHTML = `${donor.blood_type} Blood Type`;
 
-        // تحديث معلومات الصفوف (info-field)
+        // إخفاء رقم الهاتف والبريد الإلكتروني (الخاصين بالمتبرع)
         const infoFields = document.querySelectorAll(".info-field");
-        if (infoFields.length >= 4) {
-            infoFields[0].querySelector("p").innerText = searcher.telephon;
-            infoFields[1].querySelector("p").innerText = searcher.email;
-            // الحصول على اسم الولاية من الرقم باستخدام try-catch (قد لا يكون المسار موجوداً)
-            let locationName = searcher.location;
-            try {
-                const wilayaRes = await fetch(`http://localhost:3000/utils/wilaya/${searcher.location}`);
-                if (wilayaRes.ok) {
-                    const wilayaData = await wilayaRes.json();
-                    locationName = wilayaData.name;
-                } else {
-                    locationName = "Wilaya " + searcher.location;
-                }
-            } catch(e) { console.warn("Wilaya fetch failed, using number", e); }
+        if (infoFields.length >= 3) {
+            infoFields[0].style.display = "none"; // Phone
+            infoFields[1].style.display = "none"; // Email
+            // عرض الموقع فقط
+            let locationName = getWilayaNameById(donor.location);
             infoFields[2].querySelector("p").innerHTML = `${locationName} — Algeria`;
-            infoFields[3].querySelector("p").innerText = searcher.Hospital_name || "Not specified";
         }
 
-        // تحديث شارة الطوارئ
-        const urgencyBadge = document.querySelector(".urgency-badge");
-        if (urgencyBadge) {
-            if (searcher.is_urgent) {
-                urgencyBadge.innerText = "URGENT REQUEST";
-                urgencyBadge.style.backgroundColor = "#E33E3E";
-            } else {
-                urgencyBadge.innerText = "STABLE REQUEST";
-                urgencyBadge.style.backgroundColor = "#EA9A60";
-            }
-        }
-
-        // إضافة حدث لزر التبرع
         const donateBtn = document.querySelector(".btn-donate");
         if (donateBtn) {
             donateBtn.addEventListener("click", async () => {
-                const donorSession = JSON.parse(localStorage.getItem("currentUserSession"));
-                if (!donorSession || !donorSession.userId) {
-                    alert("You must be logged in as a donor to donate.");
+                const searcherSession = JSON.parse(localStorage.getItem("currentUserSession"));
+                if (!searcherSession || !searcherSession.userId) {
+                    alert("You must be logged in as a patient to request donation.");
                     window.location.href = "login.html";
                     return;
                 }
-                const donorId = donorSession.userId;
+                const searcherId = searcherSession.userId;
 
                 try {
                     const donationRes = await fetch("http://localhost:3000/donations/", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ id_donor: donorId, id_searcher: searcherId })
+                        body: JSON.stringify({ id_donor: donorId, id_searcher: searcherId, initiatedBy: "searcher" })
                     });
                     if (!donationRes.ok) {
                         const err = await donationRes.text();
                         throw new Error(err);
                     }
                     alert("Donation request sent successfully!");
-                    window.location.href = "donor-profile.html";
+                    window.location.href = "patient-profile.html";
                 } catch (err) {
                     console.error(err);
-                    alert("Donation failed: " + err.message);
+                    alert("Failed to send donation request: " + err.message);
                 }
             });
         }
 
     } catch (error) {
-        console.error("Error loading donation details:", error);
-        alert("Error loading donation details: " + error.message);
+        console.error("Error loading donor details:", error);
+        alert("Error loading donor details: " + error.message);
     }
 });
 
@@ -118,3 +111,5 @@ function setupFooterHover() {
     });
 }
 document.addEventListener('DOMContentLoaded', setupFooterHover);
+
+

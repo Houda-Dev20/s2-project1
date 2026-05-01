@@ -299,7 +299,25 @@ async function saveBloodType(newType) {
         await fetch(`http://localhost:3000/searchers/update/${userId}`, {
             method: "PUT", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ blood_type_research: newType })
         });
-    } catch(err) {}
+        // تحديث البيانات المحلية فوراً
+        currentProfileData.blood_type_research = newType;
+        // إعادة حساب فصائل الدم المتوافقة وتحديث الواجهة
+        const compatibleList = getCompatibleBloodTypes(newType);
+        const requestedTypesElem = document.querySelector('.third-div .dd-wrapper .dd-item:last-child');
+        if (requestedTypesElem) {
+            requestedTypesElem.innerText = compatibleList.join(', ');
+        }
+        // تحديث عنصر فصيلة الدم في القائمة العلوية (إذا كان موجوداً)
+        const bloodTypeElem = document.querySelector('.bloodtype-text');
+        if (bloodTypeElem) bloodTypeElem.innerText = newType;
+        // تحديث عنصر #arrow-icon (العنصر الذي يعرض فصيلة الدم)
+        const bloodDiv = document.getElementById('arrow-icon');
+        if (bloodDiv) {
+            if (bloodDiv.childNodes[0]) bloodDiv.childNodes[0].nodeValue = newType;
+            else bloodDiv.innerText = newType;
+        }
+        console.log("Blood type updated to:", newType);
+    } catch(err) { console.error("Error saving blood type:", err); }
 }
 async function saveState(newState) {
     const session = JSON.parse(localStorage.getItem("currentUserSession"));
@@ -507,4 +525,5 @@ window.toggleBloodDropdown = function(e) {
         document.body.classList.remove('dropdown-open');
     }
 };
+
 

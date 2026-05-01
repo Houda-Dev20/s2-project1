@@ -430,3 +430,56 @@ box-shadow: 0px 4px 20px 0px #00000040;
 .btn-cancel:hover{
 box-shadow: 0px 4px 20px 0px #00000040;
 }
+
+
+/*  ‰”Ìﬁ «·≈‘⁄«—«  «·„ﬁ—Ê¡… Ê€Ì— «·„ﬁ—Ê¡… */
+.notif-item.unread {
+    background-color: #FFF8F5;
+    font-weight: 600;
+}
+
+.notif-item.unread .notif-title {
+    font-weight: 700;
+    color: #000;
+}
+
+.notif-item.read {
+    background-color: #FEFAF8;
+    opacity: 0.8;
+}
+
+.notif-item.read .notif-title {
+    font-weight: 400;
+    color: #555;
+}
+
+
+/*  Õ”Ì‰ «· „ÌÌ“ »Ì‰ «·„ﬁ—Ê¡ Ê€Ì— «·„ﬁ—Ê¡ */
+.notif-item.unread {
+    background-color: #FFF5F0;
+    font-weight: 600;
+}
+
+.notif-item.unread .notif-title {
+    font-weight: 700;
+    color: #000;
+}
+
+.notif-item.read {
+    background-color: #FEFAF8;
+    opacity: 0.85;
+}
+
+.notif-item.read .notif-title {
+    font-weight: 400;
+    color: #777;
+}
+
+/* √ÌﬁÊ‰… Õ„—«¡ ·‹ donation_request Ê donor_help_request */
+.icon-circle.red-bg {
+    background-color: #E33E3E;
+}
+
+.icon-circle.green-bg {
+    background-color: #9FCBB5;
+}

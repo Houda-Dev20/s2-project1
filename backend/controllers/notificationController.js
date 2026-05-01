@@ -67,6 +67,16 @@ const getUnreadCount = (req, res) => {
     });
 };
 
+const createDonorHelpRequestNotification = (donorId, searcherName, requiredBloodType, donationId = null) => {
+    createNotification(donorId, "New Help Request", `${searcherName} needs ${requiredBloodType} blood. Please help!`, "donor_help_request", donationId);
+};
+
+
+const createPatientRequestAcceptedNotification = (searcherId, donorName) => {
+    createNotification(searcherId, "Request Accepted", `${donorName} has accepted your donation request.`, "patient_accepted");
+};
+
+
 module.exports = {
     getNotifications,
     createNotification,
@@ -74,8 +84,17 @@ module.exports = {
     createDonationRequestNotification,
     createRequestAcceptedNotification,
     createNearbyPatientNotification,
+    createDonorHelpRequestNotification,
+    createPatientRequestAcceptedNotification,
     markAsRead,
     markAllAsRead,
     getUnreadCount
 };
+
+
+
+
+
+
+
 
