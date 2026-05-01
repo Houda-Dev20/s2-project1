@@ -388,7 +388,7 @@ const loginDonor = (req, res) => {
                 blood_type: donor.blood_type,
                 location: donor.location
             },
-            token: token
+         
         });
     });
 };
