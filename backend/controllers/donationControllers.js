@@ -92,7 +92,31 @@ const getDonorDonations = (req, res) => {
         res.json(results);
     });
 };
-module.exports = { getDonorDonations, handleDonation, acceptDonation };
+
+
+const getSearcherDonations = (req, res) => {
+    const { searcherId } = req.params;
+    const sql = `
+        SELECT d.donation_date, s.Hospital_name
+        FROM donations d
+        JOIN searchers s ON d.id_searcher = s.id
+        WHERE d.id_searcher = ? AND d.status = 'accepted'
+        ORDER BY d.donation_date DESC
+    `;
+    db.query(sql, [searcherId], (err, results) => {
+        if (err) {
+            console.error("Error in getSearcherDonations:", err);
+            return res.status(500).json({ message: "Database error", error: err.message });
+        }
+        res.json(results || []);
+    });
+};
+
+module.exports = { getDonorDonations, handleDonation, acceptDonation, getSearcherDonations };
+
+
+
+
 
 
 

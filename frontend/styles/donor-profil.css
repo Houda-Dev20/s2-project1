@@ -651,3 +651,35 @@ filter: sepia(1) saturate(10000%) hue-rotate(350deg);
     justify-content: center;
     padding: 0 12px;
 }
+
+
+/* تنسيق القائمة المنسدلة لفصائل الدم */
+.blood-dropdown {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    padding: 15px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    position: absolute;
+    z-index: 10000;
+    width: 200px;
+}
+
+.blood-item {
+    text-align: center;
+    padding: 10px 8px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #D97775;
+    transition: all 0.2s;
+}
+
+.blood-item:hover {
+    background-color: #D97775;
+    color: white;
+}

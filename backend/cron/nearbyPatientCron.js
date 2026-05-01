@@ -1,4 +1,4 @@
-const cron = require("node-cron");
+﻿const cron = require("node-cron");
 const db = require("../config/db");
 
 const { createNearbyPatientNotification } = require("../controllers/notificationController");
@@ -21,7 +21,7 @@ const checkNearbyPatients = () => {
 
             const checkSql = `
                 SELECT id FROM notifications 
-                WHERE donor_id = ? AND type = 'nearby_patient'
+                WHERE user_id = ? AND type = 'nearby_patient'
             `;
 
             db.query(checkSql, [row.donorId], (err, res) => {
@@ -38,6 +38,7 @@ const checkNearbyPatients = () => {
 };
 
 cron.schedule("0 * * * *", () => {
-    console.log("🔍 Checking nearby patients...");
+    console.log("ًں”چ Checking nearby patients...");
     checkNearbyPatients();
 });
+
