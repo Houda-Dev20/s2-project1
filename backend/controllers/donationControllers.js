@@ -77,6 +77,22 @@ const acceptDonation = (req, res) => {
     });
 };
 
-module.exports = { handleDonation, acceptDonation };
+
+const getDonorDonations = (req, res) => {
+    const { donorId } = req.params;
+    const sql = `
+        SELECT d.donation_date, d.status, s.full_name AS searcher_name, s.Hospital_name
+        FROM donations d
+        JOIN searchers s ON d.id_searcher = s.id
+        WHERE d.id_donor = ?
+        ORDER BY d.donation_date DESC
+    `;
+    db.query(sql, [donorId], (err, results) => {
+        if (err) return res.status(500).json({ message: "Database error" });
+        res.json(results);
+    });
+};
+module.exports = { getDonorDonations, handleDonation, acceptDonation };
+
 
 

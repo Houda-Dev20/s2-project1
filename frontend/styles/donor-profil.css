@@ -1,4 +1,4 @@
-
+﻿
 body {
     background-color: #F8F8F8; 
     margin: 0;
@@ -42,7 +42,7 @@ body {
 .avatar-wrapper {
     position: relative;
     width: 120px;  
-    height: 120px;
+    height: auto;
 }
 
 .online-indicator {
@@ -65,20 +65,7 @@ body {
     height: 10px;
     object-fit: contain;
 }
-.user-name {
-    font-family: 'Playfair Display', serif;
-    font-size: 40px;         
-    font-weight: 600;        
-    color: #000000;         
-    line-height: 1.1;        
-    letter-spacing : -1.2px;   
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;                
-    margin: 0;                
 
-}
 
 .blood-badge {
     width: 52px;
@@ -260,9 +247,8 @@ body {
     background-color: rgba(0, 0, 0, 0.15);
 }
 
-.history-list {
     width:562px;
-    height: 120px;
+    height: auto;
     display: flex;
     flex-direction: column;
     border: 1px solid #EEE8EA; 
@@ -494,4 +480,174 @@ filter: sepia(1) saturate(10000%) hue-rotate(350deg);
     text-decoration-thickness: 0%;
     text-decoration-skip-ink: auto;
     cursor: pointer;
+}
+
+/* طھط­ط³ظٹظ† ظ…ط¸ظ‡ط± ط³ط¬ظ„ ط§ظ„طھط¨ط±ط¹ط§طھ */
+    width: 100%;
+    max-width: 562px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #EEE8EA;
+    border-radius: 10px;
+    background: #FFFFFF;
+    box-shadow: 0px 4px 40px 0px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+
+.history-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 15px;
+    border-bottom: 1px solid #EEE8EA;
+}
+
+.history-item:last-child {
+    border-bottom: none;
+}
+
+.icon-blood {
+    width: 40px !important;
+    height: 40px !important;
+    object-fit: contain;
+}
+
+.history-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.donation-date {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+.donation-hospital {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: #6B7280;
+    margin: 0;
+}
+
+.show-more-icon {
+    background: none !important;
+    border: none !important;
+    color: #D97775 !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.show-more-icon:hover {
+    opacity: 0.7;
+}
+
+
+
+/* تخصيص شريط التمرير لقائمة التبرعات */
+.history-list::-webkit-scrollbar {
+    width: 6px;
+}
+.history-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+.history-list::-webkit-scrollbar-thumb {
+    background: #D97775;
+    border-radius: 10px;
+}
+.history-list::-webkit-scrollbar-thumb:hover {
+    background: #b55a58;
+}
+.history-list {
+    max-height: 130px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #EEE8EA;
+    border-radius: 10px;
+    box-shadow: 0px 4px 40px 0px rgba(0, 0, 0, 0.15);
+    background: white;
+}
+
+.history-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    min-height: 40px;
+    border-bottom: 1px solid #EEE8EA;
+    padding: 0 10px;
+}
+
+.history-item:last-child {
+    border-bottom: none;
+}
+
+/* Fix donation history layout */
+
+/* إصلاح عرض سجل التبرعات: التاريخ في سطر، المستشفى في سطر جديد */
+.history-text {
+    display: block;
+    flex: 1;
+}
+.history-text span {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+.history-text p {
+    display: block;
+    margin: 0;
+    font-size: 12px;
+    color: #555;
+}
+
+/* Donation history layout: date above, hospital below */
+.history-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.history-text span {
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 1.2;
+}
+.history-text p {
+    margin: 0;
+    font-size: 12px;
+    color: #555;
+    line-height: 1.2;
+}
+
+
+.user-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 600;
+    color: #000000;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 8px 0;
+}
+.blood-badge {
+    width: auto;
+    min-width: 52px;
+    height: 32px;
+    background: #8CC7AE;
+    color: #FFFFFF;
+    border-radius: 16px;
+    font-size: 16px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
 }

@@ -522,6 +522,7 @@ const resetPassword = async (req, res) => {
     }
 };
 
+
 module.exports = {
     deactivateDonor,
     addDonor,
@@ -537,5 +538,5 @@ module.exports = {
     resendCode,
     forgotPassword,
     verifyResetCode,
-    resetPassword
+    resetPassword,
 };
