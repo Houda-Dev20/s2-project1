@@ -45,11 +45,9 @@ function renderNotifications(notifications) {
     if (!elements.list) return;
     const user = getCurrentUser();
     const isDonor = user?.userType === 'donor';
-    // تصفية الإشعارات حسب نوع المستخدم وحالة القراءة (غير مقروء فقط)
-    let filtered = notifications.filter(n => !n.is_read); // فقط غير المقروءة
+    let filtered = notifications.filter(n => !n.is_read); 
     if (isDonor) {
-        filtered = filtered.filter(n => n.type === 'request_accepted');
-    } else if (user?.userType === 'searcher') {
+        filtered = filtered.filter(n => n.type === 'request_accepted' || n.type === 'eligibility');    } else if (user?.userType === 'searcher') {
         filtered = filtered.filter(n => n.type === 'donation_request');
     }
     if (!filtered.length) {
@@ -136,6 +134,20 @@ if (elements.list) {
                 };
             }
         }
+        else if (notifType === 'eligibility') {
+    if (confirm("90 days have passed. Do you want to reactivate your account?")) {
+        const user = getCurrentUser();
+        if (user?.userId) {
+            const res = await fetch(`http://localhost:3000/donors/active/${user.userId}`, { method: 'POST' });
+            if (res.ok) {
+                alert("Account reactivated. You can now donate again.");
+                fetchNotifications();
+            } else {
+                alert("Failed to reactivate.");
+            }
+        }
+    }
+}
     });
 }
 
@@ -149,5 +161,7 @@ document.addEventListener('click', (e) => {
 if (document.getElementById('closeModal')) {
     document.getElementById('closeModal').onclick = () => { if (elements.modal) elements.modal.style.display = 'none'; };
 }
+
+
 
 

@@ -20,7 +20,7 @@ const createEligibilityNotification = (donor) => {
     const lastDate = new Date(donor.last_donation_date);
     const now = new Date();
     const diffDays = (now - lastDate) / (1000 * 60 * 60 * 24);
-    if (diffDays >= 90 && donor.available == 0) {
+    if (diffDays >= 90 && donor.is_active == 0) {
         const checkSql = "SELECT id FROM notifications WHERE user_id = ? AND type = 'eligibility'";
         db.query(checkSql, [donor.id], (err, result) => {
             if (err) return console.log(err);
@@ -78,3 +78,4 @@ module.exports = {
     markAllAsRead,
     getUnreadCount
 };
+

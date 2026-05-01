@@ -399,7 +399,7 @@ const logoutDonor = (req, res) => {
 
 const activateDonor = (req, res) => {
     const { id } = req.params;
-    db.query("UPDATE donors SET available = 1 WHERE id = ?", [id], (err, result) => {
+    db.query("UPDATE donors SET is_active = 1 WHERE id = ?", [id], (err, result) => {
         if (err) return res.status(500).json({ message: "error" });
         if (result.affectedRows === 0) return res.status(404).json({ message: "Donor not found" });
         res.json({ message: "Donor activated successfully" });
@@ -408,7 +408,7 @@ const activateDonor = (req, res) => {
 
 const disactivateDonor = (req, res) => {
     const { id } = req.params;
-    const sql = `UPDATE donors SET available = 0 WHERE id = ?`;
+    const sql = `UPDATE donors SET is_active = 0 WHERE id = ?`;
     db.query(sql, [id], (err, result) => {
         if (err) return res.status(500).json({ message: "error" });
         if (result.affectedRows === 0) return res.status(404).json({ message: "Donor not found" });
