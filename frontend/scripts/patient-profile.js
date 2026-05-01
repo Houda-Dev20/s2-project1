@@ -35,6 +35,21 @@ function isValidDate(dateString) {
     return date instanceof Date && !isNaN(date) && dateString === date.toISOString().split('T')[0];
 }
 
+// دالة لحساب فصائل الدم المتوافقة للتبرع للمحتاج
+function getCompatibleBloodTypes(patientBloodType) {
+    const compatibility = {
+        'O-': ['O-', 'O+', 'A-', 'A+', 'B-', 'B+', 'AB-', 'AB+'],
+        'O+': ['O+', 'A+', 'B+', 'AB+'],
+        'A-': ['A-', 'A+', 'AB-', 'AB+'],
+        'A+': ['A+', 'AB+'],
+        'B-': ['B-', 'B+', 'AB-', 'AB+'],
+        'B+': ['B+', 'AB+'],
+        'AB-': ['AB-', 'AB+'],
+        'AB+': ['AB+']
+    };
+    return compatibility[patientBloodType] || [patientBloodType];
+}
+
 // جلب طلبات التبرع الخاصة بالمحتاج (المقبولة فقط)
 async function fetchRequestHistory(searcherId) {
     try {
@@ -101,32 +116,47 @@ async function loadSearcherProfile() {
         if (locationSpan) locationSpan.innerText = locationName;
         if (memberSpan) memberSpan.innerText = "Member since " + (data.created_at ? new Date(data.created_at).getFullYear() : "2026");
 
-        const ddItems = document.querySelectorAll('.dd-wrapper .dd-item');
-        if (ddItems.length >= 6) {
-            ddItems[0].innerText = data.full_name;
-            ddItems[1].innerText = formatDate(data.date_of_birth) || "";
-            ddItems[2].innerText = data.telephon || "";
-            ddItems[3].innerText = data.email || "";
-            ddItems[4].innerText = locationName;
-            ddItems[5].innerText = data.Hospital_name || "";
-        }
-        const bloodBox = document.getElementById('arrow-icon');
-        if (bloodBox && data.blood_type_research) {
-            if (bloodBox.childNodes[0]) bloodBox.childNodes[0].nodeValue = data.blood_type_research;
-            else bloodBox.innerText = data.blood_type_research;
-        }
-        const stateBox = document.getElementById('state-icon');
-        if (stateBox) {
-            const isUrgent = data.is_urgent === 1 || data.is_urgent === true;
-            const stateText = isUrgent ? "Urgent" : "Stable";
-            if (stateBox.childNodes[0]) stateBox.childNodes[0].nodeValue = stateText;
-            else stateBox.innerText = stateText;
-            stateBox.style.color = isUrgent ? "#E33E3E" : "#EA9A60";
+        // ========== المعلومات الشخصية (القسم الأول) ==========
+        const personalWrapper = document.querySelector('.second-div .dd-wrapper');
+        if (personalWrapper) {
+            const personalItems = personalWrapper.querySelectorAll('.dd-item');
+            if (personalItems.length >= 6) {
+                personalItems[0].innerText = data.full_name;           // Full Name
+                personalItems[1].innerText = formatDate(data.date_of_birth) || "";
+                personalItems[2].innerText = data.telephon || "";
+                personalItems[3].innerText = data.email || "";
+                personalItems[4].innerText = locationName;
+                personalItems[5].innerText = data.Hospital_name || ""; // Hospital name
+            }
         }
 
-        const requestedTypesElem = document.querySelector('.dd-wrapper .dd-item:last-child');
-        if (requestedTypesElem && data.blood_type_research) {
-            requestedTypesElem.innerText = data.blood_type_research;
+        // ========== معلومات الدم (القسم الثاني) ==========
+        const bloodWrapper = document.querySelector('.third-div .dd-wrapper');
+        if (bloodWrapper) {
+            const bloodItems = bloodWrapper.querySelectorAll('.dd-item');
+            if (bloodItems.length >= 3) {
+                // العنصر الأول: فصيلة الدم (مع السهم)
+                const bloodBox = bloodItems[0];
+                if (bloodBox && data.blood_type_research) {
+                    if (bloodBox.childNodes[0]) bloodBox.childNodes[0].nodeValue = data.blood_type_research;
+                    else bloodBox.innerText = data.blood_type_research;
+                }
+                // العنصر الثاني: الحالة (Urgent/Stable)
+                const stateBox = bloodItems[1];
+                if (stateBox) {
+                    const isUrgent = data.is_urgent === 1 || data.is_urgent === true;
+                    const stateText = isUrgent ? "Urgent" : "Stable";
+                    if (stateBox.childNodes[0]) stateBox.childNodes[0].nodeValue = stateText;
+                    else stateBox.innerText = stateText;
+                    stateBox.style.color = isUrgent ? "#E33E3E" : "#EA9A60";
+                }
+                // العنصر الثالث: Requested Types (فصائل الدم المتوافقة)
+                const requestedTypesElem = bloodItems[2];
+                if (requestedTypesElem && data.blood_type_research) {
+                    const compatibleList = getCompatibleBloodTypes(data.blood_type_research);
+                    requestedTypesElem.innerText = compatibleList.join(', ');
+                }
+            }
         }
 
         fetchRequestHistory(user.userId);
@@ -156,12 +186,12 @@ function showList() {
 }
 
 function setupCheckboxes() {
-    // لا حاجة لـ checkbox بعد الآن، نتركها فارغة لتجنب الأخطاء
+    // لا حاجة لـ checkbox بعد الآن
 }
 
 // ----- إعداد القوائم المنسدلة (لفصيلة الدم والحالة) -----
 document.addEventListener('DOMContentLoaded', function() {
-    // إنشاء القائمة المنسدلة لفصيلة الدم (بنفس طريقة المتبرع)
+    // القائمة المنسدلة لفصيلة الدم
     const pencilIcon = document.getElementById('arrow-icon');
     const bloodContainer = pencilIcon ? pencilIcon.closest('.dd-item5-1') : null;
     if (pencilIcon && bloodContainer) {
@@ -178,7 +208,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td class="blood-item" style="padding:18px 10px; text-align:center; color:#D97775; font-weight:bold; border-bottom:1px solid black;">B-</td></tr>
                 <tr style="cursor: pointer;"><td class="blood-item" style="padding:18px 10px; text-align:center; color:#D97775; font-weight:bold; border-right:1px solid black;">AB+</td>
                 <td class="blood-item" style="padding:18px 10px; text-align:center; color:#D97775; font-weight:bold;">AB-</td></tr>
-              </table>`;
+            </table>`;
         bloodContainer.appendChild(bloodDropdown);
         const items = bloodDropdown.querySelectorAll('.blood-item');
         items.forEach(item => {
@@ -208,26 +238,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.body.classList.remove('dropdown-open');
             }
         }
-        pencilIcon.onclick = function(e) {
-            e.stopPropagation();
-            const isVisible = bloodDropdown.style.display === 'block';
-            if (!isVisible) {
-                bloodDropdown.style.display = 'block';
-                bloodContainer.style.border = "1px solid black";
-                bloodContainer.style.borderBottom = "none";
-                bloodContainer.style.borderRadius = "10px 10px 0 0";
-                bloodContainer.style.backgroundColor = "white";
-                document.body.classList.add('dropdown-open');
-            } else {
-                closeBloodDropdown();
-            }
-        };
+        // pencilIcon.onclick تم تعطيله لأن onclick في HTML أصبح يستخدم toggleBloodDropdown
         document.addEventListener('click', function(e) {
             if (!bloodContainer.contains(e.target)) closeBloodDropdown();
         });
     }
 
-    // القائمة المنسدلة للحالة (تظل كما هي)
+    // القائمة المنسدلة للحالة
     const stateDropdown = document.createElement('div');
     stateDropdown.id = 'stateDropdown';
     stateDropdown.className = 'state-dropdown';
@@ -237,7 +254,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.body.appendChild(stateDropdown);
 });
 
-// دوال مساعدة للقوائم المنسدلة
 function getZoomLevel() { return document.body.getBoundingClientRect().width / document.body.offsetWidth || 1; }
 function toggleStateDropdown() {
     const dropdown = document.getElementById('stateDropdown');
@@ -297,7 +313,6 @@ async function saveState(newState) {
     } catch(err) {}
 }
 
-// إغلاق القوائم عند النقر خارجها
 document.addEventListener('click', function(e) {
     const bloodDropdown = document.getElementById('bloodDropdown');
     const stateDropdown = document.getElementById('stateDropdown');
@@ -356,7 +371,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// زر تعديل المعلومات الشخصية (Edit / Save)
+// زر تعديل المعلومات الشخصية
 document.addEventListener('DOMContentLoaded', () => {
     const editBtn = document.querySelector('.edit2-div');
     let isEdited = false;
@@ -392,7 +407,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // SAVE MODE
         console.log("SAVE MODE");
         const originalEmail = editBtn.getAttribute('data-original-email');
         let emailChanged = false;
@@ -440,7 +454,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // إذا لم يتغير البريد، نرسل تحديث باقي الحقول
         console.log("Email unchanged, normal update");
         delete updatedData.email;
         updatedData.blood_type_research = document.querySelector('.bloodtype-text')?.innerText.trim() || currentProfileData.blood_type_research;
@@ -470,5 +483,28 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// تحميل الملف الشخصي عند بدء الصفحة
 loadSearcherProfile();
+
+// دالة لفتح/إغلاق القائمة المنسدلة لفصيلة الدم (يتم استدعاؤها من onclick الجديد)
+window.toggleBloodDropdown = function(e) {
+    if (e) e.stopPropagation();
+    const dropdown = document.getElementById('bloodDropdown');
+    const container = document.getElementById('arrow-icon')?.closest('.dd-item5-1');
+    if (!dropdown || !container) return;
+    const isVisible = dropdown.style.display === 'block';
+    if (!isVisible) {
+        dropdown.style.display = 'block';
+        container.style.border = "1px solid black";
+        container.style.borderBottom = "none";
+        container.style.borderRadius = "10px 10px 0 0";
+        container.style.backgroundColor = "white";
+        document.body.classList.add('dropdown-open');
+    } else {
+        dropdown.style.display = 'none';
+        container.style.border = "none";
+        container.style.borderRadius = "0";
+        container.style.backgroundColor = "transparent";
+        document.body.classList.remove('dropdown-open');
+    }
+};
+
