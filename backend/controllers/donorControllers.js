@@ -368,12 +368,10 @@ const loginDonor = (req, res) => {
         if (!donor.is_verified) {
             return res.status(403).json({ message: "Please verify your email first" });
         }
-
-        const token = jwt.sign(
-            { id: donor.id, email: donor.email },
-            process.env.JWT_SECRET || process.env.ESI_SBA_SECRET_KEY || "fallback_secret_key",
-            { expiresIn: '24h' }
-        );
+if (!donor.is_active) {
+            return res.status(403).json({ success: false, message: "Your account has been deactivated" });
+        }
+       
 
         db.query("UPDATE donors SET is_active = 1 WHERE id = ?", [donor.id], (err) => { if (err) console.log(err); });
         
