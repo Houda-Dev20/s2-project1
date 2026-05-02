@@ -205,7 +205,7 @@ async function performSearch() {
                             </span>
                             <span>
                                 <img src="images/VectorLocation.svg" alt="Location" class="metre">
-                                📞 ${searcher.telephon}
+                                📞  Will be shown after acceptance
                             </span>
                         </div>
                         <div class="map-preview"><div class="map-placeholder">🗺️ Map preview</div></div>

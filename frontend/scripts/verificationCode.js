@@ -110,7 +110,7 @@ localStorage.setItem("currentUserSession", JSON.stringify({
     userId: userId,
     userName: userName,
      userType: type,
-    userEmail: emqil
+    userEmail: email
 }))
 
 formView.style.display = 'none';

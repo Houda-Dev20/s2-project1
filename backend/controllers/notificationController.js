@@ -35,8 +35,9 @@ const createDonationRequestNotification = (searcherId, donorName, bloodType, don
     createNotification(searcherId, "New Donation Request", `${donorName} wants to donate ${bloodType} for you`, "donation_request", donationId);
 };
 
-const createRequestAcceptedNotification = (donorId, searcherName) => {
-    createNotification(donorId, "Your request was accepted", `${searcherName} accepted your donation request`, "request_accepted");
+const createRequestAcceptedNotification = (donorId, searcherName, searcherPhone) => {
+    const message = `${searcherName} accepted your donation request. Contact them at: ${searcherPhone}`;
+    createNotification(donorId, "Request Accepted", message, "request_accepted");
 };
 
 const createNearbyPatientNotification = (donorId) => {
@@ -72,10 +73,27 @@ const createDonorHelpRequestNotification = (donorId, searcherName, requiredBlood
 };
 
 
-const createPatientRequestAcceptedNotification = (searcherId, donorName) => {
-    createNotification(searcherId, "Request Accepted", `${donorName} has accepted your donation request.`, "patient_accepted");
+const createPatientRequestAcceptedNotification = (searcherId, donorName, donorPhone) => {
+    const message = `${donorName} has accepted your donation request. Contact him/her at: ${donorPhone}`;
+    createNotification(searcherId, "Request Accepted", message, "patient_accepted");
 };
 
+// عندما يقبل المتبرع طلب مساعدة من محتاج
+const createDonorAcceptedNotification = (donorId, searcherName, searcherPhone) => {
+    const message = `You accepted a help request from ${searcherName}. Contact them at: ${searcherPhone}`;
+    createNotification(donorId, "Request Accepted", message, "request_accepted");
+};
+
+// عندما يقبل المحتاج طلب تبرع من متبرع (إشعار للمحتاج)
+const createSearcherAcceptedNotification = (searcherId, donorName, donorPhone) => {
+    const message = `You accepted a donation offer from ${donorName}. Contact them at: ${donorPhone}`;
+    createNotification(searcherId, "Request Accepted", message, "patient_accepted");
+};
+
+const createDonationOfferAcceptedNotification = (donorId, searcherName, searcherPhone) => {
+    const message = `Your donation offer was accepted by ${searcherName}. Contact them at: ${searcherPhone}`;
+    createNotification(donorId, "Offer Accepted", message, "request_accepted");
+};
 
 module.exports = {
     getNotifications,
@@ -88,7 +106,10 @@ module.exports = {
     createPatientRequestAcceptedNotification,
     markAsRead,
     markAllAsRead,
-    getUnreadCount
+    getUnreadCount,
+    createSearcherAcceptedNotification,
+    createDonorAcceptedNotification,
+    createDonationOfferAcceptedNotification
 };
 
 

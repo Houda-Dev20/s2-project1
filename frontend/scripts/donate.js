@@ -1,4 +1,4 @@
-﻿// frontend/scripts/donate.js
+// frontend/scripts/donate.js
 
 document.addEventListener("DOMContentLoaded", async () => {
     console.log("donate.js loaded");
@@ -17,41 +17,40 @@ document.addEventListener("DOMContentLoaded", async () => {
         const searcher = await response.json();
         console.log("Searcher data:", searcher);
 
-        // تحديث الصورة
+        // ����� ������
         const profileImg = document.querySelector(".profile-img-container img");
         if (profileImg) {
             profileImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(searcher.full_name)}&background=FDECEA&color=E8433A&size=128`;
             profileImg.alt = searcher.full_name;
         }
 
-        // تحديث الاسم
         const nameEl = document.querySelector(".card-header h2");
         if (nameEl) nameEl.innerText = searcher.full_name;
 
-        // تحديث فصيلة الدم
         const bloodTag = document.querySelector(".blood-type-tag");
         if (bloodTag) bloodTag.innerHTML = `${searcher.blood_type_research} Blood Type`;
 
-        // تحديث معلومات الصفوف (info-field)
-        const infoFields = document.querySelectorAll(".info-field");
-        if (infoFields.length >= 4) {
-            infoFields[0].querySelector("p").innerText = searcher.telephon;
-            infoFields[1].querySelector("p").innerText = searcher.email;
-            let locationName = searcher.location;
-            try {
-                const wilayaRes = await fetch(`http://localhost:3000/utils/wilaya/${searcher.location}`);
-                if (wilayaRes.ok) {
-                    const wilayaData = await wilayaRes.json();
-                    locationName = wilayaData.name;
-                } else {
-                    locationName = "Wilaya " + searcher.location;
-                }
-            } catch(e) { console.warn("Wilaya fetch failed, using number", e); }
-            infoFields[2].querySelector("p").innerHTML = `${locationName} — Algeria`;
-            infoFields[3].querySelector("p").innerText = searcher.Hospital_name || "Not specified";
+const infoFields = document.querySelectorAll(".info-field");
+if (infoFields.length >= 4) {
+    const phoneField = infoFields[0];
+    phoneField.querySelector("p").innerText = "Available after request acceptance";
+    
+    infoFields[1].querySelector("p").innerText = "Available after request acceptance";
+    let locationName = searcher.location;
+    try {
+        const wilayaRes = await fetch(`http://localhost:3000/utils/wilaya/${searcher.location}`);
+        if (wilayaRes.ok) {
+            const wilayaData = await wilayaRes.json();
+            locationName = wilayaData.name;
+        } else {
+            locationName = "Wilaya " + searcher.location;
         }
+    } catch(e) { console.warn("Wilaya fetch failed, using number", e); }
+    infoFields[2].querySelector("p").innerHTML = `${locationName} � Algeria`;
+    infoFields[3].querySelector("p").innerText = searcher.Hospital_name || "Not specified";
+}
 
-        // تحديث شارة الطوارئ
+        // ����� ���� �������
         const urgencyBadge = document.querySelector(".urgency-badge");
         if (urgencyBadge) {
             if (searcher.is_urgent) {
@@ -63,7 +62,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
         }
 
-        // إضافة حدث لزر التبرع
+        // ����� ��� ��� ������
         const donateBtn = document.querySelector(".btn-donate");
         if (donateBtn) {
             donateBtn.addEventListener("click", async () => {
@@ -73,7 +72,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     window.location.href = "login.html";
                     return;
                 }
-                // التحقق من أن المستخدم متبرع وليس محتاج
+                // ������ �� �� �������� ����� ���� �����
                 if (donorSession.userType === "searcher") {
                     alert("Only donors can donate. Please log in as a donor.");
                     window.location.href = "login.html";

@@ -92,8 +92,11 @@ function renderNotifications(notifications) {
     const isDonor = user?.userType === 'donor';
     let filtered = notifications; // عرض كل الإشعارات (المقروء وغير المقروء)
     if (isDonor) {
-filtered = filtered.filter(n => n.type === 'request_accepted' || n.type === 'eligibility' || n.type === 'donor_help_request');    } else if (user?.userType === 'searcher') {
-filtered = filtered.filter(n => n.type === 'donation_request' || n.type === 'patient_accepted' || n.type === 'request_accepted');    }
+        filtered = filtered.filter(n => n.type === 'request_accepted' || n.type === 'eligibility' || n.type === 'donor_help_request');
+    } else if (user?.userType === 'searcher') {
+        filtered = filtered.filter(n => n.type === 'donation_request' || n.type === 'patient_accepted');
+    }
+
     if (!filtered.length) {
         elements.list.innerHTML = "";
         if (elements.empty) elements.empty.style.display = 'flex';
@@ -150,24 +153,31 @@ if (elements.list) {
         const donationId = item.dataset.donationId;
         if (!isRead) await markAsRead(id);
         if (notifType === 'donation_request' && elements.modal) {
-            elements.modal.style.display = 'flex';
-            if (elements.acceptBtn) {
-                const newAcceptBtn = elements.acceptBtn.cloneNode(true);
-                elements.acceptBtn.parentNode.replaceChild(newAcceptBtn, elements.acceptBtn);
-                elements.acceptBtn = newAcceptBtn;
-                elements.acceptBtn.onclick = async () => {
-                    if (donationId) {
-                        try {
-                            const res = await fetch(`http://localhost:3000/donations/accept/${donationId}`, { method: 'POST' });
-                            if (res.ok) alert("Donation accepted! The donor has been notified.");
-                            else alert("Failed to accept donation.");
-                        } catch(e) { alert("Error"); }
-                    } else alert("Donation ID missing.");
-                    elements.modal.style.display = 'none';
-                };
-            }
-
+    // هذا الإشعار يصل للمحتاج (طلب من متبرع) -> المحتاج هو من سيقبل
+    elements.modal.style.display = 'flex';
+    if (elements.acceptBtn) {
+        const newAcceptBtn = elements.acceptBtn.cloneNode(true);
+        elements.acceptBtn.parentNode.replaceChild(newAcceptBtn, elements.acceptBtn);
+        elements.acceptBtn = newAcceptBtn;
+        elements.acceptBtn.onclick = async () => {
+            if (donationId) {
+                try {
+                    // استخدم المسار الخاص بقبول المحتاج لطلب المتبرع
+                    const res = await fetch(`http://localhost:3000/donations/accept-by-searcher/${donationId}`, { method: 'POST' });
+                    if (res.ok) {
+                        alert("Donation accepted! The donor has been notified with your phone number.");
+                        elements.modal.style.display = 'none';
+                        fetchNotifications(); // تحديث الإشعارات
+                    } else {
+                        alert("Failed to accept donation.");
+                    }
+                } catch(e) { alert("Error"); }
+            } else alert("Donation ID missing.");
+            elements.modal.style.display = 'none';
+        };
+    }
 } else if (notifType === 'donor_help_request') {
+    // هذا الإشعار يصل للمتبرع (طلب من محتاج) -> المتبرع هو من سيقبل
     let donationId = item.dataset.donationId;
     console.log("donationId from dataset:", donationId);
     if (!donationId) {
@@ -192,15 +202,15 @@ if (elements.list) {
             if (elements.modalLocation) elements.modalLocation.innerText = getWilayaNameById(searcher.location) || "Unknown";
             if (elements.modalMsg) elements.modalMsg.innerText = `Needs ${searcher.blood_type_research} blood. Hospital: ${searcher.Hospital_name || "Not specified"}. Urgent: ${searcher.is_urgent ? "Yes" : "No"}`;
             if (elements.acceptBtn) {
-                // إزالة المستمع القديم وإضافة جديد
                 const newAcceptBtn = elements.acceptBtn.cloneNode(true);
                 elements.acceptBtn.parentNode.replaceChild(newAcceptBtn, elements.acceptBtn);
                 elements.acceptBtn = newAcceptBtn;
                 elements.acceptBtn.onclick = async () => {
                     try {
-                        const acceptRes = await fetch(`http://localhost:3000/donations/accept/${donationId}`, { method: 'POST' });
+                        // استخدم المسار الخاص بقبول المتبرع لطلب المحتاج
+                        const acceptRes = await fetch(`http://localhost:3000/donations/accept-by-donor/${donationId}`, { method: 'POST' });
                         if (acceptRes.ok) {
-                            alert("Donation accepted. Patient has been notified.");
+                            alert("Donation accepted. Patient has been notified with your phone number.");
                             elements.modal.style.display = 'none';
                             fetchNotifications(); // تحديث القائمة
                         } else {
@@ -214,6 +224,7 @@ if (elements.list) {
         console.error("Error loading patient details:", err);
         alert("Could not load patient details.");
     }
+
 
         } else if (notifType === 'eligibility') {
             if (confirm("90 days have passed. Do you want to reactivate your account?")) {

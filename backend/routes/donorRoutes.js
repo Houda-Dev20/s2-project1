@@ -19,26 +19,23 @@ const {
     confirmEmailChangeDonor
 } = require('../controllers/donorControllers');
 
-// ========== مسارات المتبرعين ==========
-router.post('/donors/register', addDonor);
-router.post('/donors/verify', verifyAndSaveDonor);
-router.post('/donors/resend-code', resendCode);
-router.post('/donors/login', loginDonor);
-router.post('/donors/logout', logoutDonor);
-router.get('/donors/all', getAllDonors);
-router.get('/donors/profile/:id', getDonorProfile);
-router.put('/donors/:id', updateDonor);
-router.delete('/donors/:id/deactivate', disactivateDonor);
-router.post('/donors/:id/activate', activateDonor);
-router.post('/donors/search', searchDonors);
+router.post('/register', addDonor);
+router.post('/verify', verifyAndSaveDonor);
+router.post('/resend-code', resendCode);
+router.post('/login', loginDonor);
+router.post('/logout', logoutDonor);
+router.get('/all', getAllDonors);
+router.get('/profile/:id', getDonorProfile);
+router.put('/update/:id', updateDonor);
+router.delete('/:id/deactivate', disactivateDonor);
+router.post('/:id/activate', activateDonor);
+router.post('/search', searchDonors);
 
-// ========== مسارات تغيير البريد ==========
-router.post('/donors/request-email-change/:id', requestEmailChangeDonor);
-router.post('/donors/confirm-email-change/:id', confirmEmailChangeDonor);
+router.post('/request-email-change/:id', requestEmailChangeDonor);
+router.post('/confirm-email-change/:id', confirmEmailChangeDonor);
 
-// ========== مسارات استعادة كلمة المرور ==========
-router.post('/donors/forgot-password', forgotPassword);
-router.post('/donors/verify-reset-code', verifyResetCode);
-router.post('/donors/reset-password', resetPassword);
+router.post('/forgot-password', forgotPassword);
+router.post('/verify-reset-code', verifyResetCode);
+router.post('/reset-password', resetPassword);
 
 module.exports = router;
