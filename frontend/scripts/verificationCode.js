@@ -1,11 +1,42 @@
+// verificationCode.js - يدعم التسجيل الجديد وتغيير البريد الإلكتروني
 
 document.addEventListener("DOMContentLoaded", () => {
-    const type = new URLSearchParams(window.location.search).get("type");
-    const email = new URLSearchParams(window.location.search).get("email");
-    document.getElementById("user-email").textContent = email;
-    
-    window.verifyEmail = email;
+    const params = new URLSearchParams(window.location.search);
+    const type = params.get("type");           // "donor", "searcher", or "email-change"
+    const email = params.get("email");
+    const userId = params.get("userId");
+    const role = params.get("role");           // "donor" or "searcher" when type=email-change
+
+    let displayText = "";
+    let isEmailChange = false;
+    let actualUserId = null;
+    let actualRole = null;
+
+    if (type === "email-change" && userId && role) {
+        // حالة تغيير البريد
+        isEmailChange = true;
+        actualUserId = userId;
+        actualRole = role;   // "donor" أو "searcher"
+        displayText = `Account ID: ${userId}`;
+    } else if ((type === "donor" || type === "searcher") && email) {
+        // حالة التسجيل الجديد
+        isEmailChange = false;
+        displayText = email;
+    } else {
+        // معاملات غير صالحة
+        document.getElementById("user-email").innerText = "Invalid request";
+        console.error("Invalid parameters:", { type, email, userId, role });
+        return;
+    }
+
+    document.getElementById("user-email").innerText = displayText;
+
+    // تخزين المتغيرات العامة
     window.verifyType = type;
+    window.verifyEmail = email;
+    window.isEmailChange = isEmailChange;
+    window.emailChangeUserId = actualUserId;
+    window.emailChangeRole = actualRole;
 });
 
 const inputs = document.querySelectorAll('.otp-input');
@@ -16,7 +47,7 @@ const successView = document.getElementById('success-view');
 
 let isResendTimerRunning = false;
 
-// ── OTP navigation ──
+// التنقل بين حقول OTP
 inputs.forEach((inp, i) => {
     inp.addEventListener('keydown', e => {
         if (e.key === 'Backspace' && !inp.value && i > 0) {
@@ -29,14 +60,10 @@ inputs.forEach((inp, i) => {
 
     inp.addEventListener('input', (e) => {
         let val = e.target.value.replace(/\D/g, '');
-        if (val.length > 1) {
-            val = val[0];
-        }
+        if (val.length > 1) val = val[0];
         inp.value = val;
         inp.classList.toggle('filled', !!val);
-        if (val && i < inputs.length - 1) {
-            inputs[i + 1].focus();
-        }
+        if (val && i < inputs.length - 1) inputs[i + 1].focus();
         updateBtn();
     });
 
@@ -59,79 +86,98 @@ inputs.forEach((inp, i) => {
 
 function updateBtn() {
     const full = [...inputs].every(i => i.value);
-    console.log("All filled:", full);
     verifyBtn.disabled = !full;
 }
 
-// ── Verify ──
+// ── زر التحقق ──
 verifyBtn.addEventListener('click', async function(e) {
     addRipple(e, this);
+    const code = [...inputs].map(i => i.value).join('');
 
-  const code = [...inputs].map(i => i.value).join('');
-
-  verifyBtn.textContent = 'Verifying...';
-  verifyBtn.disabled = true;
+    verifyBtn.textContent = 'Verifying...';
+    verifyBtn.disabled = true;
 
     try {
+        const isEmailChange = window.isEmailChange;
+        const userId = window.emailChangeUserId;
+        const role = window.emailChangeRole;
         const email = window.verifyEmail;
         const type = window.verifyType;
 
-    const url = type === "searcher"
-      ? "http://localhost:3000/searchers/verify"
-      : "http://localhost:3000/donors/verify";
+        let url, body, response;
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        email: email,
-        verification_code: code
-      })
-    });
+        if (isEmailChange && userId && role) {
+            // حالة تغيير البريد
+            url = `http://localhost:3000/${role}s/confirm-email-change/${userId}`;
+            body = { verification_code: code };
+            response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+        } else if ((type === "donor" || type === "searcher") && email) {
+            // حالة التسجيل الجديد
+            url = `http://localhost:3000/${type}s/verify`;
+            body = { email: email, verification_code: code };
+            response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+        } else {
+            throw new Error("Invalid verification request. Please go back and try again.");
+        }
 
-const data = await response.json();
+        const data = await response.json();
 
-if (!response.ok) {
-  throw new Error(data.message || "Verification failed");
-}
+        if (!response.ok) {
+            throw new Error(data.message || "Verification failed");
+        }
 
-let userId, userName;
-if (type === "searcher") {
-    userId = data.searcherId;
-    userName = data.searcher.full_name;
-} else {
-    userId = data.donorId;
-    userName = data.donor.full_name;
-}
+        if (isEmailChange) {
+            // نجاح تغيير البريد
+            alert("✓ Email updated successfully! You will be redirected to your profile.");
+            // تحديث البريد في localStorage إذا وجد
+            const session = JSON.parse(localStorage.getItem("currentUserSession"));
+            if (session && data.email) {
+                session.userEmail = data.email;
+                localStorage.setItem("currentUserSession", JSON.stringify(session));
+            }
+            setTimeout(() => {
+                if (role === "donor") window.location.href = "donor-profile.html";
+                else window.location.href = "patient-profile.html";
+            }, 1500);
+        } else {
+            // نجاح التسجيل الجديد
+            let userId, userName;
+            if (type === "searcher") {
+                userId = data.searcherId;
+                userName = data.searcher.full_name;
+            } else {
+                userId = data.donorId;
+                userName = data.donor.full_name;
+            }
 
-localStorage.setItem("currentUserSession", JSON.stringify({
-    userId: userId,
-    userName: userName,
-     userType: type,
-    userEmail: email
-}))
+            localStorage.setItem("currentUserSession", JSON.stringify({
+                userId: userId,
+                userName: userName,
+                userType: type,
+                userEmail: email
+            }));
 
-formView.style.display = 'none';
-successView.classList.add('show');
+            formView.style.display = 'none';
+            successView.classList.add('show');
 
-setTimeout(() => {
-  const type = new URLSearchParams(window.location.search).get("type");
-
-  if (type === "searcher") {
-    window.location.href = "patient-profile.html";
-  } else {
-    window.location.href = "donor-profile.html";
-  }
-}, 2000);
-
-  } catch (err) {
-    alert(err.message);
-
-    verifyBtn.textContent = 'Verify';
-    verifyBtn.disabled = false;
-  }
+            setTimeout(() => {
+                const redirect = (type === "searcher") ? "patient-profile.html" : "donor-profile.html";
+                window.location.href = redirect;
+            }, 2000);
+        }
+    } catch (err) {
+        alert(err.message);
+        verifyBtn.textContent = 'Verify';
+        verifyBtn.disabled = false;
+    }
 });
 
 function addRipple(e, btn) {
@@ -144,50 +190,52 @@ function addRipple(e, btn) {
     r.addEventListener('animationend', () => r.remove());
 }
 
+// ── إعادة إرسال الكود (للتسجيل فقط، لتغيير البريد نطلب من المستخدم العودة) ──
 resendBtn.addEventListener('click', async () => {
     if (isResendTimerRunning) {
         alert(`Please wait ${resendBtn.textContent} before resending`);
         return;
     }
-    
+
+    const isEmailChange = window.isEmailChange;
+    if (isEmailChange) {
+        alert("For email change, please go back to your profile and request a new code again.");
+        return;
+    }
+
     const email = window.verifyEmail;
     const type = window.verifyType;
-    
-    if (!email) {
+
+    if (!email || !type) {
         alert('Email not found. Please go back and try again.');
         return;
     }
-    
+
     try {
         resendBtn.disabled = true;
         resendBtn.textContent = 'Sending...';
-        
-        const url = type === "searcher"
-            ? "http://localhost:3000/searchers/resend-code"
-            : "http://localhost:3000/donors/resend-code";
-        
+
+        const url = `http://localhost:3000/${type}s/resend-code`;
         const response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: email })
         });
-        
+
         const data = await response.json();
-        
+
         if (response.ok) {
             alert('✓ New verification code sent to your email');
-            
             inputs.forEach(i => {
                 i.value = '';
                 i.classList.remove('filled');
             });
             inputs[0].focus();
             updateBtn();
-            
+
             isResendTimerRunning = true;
             let sec = 60;
             resendBtn.textContent = `Resend (${sec}s)`;
-            
             const timer = setInterval(() => {
                 sec--;
                 if (sec > 0) {
@@ -212,5 +260,4 @@ resendBtn.addEventListener('click', async () => {
     }
 });
 
-// auto-focus first
 inputs[0].focus();

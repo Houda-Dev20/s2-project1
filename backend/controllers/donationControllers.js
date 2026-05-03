@@ -91,11 +91,9 @@ const acceptDonationByDonor = (req, res) => {
                 const { createDonorAcceptedNotification } = require('./notificationController');
                 createDonorAcceptedNotification(donorId, searcherName, searcherPhone);
 
-                // إشعار للمحتاج (صاحب الطلب) - "Your request was accepted by DONOR_NAME. Contact them at: PHONE"
                 const { createPatientRequestAcceptedNotification } = require('./notificationController');
                 createPatientRequestAcceptedNotification(searcherId, donorName, donorPhone);
 
-                // حذف إشعار الطلب القديم (donor_help_request)
                 db.query("DELETE FROM notifications WHERE donation_id = ? AND type = 'donor_help_request'", [id], () => {});
 
                 res.json({ message: "Donation accepted by donor, both parties notified" });
@@ -104,7 +102,6 @@ const acceptDonationByDonor = (req, res) => {
     });
 };
 
-// ======================== قبول المحتاج لعرض متبرع (الطلب بدأ بواسطة donor) ========================
 const acceptDonationBySearcher = (req, res) => {
     const { id } = req.params;
     db.query("UPDATE donations SET status = 'accepted' WHERE id = ?", [id], (err, result) => {
