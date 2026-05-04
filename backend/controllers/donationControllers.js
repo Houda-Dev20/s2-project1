@@ -1,7 +1,24 @@
 ﻿const db = require('../config/db');
 const { createDonationRequestNotification, createDonorAcceptedNotification, createRequestAcceptedNotification, createDonorHelpRequestNotification, createPatientRequestAcceptedNotification,createDonationOfferAcceptedNotification } = require('./notificationController');
 
-const handleDonation = (req, res) => {
+// التحقق من وجود طلب معلق بين متبرع ومحتاج (مع إمكانية تضمين الـ id للاستثناء)
+const checkPendingDonation = (donorId, searcherId, excludeId = null) => {
+    return new Promise((resolve, reject) => {
+        let sql = "SELECT id, status FROM donations WHERE id_donor = ? AND id_searcher = ? AND status = 'pending'";
+        const params = [donorId, searcherId];
+        if (excludeId) {
+            sql += " AND id != ?";
+            params.push(excludeId);
+        }
+        db.query(sql, params, (err, rows) => {
+            if (err) return reject(err);
+            resolve(rows.length > 0 ? rows[0] : null);
+        });
+    });
+};
+
+// دالة إنشاء طلب جديد (مُعدلة)
+const handleDonation = async (req, res) => {
     let { id_donor, id_searcher, initiatedBy } = req.body;
 
     if (!id_donor || !id_searcher) {
@@ -10,6 +27,21 @@ const handleDonation = (req, res) => {
 
     const initiator = (initiatedBy === 'searcher') ? 'searcher' : 'donor';
 
+    // التحقق من وجود طلب معلق
+    try {
+        const existing = await checkPendingDonation(id_donor, id_searcher);
+        if (existing) {
+            return res.status(409).json({ 
+                message: "A pending donation request already exists between this donor and patient.",
+                donationId: existing.id
+            });
+        }
+    } catch(err) {
+        console.error(err);
+        return res.status(500).json({ message: "Database error while checking existing requests" });
+    }
+
+    // باقي التحقق من التوافق والوجود
     db.query("SELECT * FROM donors WHERE id = ?", [id_donor], (err, donorResult) => {
         if (err) return res.status(500).json({ message: "Database error" });
         if (donorResult.length === 0) return res.status(404).json({ message: "Donor not found" });
@@ -52,6 +84,64 @@ const handleDonation = (req, res) => {
                 }
             );
         });
+    });
+};
+
+
+const getDonationStatus = (req, res) => {
+    const { donorId, searcherId } = req.query;
+    if (!donorId || !searcherId) {
+        return res.status(400).json({ message: "Missing donorId or searcherId" });
+    }
+    db.query(
+        `SELECT id, status, initiated_by 
+         FROM donations 
+         WHERE id_donor = ? AND id_searcher = ? 
+         ORDER BY id DESC LIMIT 1`,
+        [donorId, searcherId],
+        (err, rows) => {
+            if (err) return res.status(500).json({ message: "Database error" });
+            if (rows.length === 0) {
+                return res.json({ hasRequest: false });
+            }
+            const donation = rows[0];
+            res.json({ 
+                hasRequest: true, 
+                donationId: donation.id, 
+                status: donation.status,
+                initiatedBy: donation.initiated_by
+            });
+        }
+    );
+};
+
+const cancelDonation = (req, res) => {
+    const { id } = req.params;
+    
+    // أولاً: حذف الإشعارات المرتبطة بهذا الطلب
+    db.query("DELETE FROM notifications WHERE donation_id = ?", [id], (deleteErr) => {
+        if (deleteErr) {
+            console.error("Error deleting notifications:", deleteErr);
+            // لا نوقف التنفيذ، فقط نسجل الخطأ
+        }
+        
+        // ثانياً: تحديث حالة الطلب إلى cancelled
+        db.query(
+            "UPDATE donations SET status = 'cancelled' WHERE id = ? AND status = 'pending'",
+            [id],
+            (err, result) => {
+                if (err) {
+                    console.error(err);
+                    return res.status(500).json({ message: "Database error" });
+                }
+                if (result.affectedRows === 0) {
+                    return res.status(404).json({ message: "No pending donation found to cancel" });
+                }
+                // حذف الإشعارات مرة أخرى للتأكد (إذا فشلت الأولى)
+                db.query("DELETE FROM notifications WHERE donation_id = ?", [id], () => {});
+                res.json({ message: "Donation request cancelled successfully and notifications removed" });
+            }
+        );
     });
 };
 
@@ -192,7 +282,7 @@ const getDonationById = (req, res) => {
     });
 };
 
- module.exports = {getDonorDonations, handleDonation, acceptDonationBySearcher, acceptDonationByDonor, getSearcherDonations, getDonationById  };
+ module.exports = {checkPendingDonation, getDonationStatus,cancelDonation,getDonorDonations, handleDonation, acceptDonationBySearcher, acceptDonationByDonor, getSearcherDonations, getDonationById  };
 
 
 
