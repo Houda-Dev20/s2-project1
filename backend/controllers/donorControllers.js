@@ -385,7 +385,9 @@ if (!donor.is_active) {
                 email: donor.email,
                 telephon: donor.telephon,
                 blood_type: donor.blood_type,
-                location: donor.location
+                location: donor.location,
+                //update
+                profile_picture: donor.profile_picture
             },
 
         });
@@ -417,7 +419,9 @@ const disactivateDonor = (req, res) => {
 
 const getDonorProfile = (req, res) => {
     const { id } = req.params;
-    const sql = "SELECT * FROM donors WHERE id = ?";
+    //update
+    const sql = "SELECT id, full_name, blood_type, telephon, email, location, date_of_birth, profile_picture, available, is_active, last_donation_date, created_at FROM donors WHERE id = ?";
+
     db.query(sql, [id], (err, result) => {
         if (err) return res.status(500).json({ message: "error" });
         if (result.length === 0) {
