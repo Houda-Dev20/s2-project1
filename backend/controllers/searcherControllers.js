@@ -4,6 +4,7 @@ const sendVerificationEmail = require("../utils/sendEmail");
 const { ALGERIA_WILAYAS } = require('../utils/constants');
 const jwt = require("jsonwebtoken");
 
+
 const pendingRegistrations = new Map();
 const pendingEmailChanges = new Map();
 
@@ -75,12 +76,40 @@ const updateSearcher = async (req, res) => {
         }
         if (updates.password) updates.password = await bcrypt.hash(updates.password, 10);
 
-        const allowedFields = ["full_name", "telephon", "location", "date_of_birth", "Hospital_name", "blood_type_research", "is_urgent"];
+        const allowedFields = ["full_name", "telephon", "location", "date_of_birth", "Hospital_name", "blood_type_research", "is_urgent", "latitude","longitude"];
+
         const filteredUpdates = {};
-        for (let key of allowedFields) if (updates[key] !== undefined) filteredUpdates[key] = updates[key];
-        const fields = Object.keys(filteredUpdates).map(key => `${key}=?`).join(", ");
+       // 1. copy allowed fields first
+for (let key of allowedFields) {
+    if (updates[key] !== undefined) {
+        filteredUpdates[key] = updates[key];
+    }
+}
+
+// 2. enrich hospital → coordinates (IMPORTANT FIX)
+if (filteredUpdates.Hospital_name) {
+    const hospital = await new Promise((resolve, reject) => {
+        db.query(
+            "SELECT latitude, longitude FROM hospitals WHERE LOWER(hospital_name) LIKE LOWER(?) LIMIT 1",
+            [`%${filteredUpdates.Hospital_name}%`],
+            (err, result) => {
+                if (err) return reject(err);
+                resolve(result[0]);
+            }
+        );
+    });
+
+    if (hospital) {
+        filteredUpdates.latitude = hospital.latitude;
+        filteredUpdates.longitude = hospital.longitude;
+    } else {
+        console.log("Hospital not found in DB");
+    }
+}
+      const fields = Object.keys(filteredUpdates).map(key => `${key}=?`).join(", ");
         const values = Object.values(filteredUpdates);
         const query = `UPDATE searchers SET ${fields} WHERE id=?`;
+        console.log("UPDATE DATA:", filteredUpdates);
         db.query(query, [...values, id], (err, result) => {
             if (err) return res.status(500).json({ message: "Error updating searcher" });
             if (result.affectedRows === 0) return res.status(404).json({ message: "Searcher not found" });
@@ -167,10 +196,11 @@ const loginSearcher = (req, res) => {
         const searcher = result[0];
         const match = await bcrypt.compare(password, searcher.password);
         if (!match) return res.status(401).json({ success: false, message: "Incorrect password" });
+        const token = jwt.sign({ id: searcher.id, email: searcher.email }, process.env.JWT_SECRET || "fallback", { expiresIn: '24h' });
 
 db.query("UPDATE searchers SET is_active = 1 WHERE id = ?", [searcher.id], (err) => { if (err) console.log(err); });
 
-        res.status(200).json({ success: true, message: "Login successful", searcher: { id: searcher.id, full_name: searcher.full_name, email: searcher.email, telephon: searcher.telephon, blood_type: searcher.blood_type, location: searcher.location },});
+        res.status(200).json({ success: true, message: "Login successful", searcher: { id: searcher.id, full_name: searcher.full_name, email: searcher.email, telephon: searcher.telephon, blood_type: searcher.blood_type, location: searcher.location }, token });
     });
 };
 
@@ -232,9 +262,34 @@ const confirmEmailChange = (req, res) => {
         res.json({ message: "Email updated successfully", email: pending.new_email });
     });
 };
+const getMapSearchers = (req, res) => {
+    const sql = `
+        SELECT 
+            id,
+            full_name,
+            blood_type_research,
+            latitude,
+            longitude,
+            Hospital_name,
+            is_urgent,
+            created_at
+        FROM searchers
+        WHERE latitude IS NOT NULL 
+        AND longitude IS NOT NULL
+        AND is_active = 1
+    `;
 
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error("Map searchers error:", err);
+            return res.status(500).json({ message: "Server error" });
+        }
+
+        res.json(results);
+    });
+};//update
 module.exports = {
     requestEmailChange, confirmEmailChange, addSearcher, updateSearcher, deactivateSearcher,
     verifyAndSave, searchSearchers, getAllSearchers, loginSearcher, logoutSearcher, resendCode,
-    activateSearcher, disactivateSearcher, getSearcherProfile
+    activateSearcher, disactivateSearcher, getSearcherProfile,getMapSearchers
 };

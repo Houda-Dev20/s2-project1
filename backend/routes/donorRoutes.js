@@ -16,7 +16,8 @@ const {
     verifyResetCode,
     resetPassword,
     requestEmailChangeDonor,
-    confirmEmailChangeDonor
+    confirmEmailChangeDonor,
+    getMapDonors
 } = require('../controllers/donorControllers');
 
 router.post('/register', addDonor);
@@ -30,6 +31,7 @@ router.put('/update/:id', updateDonor);
 router.delete('/:id/deactivate', disactivateDonor);
 router.post('/:id/activate', activateDonor);
 router.post('/search', searchDonors);
+router.get("/map-data", getMapDonors);
 
 router.post('/request-email-change/:id', requestEmailChangeDonor);
 router.post('/confirm-email-change/:id', confirmEmailChangeDonor);

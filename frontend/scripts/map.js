@@ -1,26 +1,126 @@
-// 1. DATA
-var donations = [
-    { lat: 36.152, lng: 5.690, type: "O+"},
-    { lat: 36.155, lng: 5.700, type: "B+"},
-    { lat: 36.140, lng: 5.695, type: "O-"}
-];
+// =========================
+// 1. معرفة نوع المستخدم
+// =========================
+function getUserRole() {
+    const session = localStorage.getItem('currentUserSession');
+    if (!session) return null;
+    try {
+        const user = JSON.parse(session);
+        if (user.userType) return user.userType;
+        if (user.blood_type) return 'donor';
+        if (user.blood_type_research) return 'searcher';
+        return null;
+    } catch(e) { return null; }
+}
 
-// 2. SETUP MAP
-var map = L.map('map', {
-    zoomControl: false 
-}).setView([36.152, 5.690], 14); 
+// =========================
+// 2. تهيئة الخريطة (مركز مؤقت)
+// =========================
+var map = L.map('map', { zoomControl: false }).setView([36.152, 5.690], 13); // سطيف مؤقتاً
 
+// طبقة الخريطة
 L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
     maxZoom: 20,
-    subdomains:['mt0','mt1','mt2','mt3'],
-    detectRetina: true,
+    subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
     attribution: 'Map data © Google'
 }).addTo(map);
 
-// 3. ICON FACTORY
+setTimeout(() => { map.invalidateSize(); }, 300);
+
+// =========================
+// 3. تحديد الموقع (مرة واحدة فقط، وسيتم تحديث الخريطة إذا نجح)
+// =========================
+let locationRetrieved = false;
+
+function getAndSetUserLocation() {
+    if (locationRetrieved) return;
+    if (!navigator.geolocation) {
+        alert("Your browser does not support geolocation.");
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            map.setView([lat, lng], 14);
+            // إضافة ماركر للمستخدم
+            if (window.userMarker) map.removeLayer(window.userMarker);
+            window.userMarker = L.marker([lat, lng], {
+                icon: L.icon({
+                    iconUrl: 'images/VectorLoc.svg',
+                    iconSize: [30, 30],
+                    popupAnchor: [0, -10]
+                })
+            }).addTo(map).bindPopup("You are here").openPopup();
+            locationRetrieved = true;
+            console.log("Location set to:", lat, lng);
+            // إعادة حساب المسافات في البوب أب (اختياري)
+            refreshDistances();
+        },
+        (error) => {
+            console.warn("Geolocation error:", error.message);
+            let msg = "Could not get your location. Click the 📍 button to try again.";
+            if (error.code === 1) msg = "Location access denied. Please allow it via the lock icon next to the URL, then click the 📍 button.";
+            alert(msg);
+            // إضافة زر تحديد الموقع يظهر بشكل دائم
+            addLocationButtonPermanent();
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+    );
+}
+
+// وظيفة لتحديث المسافات في البوب أب لكل الماركرات (إذا أردت)
+function refreshDistances() {
+    const center = map.getCenter();
+    map.eachLayer(layer => {
+        if (layer instanceof L.Marker && layer !== window.userMarker) {
+            const latlng = layer.getLatLng();
+            const distance = (center.distanceTo(latlng) / 1000).toFixed(1);
+            // تحديث البوب أب - يمكن إعادة ربطه ولكنها معقدة، الأسهل إعادة تحميل البيانات
+        }
+    });
+}
+
+// إضافة زر دائم لتحديد الموقع في حال الفشل
+function addLocationButtonPermanent() {
+    if (document.getElementById('static-locate-btn')) return;
+    const btn = document.createElement('button');
+    btn.id = 'static-locate-btn';
+    btn.innerHTML = '📍 Locate Me';
+    btn.style.position = 'absolute';
+    btn.style.bottom = '30px';
+    btn.style.right = '10px';
+    btn.style.zIndex = '1000';
+    btn.style.padding = '8px 12px';
+    btn.style.backgroundColor = '#e74c3c';
+    btn.style.color = 'white';
+    btn.style.border = 'none';
+    btn.style.borderRadius = '30px';
+    btn.style.cursor = 'pointer';
+    btn.style.fontWeight = 'bold';
+    btn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.3)';
+    btn.onclick = () => {
+        locationRetrieved = false;
+        getAndSetUserLocation();
+        btn.remove();
+    };
+    document.querySelector('.map-page').appendChild(btn);
+}
+
+// محاولة تحديد الموقع عند التحميل (مرة واحدة)
+setTimeout(() => {
+    getAndSetUserLocation();
+}, 500);
+
+// =========================
+// 4. أيقونة نقاط الدم
+// =========================
 function createBloodIcon(type) {
     return L.divIcon({
         className: 'custom-marker-wrapper',
+        iconSize: [55, 75],
+        iconAnchor: [27.5, 75],
         html: `
             <div class="marker-container">
                 <div class="ripple">
@@ -29,115 +129,122 @@ function createBloodIcon(type) {
                     <div class="ring ring-3"></div>
                 </div>
                 <div class="blood-marker"><span>${type}</span></div>
-            </div>`,
-        iconSize: [55, 75],
-        iconAnchor: [27, 75] 
+            </div>
+        `,
     });
 }
 
-// 4. THE LOOP WITH POPUPS
-
-async function initMapWithData() {
+// =========================
+// 5. جلب وعرض المحتاجين
+// =========================
+async function loadSearchersOnMap() {
     try {
-        // 1. Fetch data from your backend
         const response = await fetch('http://localhost:3000/searchers/map-data');
-        if (!response.ok) throw new Error('Network response was not ok');
-        
+        if (!response.ok) throw new Error('Failed to fetch searchers');
         const searchers = await response.json();
-        
-        // 2. Get the current center of the map to calculate distances
-        const mapCenter = map.getCenter();
 
-        searchers.forEach(person => {
-            // Validate coordinates exist to prevent Leaflet errors
-            if (!person.latitude || !person.longitude) return;
+        console.log("Searchers fetched:", searchers); // ✅ طباعة البيانات
 
-            const personLatLng = L.latLng(person.latitude, person.longitude);
+        if (!searchers.length) {
+            console.log('No searchers to display');
+            const msgDiv = document.createElement('div');
+            msgDiv.innerHTML = 'No patients with location data found.';
+            msgDiv.style.position = 'absolute';
+            msgDiv.style.bottom = '20px';
+            msgDiv.style.left = '20px';
+            msgDiv.style.backgroundColor = 'rgba(0,0,0,0.7)';
+            msgDiv.style.color = 'white';
+            msgDiv.style.padding = '5px 10px';
+            msgDiv.style.borderRadius = '5px';
+            msgDiv.style.zIndex = '1000';
+            document.querySelector('.map-page').appendChild(msgDiv);
+            setTimeout(() => msgDiv.remove(), 3000);
+            return;
+        }
 
-            // 3. Calculate real-time distance (meters to km)
-            const distance = (mapCenter.distanceTo(personLatLng) / 1000).toFixed(1);
+        const currentUserRole = getUserRole();
+        const isDonor = (currentUserRole === 'donor');
+        console.log("User role:", currentUserRole, "isDonor:", isDonor);
 
-            // 4. Create the custom blood drop marker
-            const marker = L.marker([person.latitude, person.longitude], { 
-                icon: createBloodIcon(person.blood_type_research) 
+        searchers.forEach(searcher => {
+            if (!searcher.latitude || !searcher.longitude) {
+                console.log("Skipping searcher with missing coordinates:", searcher);
+                return;
+            }
+
+            console.log("Adding marker for:", searcher.full_name, searcher.latitude, searcher.longitude);
+
+            const marker = L.marker([parseFloat(searcher.latitude), parseFloat(searcher.longitude)], {
+                icon: createBloodIcon(searcher.blood_type_research || 'O+')
             }).addTo(map);
 
-            // 5. Format the "Created At" date
-            const dateStr = new Date(person.created_at).toLocaleDateString('en-GB', {
-                day: '2-digit', 
-                month: 'short', 
-                year: 'numeric'
-            });
+            const mapCenter = map.getCenter();
+            const latlng = L.latLng(searcher.latitude, searcher.longitude);
+            const distance = (mapCenter.distanceTo(latlng) / 1000).toFixed(1);
+            const dateStr = searcher.created_at
+                ? new Date(searcher.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+                : '';
 
-            // 6. Build the Popup HTML (Matching your Figma exactly)
+            let buttonHtml = '';
+            if (isDonor) {
+                buttonHtml = `<button class="view-request-btn" onclick="goToDonate(${searcher.id})">View Request ></button>`;
+            } else {
+                buttonHtml = `<div class="no-action-msg" style="text-align:center; color:#888; padding:8px;">You cannot request from another patient</div>`;
+            }
+
             const popupContent = `
                 <div class="donor-card-popup">
                     <div class="card-header">
-                        <img src="images/Rectangle.svg" class="card-avatar" alt="Profile">
+                        <img src="images/Rectangle.svg" class="card-avatar">
                         <div class="card-title-group">
                             <div class="name-row">
-                                <span class="card-name">${person.full_name}</span>
-                                <span class="blood-badge">${person.blood_type_research}</span>
+                                <span class="card-name">${escapeHtml(searcher.full_name) || 'Unknown'}</span>
+                                <span class="blood-badge">${escapeHtml(searcher.blood_type_research) || ''}</span>
                             </div>
-                            ${person.is_urgent ? '<div class="urgency-badge">High Urgency</div>' : ''}
+                            ${searcher.is_urgent ? '<div class="urgency-badge">High Urgency</div>' : ''}
                         </div>
                     </div>
-                    
                     <div class="card-details">
                         <div class="detail-row">
-                            <img src="images/Vector P.svg" class="icon">
-                            <span class="text-main">Nearby, Sétif</span>
-                            <span class="text-sub dis">${distance} km away</span>
+                            <span class="text-main">Nearby Location</span>
+                            <span class="text-sub">${distance} km away</span>
                         </div>
-
                         <div class="detail-row">
-                            <img src="images/uil_hospital.svg" class="icon">
-                            <span class="text-main">${person.Hospital_name || 'General Hospital'}</span>
+                            <span class="text-main">${escapeHtml(searcher.Hospital_name) || 'Hospital'}</span>
                         </div>
-
                         <div class="detail-row">
-                            <img src="images/material-symbols-light_post-add.svg" class="icon">
-                            <span class="text-sub text-sub1">Request Sent</span>
-                            <span class="text-sub date">${dateStr}</span>
+                            <span class="text-sub">Posted: ${dateStr}</span>
                         </div>
                     </div>
-                    
-                    <button class="view-request-btn" onclick="goToRequest(${person.id})">
-                        View Request >
-                    </button>
+                    ${buttonHtml}
                 </div>
             `;
 
-            // 7. Bind and Style the Popup
             marker.bindPopup(popupContent, {
                 closeButton: false,
                 className: 'custom-leaflet-popup',
-                minWidth: 400,
-                maxWidth: 400,
-                offset: [0, -70]
+                minWidth: 300,
+                maxWidth: 300
             });
         });
-
     } catch (err) {
-        console.error("Critical Error: Could not load searcher data onto map:", err);
+        console.error('Error loading searchers:', err);
+        alert('Failed to load patients on map.');
     }
 }
-
-// Global function to handle button clicks inside the popup
-function goToRequest(id) {
-    console.log("Navigating to request ID:", id);
-    window.location.href = `request-details.html?id=${id}`;
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
 }
 
-// Call the function to start
-initMapWithData();
-document.addEventListener('DOMContentLoaded', function() {
-    const currentPage = window.location.pathname.split('/').pop() ;
-    
-    document.querySelectorAll('.taps').forEach(link => {
-        if (link.getAttribute('href') === currentPage) {
-            link.classList.add('active');
-        }
-    });
-});
+function goToDonate(searcherId) {
+    window.location.href = `donate.html?searcherId=${searcherId}`;
+}
 
+// بدء تحميل البيانات (المحتاجين)
+loadSearchersOnMap();

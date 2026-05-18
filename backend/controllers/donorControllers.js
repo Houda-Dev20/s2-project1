@@ -587,6 +587,28 @@ const confirmEmailChangeDonor = (req, res) => {
     });
 };
 
+const getMapDonors = (req, res) => {
+    const sql = `
+        SELECT 
+            id,
+            full_name,
+            blood_type,
+            latitude,
+            longitude,
+            location AS wilaya,
+            is_active,
+            created_at
+        FROM donors
+        WHERE latitude IS NOT NULL 
+        AND longitude IS NOT NULL
+        AND is_active = 1
+    `;
+    db.query(sql, (err, results) => {
+        if (err) return res.status(500).json({ message: "Server error" });
+        res.json(results);
+    });
+};
+
 module.exports = {
     deactivateDonor,
     addDonor,
@@ -604,5 +626,6 @@ module.exports = {
     verifyResetCode,
     resetPassword,
     confirmEmailChangeDonor,
-    requestEmailChangeDonor
+    requestEmailChangeDonor,
+    getMapDonors
 };

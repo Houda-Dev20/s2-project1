@@ -27,6 +27,11 @@ app.use("/notifications", notificationRoutes);
 const donationRoutes = require("./routes/donationRoutes");
 app.use("/donations", donationRoutes);
 
+const hospitalRoutes = require("./routes/hospitalRoutes");
+app.use("/hospitals", hospitalRoutes);
+
+
+
 // تشغيل الخادم
 app.listen(3000, () => {
     console.log("Server running on port 3000");
