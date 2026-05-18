@@ -8,7 +8,94 @@
     "Ain Temouchent","Ghardaia","Relizane","Timimoun","Bordj Badji Mokhtar","Ouled Djellal",
     "Beni Abbes","In Salah","In Guezzam","Touggourt","Djanet","El M'Ghair","El Meniaa"
 ];
+// ========== SERVER PROFILE PICTURE FUNCTIONS ==========
 
+async function uploadProfilePictureToServer(file) {
+    const user = JSON.parse(localStorage.getItem("currentUserSession"));
+    if (!user?.userId) return false;
+    
+    const formData = new FormData();
+    formData.append('profilePicture', file);
+    
+    try {
+        const response = await fetch(`http://localhost:3000/donors/upload-picture/${user.userId}`, {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Upload failed');
+        }
+        
+        const data = await response.json();
+        
+        // Update both images with server URL
+        const avatarImg = document.querySelector('.main-avatar');
+        const headerImg = document.querySelector('.profile-img');
+        
+        const newSrc = 'http://localhost:3000' + data.pictureUrl + '?t=' + Date.now();
+        
+        if (avatarImg) avatarImg.src = newSrc;
+        if (headerImg) headerImg.src = newSrc;
+        
+        // Save to session storage for other pages
+        user.profilePicture = data.pictureUrl;
+        localStorage.setItem('currentUserSession', JSON.stringify(user));
+        
+        // ✅ MOVED THIS - Broadcast to other tabs/pages
+        broadcastProfilePictureUpdate(data.pictureUrl);
+        
+        console.log('Profile picture saved to server!');
+        return true;
+        
+    } catch (error) {
+        console.error('Upload error:', error);
+        alert('Failed to upload picture: ' + error.message);
+        return false;
+    }
+}
+
+async function loadProfilePictureFromServer() {
+    const user = JSON.parse(localStorage.getItem("currentUserSession"));
+    const avatarImg = document.querySelector('.main-avatar');
+    const headerImg = document.querySelector('.profile-img');
+    
+    if (!user?.userId || (!avatarImg && !headerImg)) return;
+    
+    try {
+        const response = await fetch(`http://localhost:3000/get-profile-picture/${user.userId}/donor`);
+        if (!response.ok) return;
+        
+        const data = await response.json();
+        
+        if (data.pictureUrl) {
+            
+const newSrc = 'http://localhost:3000' + data.pictureUrl + '?t=' + Date.now();
+            if (avatarImg) avatarImg.src = newSrc;
+            if (headerImg) headerImg.src = newSrc;
+            
+            user.profilePicture = data.pictureUrl;
+            localStorage.setItem('currentUserSession', JSON.stringify(user));
+            console.log('Profile picture loaded from server');
+        }
+    } catch (error) {
+        console.error('Failed to load profile picture:', error);
+    }
+}
+// Add this function to broadcast picture changes to other tabs/pages
+function broadcastProfilePictureUpdate(pictureUrl) {
+    // Update current session
+    const user = JSON.parse(localStorage.getItem("currentUserSession"));
+    if (user) {
+        user.profilePicture = pictureUrl;
+        localStorage.setItem('currentUserSession', JSON.stringify(user));
+    }
+    
+    // Trigger storage event for other tabs
+    localStorage.setItem('profilePictureUpdated', Date.now().toString());
+    setTimeout(() => localStorage.removeItem('profilePictureUpdated'), 100);
+}
 function getWilayaNameById(id) {
     if (!id) return "Unknown";
     const index = parseInt(id) - 1;
@@ -102,6 +189,7 @@ async function loadDonorData() {
     }
 
     try {
+        
         const response = await fetch(`http://localhost:3000/donors/profile/${user.userId}`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
@@ -170,6 +258,14 @@ async function loadDonorData() {
                 }
             }
         }
+        // Add this inside loadDonorData, after getting the data (around line 130):
+if (data.profile_picture) {
+    const avatarImg = document.querySelector('.main-avatar');
+    const headerImg = document.querySelector('.profile-img');
+   const newSrc = 'http://localhost:3000' + data.profile_picture + '?t=' + Date.now();
+    if (avatarImg) avatarImg.src = newSrc;
+    if (headerImg) headerImg.src = newSrc;
+}
     } catch (error) {
         console.error("Error loading donor:", error);
         alert("Failed to load profile data. Please make sure the server is running.");
@@ -180,22 +276,36 @@ async function loadDonorData() {
 function setupPhotoEdit() {
     const editBtn = document.querySelector('.btn-edit');
     const avatarImg = document.querySelector('.main-avatar');
+    const headerImg = document.querySelector('.profile-img');
+    
     if (!editBtn || !avatarImg) return;
+    
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
+    fileInput.accept = 'image/jpeg,image/png,image/gif';
     fileInput.style.display = 'none';
     document.body.appendChild(fileInput);
+    
     editBtn.onclick = () => fileInput.click();
-    fileInput.onchange = (e) => {
+    
+    fileInput.onchange = async (e) => {
         const file = e.target.files[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onload = (ev) => { avatarImg.src = ev.target.result; };
-            reader.readAsDataURL(file);
+            // Show loading state
+            avatarImg.style.opacity = '0.5';
+            if (headerImg) headerImg.style.opacity = '0.5';
+            
+            // Upload to server
+            await uploadProfilePictureToServer(file);
+            
+            // Reset opacity
+            avatarImg.style.opacity = '1';
+            if (headerImg) headerImg.style.opacity = '1';
+            
+            fileInput.value = '';
         }
     };
 }
-
 function setupFooterHover() {
     const socialIcons = [
         { class: '.sm1-img', hover: 'images/hoverX.svg' },
@@ -444,14 +554,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadProfilePictureFromServer();  // Load saved picture first
     setupPhotoEdit();
     setupDonorInfoEdit();
     setupFooterHover();
     setupLogout();
     loadDonorData();
 });
-
-
 
 

@@ -11,6 +11,89 @@ const wilayas = [
     "Beni Abbes","In Salah","In Guezzam","Touggourt","Djanet","El M'Ghair","El Meniaa"
 ];
 
+//update
+// ========== SEARCHER PROFILE PICTURE FUNCTIONS ==========
+// Add this at the VERY TOP of your file, right after const wilayas
+
+async function uploadSearcherProfilePicture(file) {
+    const user = JSON.parse(localStorage.getItem("currentUserSession"));
+    if (!user?.userId) return false;
+    
+    const formData = new FormData();
+    formData.append('profilePicture', file);
+    
+    try {
+        const response = await fetch(`http://localhost:3000/searchers/upload-picture/${user.userId}`, {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Upload failed');
+        }
+        
+        const data = await response.json();
+        
+        // Update profile image and header image
+        const profileImg = document.getElementById('profileImage');
+        const headerImg = document.querySelector('.profile-img');
+        
+        const newSrc = 'http://localhost:3000' + data.pictureUrl + '?t=' + Date.now();
+        
+        if (profileImg) profileImg.src = newSrc;
+        if (headerImg) headerImg.src = newSrc;
+        
+        // Save to session storage
+        user.profilePicture = data.pictureUrl;
+        localStorage.setItem('currentUserSession', JSON.stringify(user));
+        
+        // Broadcast update to other pages
+        window.dispatchEvent(new CustomEvent('profilePictureUpdated'));
+        
+        alert('Profile picture updated!');
+        return true;
+        
+    } catch (error) {
+
+        console.error('Upload error:', error);
+        alert('Failed to upload picture: ' + error.message);
+        return false;
+    }
+}
+//update
+async function loadSearcherProfilePictureFromServer() {
+    const user = JSON.parse(localStorage.getItem("currentUserSession"));
+    const profileImg = document.getElementById('profileImage');
+    const headerImg = document.querySelector('.profile-img');
+    
+    if (!user?.userId || (!profileImg && !headerImg)) return;
+    
+    try {
+        const response = await fetch(`http://localhost:3000/get-profile-picture/${user.userId}/searcher`);
+        if (!response.ok) return;
+        
+        const data = await response.json();
+        
+        // FIX: Use pictureUrl instead of profile_picture
+        if (data.pictureUrl) {
+            const newSrc = 'http://localhost:3000' + data.pictureUrl + '?t=' + Date.now();
+            if (profileImg) profileImg.src = newSrc;
+            if (headerImg) headerImg.src = newSrc;
+            
+            user.profilePicture = data.pictureUrl;
+            localStorage.setItem('currentUserSession', JSON.stringify(user));
+            console.log('Searcher profile picture loaded from server');
+        }
+    } catch (error) {
+        console.error('Failed to load profile picture:', error);
+    }
+}
+
+
+
+
+
 function getWilayaNameById(id) {
     if (!id) return "Unknown";
     const index = parseInt(id) - 1;
@@ -356,23 +439,39 @@ document.addEventListener('DOMContentLoaded', function() {
     if (sm3) { const orig = sm3.src; sm3.addEventListener('mouseenter',()=>sm3.src='images/Vector22.svg'); sm3.addEventListener('mouseleave',()=>sm3.src=orig); }
     if (sm4) { const orig = sm4.src; sm4.addEventListener('mouseenter',()=>sm4.src='images/Vector21.svg'); sm4.addEventListener('mouseleave',()=>sm4.src=orig); }
 });
-
-// تعديل الصورة الشخصية
-const editPhotoBtn = document.getElementById('editPhotoBtn');
-const fileInput = document.getElementById('fileInput');
-const profileImage = document.getElementById('profileImage');
-if (editPhotoBtn && fileInput && profileImage) {
+//update
+// ========== SETUP PHOTO EDIT FOR SEARCHER ==========
+function setupSearcherPhotoEdit() {
+    const editPhotoBtn = document.getElementById('editPhotoBtn');
+    const fileInput = document.getElementById('fileInput');
+    const profileImg = document.getElementById('profileImage');
+    const headerImg = document.querySelector('.profile-img');
+    
+    if (!editPhotoBtn || !fileInput || !profileImg) return;
+    
     editPhotoBtn.onclick = () => fileInput.click();
-    fileInput.onchange = (e) => {
+    
+    fileInput.onchange = async (e) => {
         const file = e.target.files[0];
         if (file) {
-            const url = URL.createObjectURL(file);
-            profileImage.src = url;
-            const headerImg = document.querySelector('.profile img');
-            if (headerImg) headerImg.src = url;
+            // Show loading state
+            profileImg.style.opacity = '0.5';
+            if (headerImg) headerImg.style.opacity = '0.5';
+            
+            // Upload to server
+            await uploadSearcherProfilePicture(file);
+            
+            // Reset opacity
+            profileImg.style.opacity = '1';
+            if (headerImg) headerImg.style.opacity = '1';
+            
+            fileInput.value = '';
         }
     };
 }
+
+// Call the setup function
+setupSearcherPhotoEdit();
 
 // تسجيل الخروج
 document.addEventListener('DOMContentLoaded', function() {
@@ -501,7 +600,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-loadSearcherProfile();
 
 // دالة لفتح/إغلاق القائمة المنسدلة لفصيلة الدم (يتم استدعاؤها من onclick الجديد)
 window.toggleBloodDropdown = function(e) {
@@ -526,4 +624,8 @@ window.toggleBloodDropdown = function(e) {
     }
 };
 
-
+// Load profile picture and data when page loads
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadSearcherProfilePictureFromServer();
+    await loadSearcherProfile();
+});
