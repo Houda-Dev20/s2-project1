@@ -120,8 +120,8 @@ router.post('/logout', logoutDonor);
 router.get('/all', getAllDonors);
 router.get('/profile/:id', getDonorProfile);
 router.put('/update/:id', updateDonor);
-router.delete('/:id/deactivate', disactivateDonor);
-router.post('/:id/activate', activateDonor);
+router.delete('/deactivate/:id', disactivateDonor);
+router.put('/active/:id', activateDonor);
 router.post('/search', searchDonors);
 router.get("/map-data", getMapDonors);
 

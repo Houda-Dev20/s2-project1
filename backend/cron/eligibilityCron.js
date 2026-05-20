@@ -14,3 +14,13 @@ cron.schedule("0 0 * * *", () => {
     });
 
 });
+
+setTimeout(() => {
+    console.log("🔄 Running eligibility check manually for testing...");
+    db.query("SELECT * FROM donors", (err, donors) => {
+        if (err) return console.log(err);
+        donors.forEach(donor => {
+            createEligibilityNotification(donor);
+        });
+    });
+}, 5000); 
