@@ -463,21 +463,7 @@ function setupLogout() {
     const logoutBtn = document.querySelector('.logout-item');
     if (!logoutBtn) return;
     logoutBtn.addEventListener('click', function() {
-        const user = JSON.parse(localStorage.getItem("currentUserSession"));
-        const id = user ? user.userId : null;
-        const name = document.getElementById('topName').innerText;
-        const bloodType = document.querySelector('.blood-badge').innerText;
-        const profilePic = document.querySelector('.main-avatar').src;
-        let email = "";
-        const rows = document.querySelectorAll('.data-row');
-        rows.forEach(row => {
-            if(row.innerText.toLowerCase().includes('email')) {
-                const emailSpan = row.querySelector('span:last-child');
-                if(emailSpan) email = emailSpan.innerText;
-            }
-        });
-        const sessionData = { userId: id, userName: name, userEmail: email, userBlood: bloodType, userPic: profilePic };
-        localStorage.setItem('currentUserSession', JSON.stringify(sessionData));
+        // فقط انتقلي لصفحة logout بدون تغيير الـ session
         window.location.href = 'log-out.html';
     });
 }

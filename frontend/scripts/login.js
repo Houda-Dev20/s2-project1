@@ -98,8 +98,8 @@
                     userEmail: data.searcher.email,
                     userType: "searcher"
                 }));
-                window.location.href = "patient-profile.html";
-                return;
+                    window.location.href = "patient-profile.html";
+    return;
             }
 
             alert("Invalid email or password");

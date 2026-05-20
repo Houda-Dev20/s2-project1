@@ -369,13 +369,7 @@ const loginDonor = (req, res) => {
         if (!donor.is_verified) {
             return res.status(403).json({ message: "Please verify your email first" });
         }
-if (!donor.is_active) {
-            return res.status(403).json({ success: false, message: "Your account has been deactivated" });
-        }
-
-
-        db.query("UPDATE donors SET is_active = 1 WHERE id = ?", [donor.id], (err) => { if (err) console.log(err); });
-
+        
         res.status(200).json({
             success: true,
             message: "Login successful",
