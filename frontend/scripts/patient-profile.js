@@ -474,18 +474,8 @@ function setupSearcherPhotoEdit() {
 setupSearcherPhotoEdit();
 
 // تسجيل الخروج
-document.addEventListener('DOMContentLoaded', function() {
-    const logoutBtn = document.querySelector('[data-action="logout"]');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', function() {
-            const name = document.querySelector('.name').innerText;
-            const bloodType = document.querySelector('.bloodtype-text').innerText;
-            const profilePic = document.getElementById('profileImage').src;
-            const email = document.querySelectorAll('.dd-wrapper .dd-item')[3]?.innerText || '';
-            localStorage.setItem('currentUserSession', JSON.stringify({ userName: name, userEmail: email, userBlood: bloodType, userPic: profilePic }));
-            window.location.href = 'log-out.html';
-        });
-    }
+logoutBtn.addEventListener('click', function() {
+    window.location.href = 'log-out.html';
 });
 
 // زر تعديل المعلومات الشخصية
