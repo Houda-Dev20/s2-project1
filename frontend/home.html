@@ -18,13 +18,20 @@
     <link rel="stylesheet" href="styles/general.css">
     <link rel="stylesheet" href="styles/footer.css">
     <script>
-    const sessionData = localStorage.getItem('currentUserSession');
-    if (sessionData) {
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = 'styles/notifications.css'; 
-        document.head.appendChild(link);
-    }
+  
+ const sessionData = localStorage.getItem('currentUserSession');
+if (sessionData) {
+    
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'styles/notifications.css';
+    document.head.appendChild(link);
+    
+    
+    const script = document.createElement('script');
+    script.src = 'scripts/notifications.js';
+    document.head.appendChild(script);
+}
 </script>
 </head>
 <body>
@@ -280,6 +287,7 @@
 </body>
 <script src="scripts/home.js"></script>
 <script src="scripts/header.js"></script>
+
 <script src="scripts/global-profile.js"></script>
 </html>
 

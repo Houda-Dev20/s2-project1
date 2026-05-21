@@ -16,7 +16,7 @@ body {
 
     }
 }
-@media (max-width: 2440px) {
+@media (min-width: 2440px) {
     body {
         
         zoom:1.18; 
