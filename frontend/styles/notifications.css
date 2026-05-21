@@ -1,7 +1,7 @@
 
 body {
     width: 100%;
-    max-width: 1440px;
+    max-width: 2440px;
     min-height: 900px;
     margin: 0px;
     padding: 0px;
@@ -432,7 +432,7 @@ box-shadow: 0px 4px 20px 0px #00000040;
 }
 
 
-/* ÊäÓíŞ ÇáÅÔÚÇÑÇÊ ÇáãŞÑæÁÉ æÛíÑ ÇáãŞÑæÁÉ */
+/* ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
 .notif-item.unread {
     background-color: #FFF8F5;
     font-weight: 600;
@@ -454,7 +454,7 @@ box-shadow: 0px 4px 20px 0px #00000040;
 }
 
 
-/* ÊÍÓíä ÇáÊãííÒ Èíä ÇáãŞÑæÁ æÛíÑ ÇáãŞÑæÁ */
+/* ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
 .notif-item.unread {
     background-color: #FFF5F0;
     font-weight: 600;
@@ -475,7 +475,7 @@ box-shadow: 0px 4px 20px 0px #00000040;
     color: #777;
 }
 
-/* ÃíŞæäÉ ÍãÑÇÁ áÜ donation_request æ donor_help_request */
+/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ donation_request ï¿½ donor_help_request */
 .icon-circle.red-bg {
     background-color: #E33E3E;
 }
@@ -485,7 +485,7 @@ box-shadow: 0px 4px 20px 0px #00000040;
 }
 
 
-/* ÃíŞæäÉ ããíÒÉ áÅÔÚÇÑÇÊ nearby_patient */
+/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ nearby_patient */
 .notif-item .icon-circle.nearby-bg {
-    background-color: #FFA500; /* ÈÑÊŞÇáí */
+    background-color: #FFA500; /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
 }
