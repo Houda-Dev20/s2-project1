@@ -169,7 +169,10 @@ const resendCode = async (req, res) => {
 
 const searchSearchers = (req, res) => {
     const { blood_type, location, is_urgent } = req.body;
-    let sql = `SELECT id, full_name, telephon, blood_type_research, location, is_urgent, date_of_birth, email FROM searchers WHERE blood_type_research = ? AND location = ? AND is_active = 1`;
+    let sql = `SELECT id, full_name, telephon, blood_type_research, location, is_urgent, created_at 
+               FROM searchers 
+               WHERE blood_type_research = ? AND location = ? AND is_active = 1
+              `;
     const params = [blood_type, location];
     if (is_urgent !== undefined && (is_urgent === 0 || is_urgent === 1)) {
         sql += " AND is_urgent = ?";
@@ -182,7 +185,7 @@ const searchSearchers = (req, res) => {
 };
 
 const getAllSearchers = (req, res) => {
-    db.query("SELECT * FROM searchers", (err, result) => {
+    db.query("SELECT * FROM searchers  WHERE is_active=1", (err, result) => {
         if (err) return res.status(500).json({ message: "Error retrieving searchers" });
         res.status(200).json({ success: true, searchers: result });
     });
@@ -218,7 +221,7 @@ const loginSearcher = (req, res) => {
 const logoutSearcher = (req, res) => res.status(200).json({ success: true, message: "Logout successful" });
 
 const activateSearcher = (req, res) => {
-    db.query("UPDATE searchers SET available = 1 WHERE id = ?", [req.params.id], (err, result) => {
+    db.query("UPDATE searchers SET is_active = 1 WHERE id = ?", [req.params.id], (err, result) => {
         if (err) return res.status(500).json({ message: "error" });
         if (result.affectedRows === 0) return res.status(404).json({ message: "Searcher not found" });
         res.json({ message: "Searcher activated successfully" });
@@ -226,7 +229,7 @@ const activateSearcher = (req, res) => {
 };
 
 const disactivateSearcher = (req, res) => {
-    db.query("UPDATE searchers SET available = 0 WHERE id = ?", [req.params.id], (err, result) => {
+    db.query("UPDATE searchers SET is_active = 0 WHERE id = ?", [req.params.id], (err, result) => {
         if (err) return res.status(500).json({ message: "error" });
         if (result.affectedRows === 0) return res.status(404).json({ message: "Searcher not found" });
         res.json({ message: "Searcher deactivated successfully" });

@@ -243,6 +243,35 @@ async function loadSearcherProfile() {
         }
 
         fetchRequestHistory(user.userId);
+
+// تحقق من is_active وغير الزر
+const currentSession = JSON.parse(localStorage.getItem('currentUserSession') || '{}');
+const deactivateLink = document.querySelector('.security-btn1');
+const securityP = deactivateLink?.querySelector('.security-p');
+
+if (currentSession.is_active === 0 && deactivateLink && securityP) {
+    // غير النص
+    securityP.textContent = 'Reactivate Account';
+    
+    // امنع الانتقال لصفحة deactivate
+    deactivateLink.addEventListener('click', async (e) => {
+        e.preventDefault();
+        
+        const res = await fetch(`http://localhost:3000/searchers/activate-searcher/${currentSession.userId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (res.ok) {
+            currentSession.is_active = 1;
+            localStorage.setItem('currentUserSession', JSON.stringify(currentSession));
+            alert('Account reactivated successfully');
+            window.location.reload();
+        } else {
+            alert('Failed to reactivate account');
+        }
+    });
+}
     } catch (error) {
         console.error("Error loading profile:", error);
         alert("Failed to load profile data. Please make sure the server is running.");

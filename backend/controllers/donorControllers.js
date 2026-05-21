@@ -323,7 +323,7 @@ const resendCode = async (req, res) => {
 const searchDonors = (req, res) => {
     const { blood_type, location } = req.body;
     const sql = `
-        SELECT id, full_name, telephon, blood_type, location
+        SELECT id, full_name, telephon, blood_type, location, created_at
         FROM donors
         WHERE blood_type = ? AND location = ? AND is_active = 1
     `;
@@ -342,7 +342,7 @@ const searchDonors = (req, res) => {
 };
 
 const getAllDonors = (req, res) => {
-    const sql = `SELECT * FROM donors`;
+    const sql = `SELECT * FROM donors WHERE is_active = 1`;
     db.query(sql, (err, result) => {
         if (err) {
             return res.status(500).json({ message: "Error retrieving donors" });

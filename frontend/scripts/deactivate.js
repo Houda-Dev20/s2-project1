@@ -1,3 +1,9 @@
+// في أعلى DOMContentLoaded مباشرة
+const session = JSON.parse(localStorage.getItem('currentUserSession') || '{}');
+const userId = session.userId;
+const userType = session.userType;
+const userEmail = session.userEmail;
+
 document.addEventListener('DOMContentLoaded', () => {
     const checkbox = document.getElementById('consent');
     const passwordInput = document.getElementById('passwordInput');
@@ -89,11 +95,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const data = await response.json();
 
-            if (response.ok) {
-                alert('Account deactivated successfully');
-                localStorage.clear();
-                window.location.href = 'home.html'; // ✅ يروح لـ home فقط إذا نجح
-            } else {
+if (response.ok) {
+    const session = JSON.parse(localStorage.getItem('currentUserSession') || '{}');
+    session.is_active = 0;
+    localStorage.setItem('currentUserSession', JSON.stringify(session));
+
+    alert('Account deactivated successfully');
+    
+    // انتقل لصفحة البروفيل
+    if (userType === 'searcher') {
+        window.location.href = 'patient-profile.html';
+    } else {
+        window.location.href = 'donor-profile.html';
+    }
+} else {
                 alert(data.message || 'Failed to deactivate account');
                 modal.style.display = 'none';
             }

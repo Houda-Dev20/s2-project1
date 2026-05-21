@@ -11,7 +11,7 @@ router.put("/update/:id", updateSearcher);
 router.put('/deactivate/:id', deactivateSearcher);
 router.post("/verify", verifyAndSave);
 router.post("/search", searchSearchers);
-router.get("/", getAllSearchers);
+router.get("/all", getAllSearchers);
 router.post("/login", loginSearcher );
 router.post("/logout", logoutSearcher );
 router.put("/activate-searcher/:id", activateSearcher);

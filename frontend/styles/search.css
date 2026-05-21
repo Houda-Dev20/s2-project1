@@ -363,14 +363,14 @@ main {
   height: 20px;
 }
 
-
 .request-box {
-  width: 340px;
-  height: 400px;
+  width: 100%;
+  height: auto;
   border: 1px solid rgba(238, 232, 234, 1);
   border-radius: 10px;
   overflow: hidden;
   box-shadow: -4px 4px 20px 0px rgba(0, 0, 0, 0.2);
+  padding-bottom: 14px;
 }
 
 .hospital-name {
@@ -419,16 +419,15 @@ main {
 /* ── MAP ── */
 
 .map-preview {
-    width: 90%;
-    height: 60px;
-    border-radius: 8px;    
-    overflow: hidden;        
-    border: 1px solid rgba(0, 0, 0, 0.06); 
-    position: relative;
-    margin: 10px 0;
-    z-index: 1; 
-    margin-left: 15px; 
-    margin-bottom: 10px;  
+  width: calc(100% - 30px);
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  position: relative;
+  margin: 10px 15px;
+  z-index: 1;
+  cursor: pointer;
 }
 
 .map-preview > div { 
@@ -472,21 +471,22 @@ main {
 
 .btn-view {
   display: block;
-  width: 128px;
-  margin-left: 100px;
+  width: 150px;
+  margin: 10px auto 0 auto;
   height: 35px;
   background: rgba(241, 146, 138, 1);
   color: rgba(255, 255, 255, 1);
   border: none;
   border-radius: 20px;
   font-family: 'Inter', sans-serif;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 400;
   cursor: pointer;
   text-align: center;
-  
+  line-height: 35px;
   transition: background .2s, color .2s;
 }
+
 .btn-view:hover { background: var(--red); }
 
 /* ── FOOTER ── */

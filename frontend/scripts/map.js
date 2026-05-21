@@ -18,6 +18,21 @@ function getUserRole() {
 // =========================
 var map = L.map('map', { zoomControl: false }).setView([36.152, 5.690], 13); // سطيف مؤقتاً
 
+
+// استقبال المعاملات من URL
+const urlParams = new URLSearchParams(window.location.search);
+const targetWilaya = urlParams.get('wilaya');
+const targetLat = parseFloat(urlParams.get('lat'));
+const targetLng = parseFloat(urlParams.get('lng'));
+
+if (targetLat && targetLng && !isNaN(targetLat) && !isNaN(targetLng)) {
+    // إذا تم تمرير إحداثيات، انتقل إلى هذا الموقع
+    setTimeout(() => {
+        map.setView([targetLat, targetLng], 12);
+        L.marker([targetLat, targetLng]).addTo(map).bindPopup(targetWilaya || "Location").openPopup();
+    }, 500);
+}
+
 // طبقة الخريطة
 L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
     maxZoom: 20,
