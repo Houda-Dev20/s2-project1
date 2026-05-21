@@ -463,7 +463,21 @@ function setupLogout() {
     const logoutBtn = document.querySelector('.logout-item');
     if (!logoutBtn) return;
     logoutBtn.addEventListener('click', function() {
-        // فقط انتقلي لصفحة logout بدون تغيير الـ session
+        const user = JSON.parse(localStorage.getItem("currentUserSession"));
+        const id = user ? user.userId : null;
+        const name = document.getElementById('topName').innerText;
+        const bloodType = document.querySelector('.blood-badge').innerText;
+        const profilePic = document.querySelector('.main-avatar').src;
+        let email = "";
+        const rows = document.querySelectorAll('.data-row');
+        rows.forEach(row => {
+            if(row.innerText.toLowerCase().includes('email')) {
+                const emailSpan = row.querySelector('span:last-child');
+                if(emailSpan) email = emailSpan.innerText;
+            }
+        });
+        const sessionData = { userId: id, userName: name, userEmail: email, userBlood: bloodType, userPic: profilePic };
+        localStorage.setItem('currentUserSession', JSON.stringify(sessionData));
         window.location.href = 'log-out.html';
     });
 }
@@ -538,6 +552,41 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         document.addEventListener('click', (e) => { if (!bloodContainer.contains(e.target)) closeBloodDropdown(); });
     }
+
+
+const readyToggle = document.getElementById('readyToggle');
+const readySub = document.getElementById('readySubtext');
+
+if (readyToggle) {
+    // تحميل الحالة المحفوظة
+    const saved = localStorage.getItem('readyToDonate');
+    if (saved === 'true') {
+        readyToggle.checked = true;
+        readySub.textContent = 'You are visible to patients';
+    }
+
+    readyToggle.addEventListener('change', async () => {
+        const isReady = readyToggle.checked;
+        readySub.textContent = isReady 
+            ? 'You are visible to patients' 
+            : 'You are not visible to patients right now';
+        localStorage.setItem('readyToDonate', isReady);
+
+        // إرسال للسيرفر (اختياري)
+        const user = JSON.parse(localStorage.getItem("currentUserSession"));
+        if (user?.userId) {
+            try {
+                await fetch(`http://localhost:3000/donors/update/${user.userId}`, {
+                    method: "PUT",
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ is_available: isReady ? 1 : 0 })
+                });
+            } catch(e) { console.error(e); }
+        }
+    });
+}
+
+
 });
 
 document.addEventListener('DOMContentLoaded', async () => {
