@@ -325,7 +325,7 @@ const searchDonors = (req, res) => {
     const sql = `
         SELECT id, full_name, telephon, blood_type, location
         FROM donors
-        WHERE blood_type = ? AND location = ?
+        WHERE blood_type = ? AND location = ? AND is_active = 1
     `;
     db.query(sql, [blood_type, location], (err, result) => {
         if (err) {
@@ -369,7 +369,7 @@ const loginDonor = (req, res) => {
         if (!donor.is_verified) {
             return res.status(403).json({ message: "Please verify your email first" });
         }
-        
+
         res.status(200).json({
             success: true,
             message: "Login successful",

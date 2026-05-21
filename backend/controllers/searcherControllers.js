@@ -169,7 +169,7 @@ const resendCode = async (req, res) => {
 
 const searchSearchers = (req, res) => {
     const { blood_type, location, is_urgent } = req.body;
-    let sql = `SELECT id, full_name, telephon, blood_type_research, location, is_urgent, date_of_birth, email FROM searchers WHERE blood_type_research = ? AND location = ?`;
+    let sql = `SELECT id, full_name, telephon, blood_type_research, location, is_urgent, date_of_birth, email FROM searchers WHERE blood_type_research = ? AND location = ? AND is_active = 1`;
     const params = [blood_type, location];
     if (is_urgent !== undefined && (is_urgent === 0 || is_urgent === 1)) {
         sql += " AND is_urgent = ?";

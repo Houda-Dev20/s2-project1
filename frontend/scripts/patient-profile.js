@@ -474,8 +474,13 @@ function setupSearcherPhotoEdit() {
 setupSearcherPhotoEdit();
 
 // تسجيل الخروج
-logoutBtn.addEventListener('click', function() {
-    window.location.href = 'log-out.html';
+document.addEventListener('DOMContentLoaded', function() {
+    const logoutBtn = document.querySelector('[data-action="logout"]');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function() {
+            window.location.href = 'log-out.html';
+        });
+    }
 });
 
 // زر تعديل المعلومات الشخصية
