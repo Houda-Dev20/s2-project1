@@ -631,7 +631,7 @@ span{
 }
 .fifth-div {
     width: 618px;
-    height: 192px; /* Keeping your exact height */
+    height: 231px; /* Keeping your exact height */
     border-radius: 20px;
     background: #FFFFFF;
     box-shadow: 0px 4px 12px 0px #0000000D; /* Parent shadow */
@@ -685,8 +685,9 @@ box-shadow: 0px 4px 40px 0px #00000026;
     border-width: 2px;
 }
 .Security-img4{
-    width: 21px;
+    width: 20px;
     height: 20px;
+    margin-top: -2px;
 }
 
 .security-p{
@@ -706,9 +707,87 @@ box-shadow: 0px 4px 40px 0px #00000026;
 }
 
 
-.security-options li:nth-child(2) .security-btn {
+.security-options li:nth-child(3) .security-btn {
     border-bottom-left-radius: 10px;
     border-bottom-right-radius: 10px;
+}
+/* Styling for the text layout and toggle */
+.security-text-container {
+    display: flex;
+    flex-direction: column;
+    
+}
+.security-p2{
+font-weight: 500;
+font-size: 13.5;
+font-family: 'DM Sans';
+color: #1A1A1A;
+margin: 0px;
+margin-top: 2px;
+}
+
+
+.security-sub-p {
+    margin: 0;
+    margin-top: 2px;
+    font-family: 'DM sans';
+    font-size: 11px;
+    color: #BBA0A0;
+   font-weight: 400;
+
+}
+.toggle-switch {
+    width: 44px;
+    height: 24px;
+    background-color: #EEDCDC;
+    border-radius: 12px;
+    margin-left: auto;
+    margin-right: 10px;
+    position: relative;
+    cursor: pointer;
+    display: inline-block;
+    transition: background-color 0.2s ease;
+}
+
+/* Hide the actual checkbox square completely */
+.toggle-input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.toggle-circle {
+    width: 20px;
+    height: 20px;
+    background-color: #FFFFFF;
+    border-radius: 50%;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* When the hidden checkbox is checked, update the track color */
+.toggle-input:checked + .toggle-circle {
+    transform: translateX(20px);
+}
+
+/* When the hidden checkbox is checked, move the circle */
+.toggle-switch:has(.toggle-input:checked) {
+    background-color: #D97775;
+    
+}
+
+/* Adjusts borders for the new 3-item order */
+.security-options li:first-child .security-btn {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+.security-options li:nth-child(2) .security-btn {
+    border-top: none; 
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
 }
 .end-img{
     position: absolute;
