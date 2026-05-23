@@ -244,6 +244,43 @@ async function loadSearcherProfile() {
 
         fetchRequestHistory(user.userId);
 
+const toggleInput = document.querySelector('.toggle-input');
+const toggleSubText = document.querySelector('.security-sub-p');
+
+if (toggleInput) {
+    // ضع الحالة الحالية من الـ data
+    toggleInput.checked = data.available === 1;
+    if (toggleSubText) {
+        toggleSubText.textContent = data.available === 1 
+            ? 'You are visible for donors right now' 
+            : 'You are not visible for donors right now';
+    }
+
+    toggleInput.addEventListener('change', async () => {
+        const isAvailable = toggleInput.checked ? 1 : 0;
+        
+        if (toggleSubText) {
+            toggleSubText.textContent = isAvailable 
+                ? 'You are visible for donors right now' 
+                : 'You are not visible for donors right now';
+        }
+
+        const session = JSON.parse(localStorage.getItem('currentUserSession'));
+        const userId = session?.userId;
+        if (!userId) return;
+
+        try {
+await fetch(`http://localhost:3000/searchers/update-availability/${userId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ available: isAvailable })
+});
+        } catch (err) {
+            console.error('Failed to update availability:', err);
+        }
+    });
+}
+
 // تحقق من is_active وغير الزر
 const currentSession = JSON.parse(localStorage.getItem('currentUserSession') || '{}');
 const deactivateLink = document.querySelector('.security-btn1');

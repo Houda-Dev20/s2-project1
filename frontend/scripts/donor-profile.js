@@ -507,6 +507,26 @@ function selectBloodType(type) {
     saveBloodType(type);
 }
 
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: ${type === 'success' ? '#4CAF50' : '#E8433A'};
+        color: white;
+        padding: 14px 24px;
+        border-radius: 10px;
+        font-family: Inter, sans-serif;
+        font-size: 15px;
+        z-index: 99999;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
 // ---------- القائمة المنسدلة للدم ----------
 document.addEventListener('DOMContentLoaded', function() {
     const penIcon = document.querySelector('.pen-icon');
@@ -558,28 +578,46 @@ const readyToggle = document.getElementById('readyToggle');
 const readySub = document.getElementById('readySubtext');
 
 if (readyToggle) {
-    // تحميل الحالة المحفوظة
-    const saved = localStorage.getItem('readyToDonate');
-    if (saved === 'true') {
-        readyToggle.checked = true;
-        readySub.textContent = 'You are visible to patients';
-    }
-
     readyToggle.addEventListener('change', async () => {
         const isReady = readyToggle.checked;
+
+        // إذا أراد التفعيل — تحقق من 90 يوم
+        if (isReady) {
+            const user = JSON.parse(localStorage.getItem("currentUserSession"));
+            if (user?.userId) {
+                try {
+                    const profileRes = await fetch(`http://localhost:3000/donors/profile/${user.userId}`);
+                    const profileData = await profileRes.json();
+
+                    if (profileData.last_donation_date) {
+                        const lastDonation = new Date(profileData.last_donation_date);
+                        const now = new Date();
+                        const daysDiff = Math.floor((now - lastDonation) / (1000 * 60 * 60 * 24));
+
+                        if (daysDiff < 90) {
+                            const daysLeft = 90 - daysDiff;
+                            readyToggle.checked = false;
+                            showToast(`You cannot donate yet. ${daysLeft} days remaining until you can donate again.`, 'error');
+                            return;
+                        }
+                    }
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+        }
+
         readySub.textContent = isReady 
             ? 'You are visible to patients' 
             : 'You are not visible to patients right now';
-        localStorage.setItem('readyToDonate', isReady);
 
-        // إرسال للسيرفر (اختياري)
         const user = JSON.parse(localStorage.getItem("currentUserSession"));
         if (user?.userId) {
             try {
-                await fetch(`http://localhost:3000/donors/update/${user.userId}`, {
+                await fetch(`http://localhost:3000/donors/update-availability/${user.userId}`, {
                     method: "PUT",
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ is_available: isReady ? 1 : 0 })
+                    body: JSON.stringify({ available: isReady ? 1 : 0 })
                 });
             } catch(e) { console.error(e); }
         }

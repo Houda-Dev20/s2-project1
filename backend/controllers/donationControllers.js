@@ -173,7 +173,7 @@ const acceptDonationByDonor = (req, res) => {
                 const searcherPhone = rows[0].searcher_phone;
 
                 const today = new Date().toISOString().split('T')[0];
-                db.query("UPDATE donors SET last_donation_date = ?, is_active = 0 WHERE id = ?", [today, donorId], (updateErr) => {
+                db.query("UPDATE donors SET last_donation_date = ?, available  = 0 WHERE id = ?", [today, donorId], (updateErr) => {
                     if (updateErr) console.error("Error updating donor:", updateErr);
                 });
 
@@ -219,7 +219,7 @@ const acceptDonationBySearcher = (req, res) => {
                 const searcherPhone = rows[0].searcher_phone;
 
                 const today = new Date().toISOString().split('T')[0];
-                db.query("UPDATE donors SET last_donation_date = ?, is_active = 0 WHERE id = ?", [today, donorId], (updateErr) => {
+                db.query("UPDATE donors SET last_donation_date = ?, available = 0 WHERE id = ?", [today, donorId], (updateErr) => {
                     if (updateErr) console.error("Error updating donor:", updateErr);
                 });
 
@@ -244,7 +244,7 @@ const getDonorDonations = (req, res) => {
         SELECT d.donation_date, d.status, s.full_name AS searcher_name, s.Hospital_name
         FROM donations d
         JOIN searchers s ON d.id_searcher = s.id
-        WHERE d.id_donor = ?
+        WHERE d.id_donor = ? AND d.status = 'accepted'
         ORDER BY d.donation_date DESC
     `;
     db.query(sql, [donorId], (err, results) => {

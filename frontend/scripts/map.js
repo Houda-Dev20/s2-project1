@@ -154,6 +154,9 @@ function createBloodIcon(type) {
 // =========================
 async function loadSearchersOnMap() {
     try {
+        const session = JSON.parse(localStorage.getItem('currentUserSession'));
+        const isLoggedIn = !!session;
+
         const response = await fetch('http://localhost:3000/searchers/map-data');
         if (!response.ok) throw new Error('Failed to fetch searchers');
         const searchers = await response.json();

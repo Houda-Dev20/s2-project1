@@ -76,7 +76,7 @@ const updateSearcher = async (req, res) => {
         }
         if (updates.password) updates.password = await bcrypt.hash(updates.password, 10);
 
-        const allowedFields = ["full_name", "telephon", "location", "date_of_birth", "Hospital_name", "blood_type_research", "is_urgent", "latitude","longitude"];
+        const allowedFields = ["full_name", "telephon", "location", "date_of_birth", "Hospital_name", "blood_type_research", "is_urgent", "latitude","longitude", "available"];
 
         const filteredUpdates = {};
        // 1. copy allowed fields first
@@ -171,7 +171,7 @@ const searchSearchers = (req, res) => {
     const { blood_type, location, is_urgent } = req.body;
     let sql = `SELECT id, full_name, telephon, blood_type_research, location, is_urgent, created_at 
                FROM searchers 
-               WHERE blood_type_research = ? AND location = ? AND is_active = 1
+               WHERE blood_type_research = ? AND location = ? AND is_active = 1 AND available = 1
               `;
     const params = [blood_type, location];
     if (is_urgent !== undefined && (is_urgent === 0 || is_urgent === 1)) {
@@ -185,7 +185,7 @@ const searchSearchers = (req, res) => {
 };
 
 const getAllSearchers = (req, res) => {
-    db.query("SELECT * FROM searchers  WHERE is_active=1", (err, result) => {
+    db.query("SELECT * FROM searchers  WHERE is_active=1 AND available = 1", (err, result) => {
         if (err) return res.status(500).json({ message: "Error retrieving searchers" });
         res.status(200).json({ success: true, searchers: result });
     });
@@ -311,8 +311,20 @@ const getMapSearchers = (req, res) => {
         res.json(results);
     });
 };//update
+
+const updateAvailability = (req, res) => {
+    const { available } = req.body;
+    db.query(
+        "UPDATE searchers SET available = ? WHERE id = ?",
+        [available, req.params.id],
+        (err, result) => {
+            if (err) return res.status(500).json({ message: "Error updating availability" });
+            res.json({ success: true, message: "Availability updated" });
+        }
+    );
+};
 module.exports = {
     requestEmailChange, confirmEmailChange, addSearcher, updateSearcher, deactivateSearcher,
     verifyAndSave, searchSearchers, getAllSearchers, loginSearcher, logoutSearcher, resendCode,
-    activateSearcher, disactivateSearcher, getSearcherProfile,getMapSearchers
+    activateSearcher, disactivateSearcher, getSearcherProfile,getMapSearchers, updateAvailability
 };

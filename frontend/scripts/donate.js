@@ -99,23 +99,47 @@ document.addEventListener("DOMContentLoaded", async () => {
                 donateBtn.textContent = "Donate Blood Now";
                 donateBtn.style.backgroundColor = "";
                 donateBtn.addEventListener("click", async () => {
-                    try {
-                        const donationRes = await fetch("http://localhost:3000/donations", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ id_donor: donorId, id_searcher: searcherId, initiatedBy: "donor" })
-                        });
-                        if (!donationRes.ok) {
-                            const errData = await donationRes.json();
-                            throw new Error(errData.message || "Request failed");
-                        }
-                        alert("Donation offer sent successfully!");
-                        window.location.reload();
-                    } catch (err) {
-                        console.error(err);
-                        alert("Failed to send donation offer: " + err.message);
-                    }
-                });
+    try {
+        // تحقق من بيانات المتبرع أولاً
+        const donorProfileRes = await fetch(`http://localhost:3000/donors/profile/${donorId}`);
+        const donorProfile = await donorProfileRes.json();
+
+        // تحقق من 90 يوم
+        if (donorProfile.last_donation_date) {
+            const lastDonation = new Date(donorProfile.last_donation_date);
+            const now = new Date();
+            const daysDiff = Math.floor((now - lastDonation) / (1000 * 60 * 60 * 24));
+
+            if (daysDiff < 90) {
+                const daysLeft = 90 - daysDiff;
+                showToast(`You cannot donate yet. ${daysLeft} days remaining until you can donate again.`, 'error');
+                return;
+            }
+        }
+
+        // تحقق من available
+        if (donorProfile.available === 0) {
+            showToast('You are currently marked as unavailable. Please activate yourself in your profile first.', 'error');
+            return;
+        }
+
+        // إرسال طلب التبرع
+        const donationRes = await fetch("http://localhost:3000/donations", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id_donor: donorId, id_searcher: searcherId, initiatedBy: "donor" })
+        });
+        if (!donationRes.ok) {
+            const errData = await donationRes.json();
+            throw new Error(errData.message || "Request failed");
+        }
+        showToast("Donation offer sent successfully!", 'success');
+        setTimeout(() => window.location.reload(), 1500);
+    } catch (err) {
+        console.error(err);
+        showToast("Failed to send donation offer: " + err.message, 'error');
+    }
+});
             }
         }
 
@@ -155,5 +179,25 @@ function setupFooterHover() {
             img.onmouseleave = () => { img.src = originalSrc; };
         }
     });
+}
+
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: ${type === 'success' ? '#4CAF50' : '#E8433A'};
+        color: white;
+        padding: 14px 24px;
+        border-radius: 10px;
+        font-family: Inter, sans-serif;
+        font-size: 15px;
+        z-index: 99999;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
 }
 document.addEventListener('DOMContentLoaded', setupFooterHover);

@@ -23,7 +23,8 @@ const {
     resetPassword,
     requestEmailChangeDonor,
     confirmEmailChangeDonor,
-    getMapDonors
+    getMapDonors,
+    updateDonorAvailability
 } = require('../controllers/donorControllers');
 //update
 
@@ -131,5 +132,6 @@ router.post('/confirm-email-change/:id', confirmEmailChangeDonor);
 router.post('/forgot-password', forgotPassword);
 router.post('/verify-reset-code', verifyResetCode);
 router.post('/reset-password', resetPassword);
+router.put("/update-availability/:id", updateDonorAvailability);
 
 module.exports = router;

@@ -325,7 +325,7 @@ const searchDonors = (req, res) => {
     const sql = `
         SELECT id, full_name, telephon, blood_type, location, created_at
         FROM donors
-        WHERE blood_type = ? AND location = ? AND is_active = 1
+        WHERE blood_type = ? AND location = ? AND is_active = 1 AND available = 1
     `;
     db.query(sql, [blood_type, location], (err, result) => {
         if (err) {
@@ -342,7 +342,7 @@ const searchDonors = (req, res) => {
 };
 
 const getAllDonors = (req, res) => {
-    const sql = `SELECT * FROM donors WHERE is_active = 1`;
+    const sql = `SELECT * FROM donors WHERE is_active = 1 AND available = 1`;
     db.query(sql, (err, result) => {
         if (err) {
             return res.status(500).json({ message: "Error retrieving donors" });
@@ -378,7 +378,6 @@ const loginDonor = (req, res) => {
         userType: "donor"
     });
 }
-
         res.status(200).json({
             success: true,
             message: "Login successful",
@@ -616,6 +615,18 @@ const getMapDonors = (req, res) => {
     });
 };
 
+const updateDonorAvailability = (req, res) => {
+    const { available } = req.body;
+    db.query(
+        "UPDATE donors SET available = ? WHERE id = ?",
+        [available, req.params.id],
+        (err, result) => {
+            if (err) return res.status(500).json({ message: "Error updating availability" });
+            res.json({ success: true, message: "Availability updated" });
+        }
+    );
+};
+
 module.exports = {
     deactivateDonor,
     addDonor,
@@ -634,5 +645,6 @@ module.exports = {
     resetPassword,
     confirmEmailChangeDonor,
     requestEmailChangeDonor,
-    getMapDonors
+    getMapDonors,
+    updateDonorAvailability
 };

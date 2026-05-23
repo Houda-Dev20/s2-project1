@@ -1,8 +1,11 @@
 ﻿// دالة تحويل التاريخ إلى "منذ X دقيقة/ساعة/يوم"
 function getTimeAgo(dateString) {
-    const date = new Date(dateString);
+    const dateStr = dateString.endsWith('Z') ? dateString : dateString + 'Z';
+    const date = new Date(dateStr);
     const now = new Date();
     const seconds = Math.floor((now - date) / 1000);
+    
+    if (seconds < 0) return "Just now"; // إذا كان الوقت في المستقبل بسبب timezone
     if (seconds < 60) return "Just now";
     const minutes = Math.floor(seconds / 60);
     if (minutes < 60) return `${minutes} min ago`;
@@ -152,8 +155,51 @@ if (elements.list) {
         const notifType = item.dataset.type;
         const donationId = item.dataset.donationId;
         if (!isRead) await markAsRead(id);
-        if (notifType === 'donation_request' && elements.modal) {
-    // هذا الإشعار يصل للمحتاج (طلب من متبرع) -> المحتاج هو من سيقبل
+if (notifType === 'donation_request' && elements.modal) {
+    // جلب بيانات المتبرع
+    const donationRes = await fetch(`http://localhost:3000/donations/${donationId}`);
+    const donation = await donationRes.json();
+    const donorId = donation.id_donor;
+    
+    const donorRes = await fetch(`http://localhost:3000/donors/profile/${donorId}`);
+    const donor = await donorRes.json();
+    
+    // تحديث الـ modal
+    if (elements.modalTitle) elements.modalTitle.innerText = "DONOR MATCH FOUND!";
+    if (elements.modalName) elements.modalName.innerText = donor.full_name;
+    if (elements.modalLocation) elements.modalLocation.innerText = getWilayaNameById(donor.location) || "Unknown";
+    if (elements.modalMsg) elements.modalMsg.innerText = "Hello, I am nearby and I can help you.";
+
+    // صورة المتبرع
+    const modalImg = document.getElementById('modalImg');
+    if (modalImg) {
+        if (donor.profile_picture) {
+            modalImg.src = 'http://localhost:3000' + donor.profile_picture;
+            modalImg.style.display = 'block';
+        } else {
+            // أظهر الحروف الأولى
+            modalImg.style.display = 'none';
+            const donorInfo = document.querySelector('.donor-info');
+            if (donorInfo) {
+                const existing = donorInfo.querySelector('.initials-circle');
+                if (!existing) {
+                    const initials = donor.full_name.split(' ').map(w => w[0]).join('').toUpperCase().substring(0, 2);
+                    const circle = document.createElement('div');
+                    circle.className = 'initials-circle';
+                    circle.style.cssText = `
+                        width: 50px; height: 50px; border-radius: 50%;
+                        background: #FDECEA; color: #E8433A;
+                        display: flex; align-items: center; justify-content: center;
+                        font-weight: bold; font-size: 18px; font-family: Inter, sans-serif;
+                        flex-shrink: 0;
+                    `;
+                    circle.innerText = initials;
+                    donorInfo.insertBefore(circle, donorInfo.firstChild);
+                }
+            }
+        }
+    }
+    // ... باقي كود القبول    // هذا الإشعار يصل للمحتاج (طلب من متبرع) -> المحتاج هو من سيقبل
     elements.modal.style.display = 'flex';
     if (elements.acceptBtn) {
         const newAcceptBtn = elements.acceptBtn.cloneNode(true);
@@ -197,10 +243,18 @@ if (elements.list) {
 
         if (elements.modal) {
             elements.modal.style.display = 'flex';
-            if (elements.modalTitle) elements.modalTitle.innerText = "PATIENT REQUEST";
+            if (elements.modalTitle) elements.modalTitle.innerText = "PATIENT WANTS YOUR HELP!";
             if (elements.modalName) elements.modalName.innerText = searcher.full_name;
             if (elements.modalLocation) elements.modalLocation.innerText = getWilayaNameById(searcher.location) || "Unknown";
-            if (elements.modalMsg) elements.modalMsg.innerText = `Needs ${searcher.blood_type_research} blood. Hospital: ${searcher.Hospital_name || "Not specified"}. Urgent: ${searcher.is_urgent ? "Yes" : "No"}`;
+            if (elements.modalMsg) elements.modalMsg.innerText = "Hello, I am nearby and I need blood.";
+            const modalImg = document.getElementById('modalImg');
+if (modalImg) {
+    if (searcher.profile_picture) {
+        modalImg.src = 'http://localhost:3000' + searcher.profile_picture;
+    } else {
+        modalImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(searcher.full_name)}&background=FDECEA&color=E8433A&size=128`;
+    }
+}
             if (elements.acceptBtn) {
                 const newAcceptBtn = elements.acceptBtn.cloneNode(true);
                 elements.acceptBtn.parentNode.replaceChild(newAcceptBtn, elements.acceptBtn);
