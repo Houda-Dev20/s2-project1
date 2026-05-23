@@ -3,10 +3,13 @@
 async function loadGlobalProfilePicture() {
     const user = JSON.parse(localStorage.getItem("currentUserSession"));
     
-    if (!user?.userId) {
-        console.log('No user logged in');
-        return;
-    }
+if (!user?.userId) {
+    const profileBtn = document.getElementById('profile');
+    const notifWrapper = document.querySelector('.notif-wrapper');
+    if (profileBtn) profileBtn.style.display = 'none';
+    if (notifWrapper) notifWrapper.style.display = 'none';
+    return;
+}
     
     // Wait a bit for the DOM to be fully ready
     setTimeout(async () => {

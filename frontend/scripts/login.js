@@ -71,16 +71,53 @@
 
             let data = await response.json();
 
-            if (data.success) {
+// للـ donor
+if (data.is_deactivated && data.userType === "donor") {
+    const confirmReactivate = confirm("Your account is deactivated. Would you like to reactivate it?");
+    if (confirmReactivate) {
+        const res = await fetch(`http://localhost:3000/donors/active/${data.userId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        if (res.ok) {
+            // سجّل الدخول تلقائياً بعد إعادة التفعيل
+            localStorage.setItem("currentUserSession", JSON.stringify({
+                userId: data.userId,
+                userType: "donor",
+                is_active: 1
+            }));
+            // اجلب بيانات المستخدم الكاملة
+            const profileRes = await fetch(`http://localhost:3000/donors/profile/${data.userId}`);
+            if (profileRes.ok) {
+                const profileData = await profileRes.json();
                 localStorage.setItem("currentUserSession", JSON.stringify({
-                    userId: data.donor.id,
-                    userName: data.donor.full_name,
-                    userEmail: data.donor.email,
-                    userType: "donor"
+                    userId: data.userId,
+                    userName: profileData.full_name,
+                    userEmail: profileData.email,
+                    userType: "donor",
+                    is_active: 1
                 }));
-                window.location.href = "donor-profile.html";
-                return;
             }
+            alert('Account reactivated successfully!');
+            window.location.href = "donor-profile.html";
+        } else {
+            alert('Failed to reactivate account.');
+        }
+    }
+    return;
+}
+
+if (data.success) {
+    localStorage.setItem("currentUserSession", JSON.stringify({
+        userId: data.donor.id,
+        userName: data.donor.full_name,
+        userEmail: data.donor.email,
+        userType: "donor",
+        is_active: 1
+    }));
+    window.location.href = "donor-profile.html";
+    return;
+}
 
             // جرب searcher
             response = await fetch("http://localhost:3000/searchers/login", {
@@ -91,16 +128,45 @@
 
             data = await response.json();
 
-            if (data.success) {
+if (data.is_deactivated && data.userType === "searcher") {
+    const confirmReactivate = confirm("Your account is deactivated. Would you like to reactivate it?");
+    if (confirmReactivate) {
+        const res = await fetch(`http://localhost:3000/searchers/activate-searcher/${data.userId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        if (res.ok) {
+            const profileRes = await fetch(`http://localhost:3000/searchers/profile/${data.userId}`);
+            if (profileRes.ok) {
+                const profileData = await profileRes.json();
                 localStorage.setItem("currentUserSession", JSON.stringify({
-                    userId: data.searcher.id,
-                    userName: data.searcher.full_name,
-                    userEmail: data.searcher.email,
-                    userType: "searcher"
+                    userId: data.userId,
+                    userName: profileData.full_name,
+                    userEmail: profileData.email,
+                    userType: "searcher",
+                    is_active: 1
                 }));
-                    window.location.href = "patient-profile.html";
-    return;
             }
+            alert('Account reactivated successfully!');
+            window.location.href = "patient-profile.html";
+        } else {
+            alert('Failed to reactivate account.');
+        }
+    }
+    return;
+}
+
+if (data.success) {
+    localStorage.setItem("currentUserSession", JSON.stringify({
+        userId: data.searcher.id,
+        userName: data.searcher.full_name,
+        userEmail: data.searcher.email,
+        userType: "searcher",
+        is_active: 1
+    }));
+    window.location.href = "patient-profile.html";
+    return;
+}
 
             alert("Invalid email or password");
 

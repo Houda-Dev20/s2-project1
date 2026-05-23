@@ -47,6 +47,20 @@ let selectedLocation = "";
 let selectedUrgency = "";
 
 document.addEventListener("DOMContentLoaded", () => {
+
+    const session = JSON.parse(localStorage.getItem('currentUserSession') || 'null');
+    if (!session) {
+        const cardsGrid = document.querySelector('.cards-grid');
+        if (cardsGrid) {
+            cardsGrid.innerHTML = `
+                <div style="text-align:center; padding: 40px; font-family: Inter, sans-serif;">
+                    <p style="font-size:18px; color:#7A7A7A;">You must be logged in to search.</p>
+                    <a href="login.html" style="color:#E8433A; font-weight:600;">Login here</a>
+                </div>`;
+        }
+        return; 
+    }
+
     const locationSelect = document.getElementById("location");
     if (locationSelect) {
         locationSelect.innerHTML = '<option value="">Select Location</option>';

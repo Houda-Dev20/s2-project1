@@ -201,6 +201,15 @@ const loginSearcher = (req, res) => {
         const match = await bcrypt.compare(password, searcher.password);
         if (!match) return res.status(401).json({ success: false, message: "Incorrect password" });
 
+        if (searcher.is_active === 0) {
+    return res.status(403).json({ 
+        success: false, 
+        message: "Account is deactivated",
+        is_deactivated: true,
+        userId: searcher.id,
+        userType: "searcher"
+    });
+}
 
         res.status(200).json({ 
             success: true, 

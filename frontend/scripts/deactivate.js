@@ -96,18 +96,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
 if (response.ok) {
-    const session = JSON.parse(localStorage.getItem('currentUserSession') || '{}');
-    session.is_active = 0;
-    localStorage.setItem('currentUserSession', JSON.stringify(session));
-
+    localStorage.clear();
     alert('Account deactivated successfully');
-    
-    // انتقل لصفحة البروفيل
-    if (userType === 'searcher') {
-        window.location.href = 'patient-profile.html';
-    } else {
-        window.location.href = 'donor-profile.html';
-    }
+    window.location.href = 'home.html';
 } else {
                 alert(data.message || 'Failed to deactivate account');
                 modal.style.display = 'none';

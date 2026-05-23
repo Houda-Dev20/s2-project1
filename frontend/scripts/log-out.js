@@ -37,27 +37,29 @@
 
     // تحديث الصورة (إذا كانت موجودة) أو الأحرف الأولى
     if (avatarContainer) {
-        // إذا كانت الصورة موجودة في localStorage (وليست الصورة الافتراضية)
-        if (userData && userData.userPic && !userData.userPic.includes('Ellipse')) {
-            avatarContainer.innerHTML = `<img src="${userData.userPic}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;" alt="Profile">`;
-        } else if (userData && userData.userName) {
-            // استخراج الأحرف الأولى
-            const initials = userData.userName
-                .split(' ')
-                .map(word => word[0])
-                .join('')
-                .toUpperCase()
-                .substring(0, 2);
-            avatarContainer.innerText = initials;
-            avatarContainer.style.display = 'flex';
-            avatarContainer.style.alignItems = 'center';
-            avatarContainer.style.justifyContent = 'center';
-            avatarContainer.style.fontSize = '24px';
-            avatarContainer.style.fontWeight = 'bold';
-        } else {
-            avatarContainer.innerText = '?';
-        }
+    if (userData && userData.profilePicture) {
+        // صورة من السيرفر
+        const src = 'http://localhost:3000' + userData.profilePicture + '?t=' + Date.now();
+        avatarContainer.innerHTML = `<img src="${src}" style="width:72px; height:72px; border-radius:50%; object-fit:cover; display:block;" alt="Profile">`;
+    } else if (userData && userData.userPic && !userData.userPic.includes('ui-avatars') && !userData.userPic.includes('Ellipse')) {
+        avatarContainer.innerHTML = `<img src="${userData.userPic}" style="width:72px; height:72px; border-radius:50%; object-fit:cover; display:block;" alt="Profile">`;
+    } else if (userData && userData.userName) {
+        const initials = userData.userName
+            .split(' ')
+            .map(word => word[0])
+            .join('')
+            .toUpperCase()
+            .substring(0, 2);
+        avatarContainer.innerText = initials;
+        avatarContainer.style.display = 'flex';
+        avatarContainer.style.alignItems = 'center';
+        avatarContainer.style.justifyContent = 'center';
+        avatarContainer.style.fontSize = '24px';
+        avatarContainer.style.fontWeight = 'bold';
+    } else {
+        avatarContainer.innerText = '?';
     }
+}
 });
 
 // زر تسجيل الخروج وزر الإلغاء

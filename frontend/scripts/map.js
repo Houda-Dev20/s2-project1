@@ -235,12 +235,29 @@ async function loadSearchersOnMap() {
                 </div>
             `;
 
-            marker.bindPopup(popupContent, {
-                closeButton: false,
-                className: 'custom-leaflet-popup',
-                minWidth: 300,
-                maxWidth: 300
-            });
+if (!isLoggedIn) {
+    // لا يستطيع رؤية المعلومات
+    marker.on('click', () => {
+        L.popup({ closeButton: false, className: 'custom-leaflet-popup', minWidth: 250 })
+            .setLatLng([parseFloat(searcher.latitude), parseFloat(searcher.longitude)])
+            .setContent(`
+                <div style="text-align:center; padding: 20px; font-family: Inter, sans-serif;">
+                    <p style="font-size:14px; color:#7A7A7A;">Login to view patient details</p>
+                    <a href="login.html" style="color:#E8433A; font-weight:600; text-decoration:none;">Login / Sign Up</a>
+                </div>
+            `)
+            .openOn(map);
+    });
+} else {
+    marker.bindPopup(popupContent, {
+        closeButton: false,
+        className: 'custom-leaflet-popup',
+        minWidth: 300,
+        maxWidth: 300
+    });
+}
+
+
         });
     } catch (err) {
         console.error('Error loading searchers:', err);

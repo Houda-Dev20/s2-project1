@@ -369,6 +369,15 @@ const loginDonor = (req, res) => {
         if (!donor.is_verified) {
             return res.status(403).json({ message: "Please verify your email first" });
         }
+        if (donor.is_active === 0) {
+    return res.status(403).json({ 
+        success: false, 
+        message: "Account is deactivated",
+        is_deactivated: true,
+        userId: donor.id,
+        userType: "donor"
+    });
+}
 
         res.status(200).json({
             success: true,
