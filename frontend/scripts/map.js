@@ -1,6 +1,26 @@
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: ${type === 'success' ? '#4CAF50' : '#E8433A'};
+        color: white;
+        padding: 14px 24px;
+        border-radius: 10px;
+        font-family: Inter, sans-serif;
+        font-size: 15px;
+        z-index: 99999;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
 // =========================
 // 1. معرفة نوع المستخدم
 // =========================
+
 function getUserRole() {
     const session = localStorage.getItem('currentUserSession');
     if (!session) return null;
@@ -50,7 +70,7 @@ let locationRetrieved = false;
 function getAndSetUserLocation() {
     if (locationRetrieved) return;
     if (!navigator.geolocation) {
-        alert("Your browser does not support geolocation.");
+showToast("Your browser does not support geolocation.", 'error');
         return;
     }
 
@@ -77,7 +97,7 @@ function getAndSetUserLocation() {
             console.warn("Geolocation error:", error.message);
             let msg = "Could not get your location. Click the 📍 button to try again.";
             if (error.code === 1) msg = "Location access denied. Please allow it via the lock icon next to the URL, then click the 📍 button.";
-            alert(msg);
+showToast(msg, 'error');
             // إضافة زر تحديد الموقع يظهر بشكل دائم
             addLocationButtonPermanent();
         },
@@ -264,7 +284,7 @@ if (!isLoggedIn) {
         });
     } catch (err) {
         console.error('Error loading searchers:', err);
-        alert('Failed to load patients on map.');
+showToast('Failed to load patients on map.', 'error');
     }
 }
 function escapeHtml(str) {

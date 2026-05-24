@@ -8,7 +8,8 @@ const {
     acceptDonationBySearcher, 
     getDonorDonations, 
     getSearcherDonations, 
-    getDonationById 
+    getDonationById,
+    getDonorPendingStatus
 } = require('../controllers/donationControllers');
 
 // 1️⃣ المسارات الثابتة (POST)
@@ -21,7 +22,7 @@ router.post('/:id/cancel', cancelDonation);
 router.get('/status', getDonationStatus);            // ⭐ مهم جداً قبل /:id
 router.get('/donor/:donorId', getDonorDonations);    // ⭐ قبل /:id
 router.get('/searcher/:searcherId', getSearcherDonations); // ⭐ قبل /:id
-
+router.get('/donor-pending/:donorId', getDonorPendingStatus);
 // 3️⃣ المسار المتغير (يجب أن يكون آخراً)
 router.get('/:id', getDonationById);                 // هذا يمسك أي رقم معرف
 

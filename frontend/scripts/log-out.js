@@ -1,4 +1,24 @@
-﻿document.addEventListener('DOMContentLoaded', function() {
+﻿function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: ${type === 'success' ? '#4CAF50' : '#E8433A'};
+        color: white;
+        padding: 14px 24px;
+        border-radius: 10px;
+        font-family: Inter, sans-serif;
+        font-size: 15px;
+        z-index: 99999;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
     // جلب بيانات المستخدم من localStorage
     const userDataStr = localStorage.getItem('currentUserSession');
     let userData = null;
@@ -67,9 +87,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const logoutBtn = document.querySelector(".btn-logout");
     if (logoutBtn) {
         logoutBtn.addEventListener("click", () => {
-            localStorage.removeItem("currentUserSession");
-            alert("Logged out successfully");
-            window.location.href = "home.html";
+localStorage.removeItem("currentUserSession");
+showToast("Logged out successfully", 'success');
+setTimeout(() => window.location.href = "home.html", 1500);
         });
     }
 

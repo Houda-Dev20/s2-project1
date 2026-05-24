@@ -193,8 +193,10 @@ function renderSearcherCards(searchers) {
         const wilayaName = getWilayaNameById(searcher.location);
         const urgencyClass = searcher.is_urgent ? "high" : "stable";
         const urgencyText = searcher.is_urgent ? "High Urgency" : "Stable";
-        const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(searcher.full_name)}&background=FDECEA&color=E8433A&bold=true`;
-
+const avatarUrl = searcher.profile_picture 
+    ? `http://localhost:3000${searcher.profile_picture}`
+    : `https://ui-avatars.com/api/?name=${encodeURIComponent(searcher.full_name)}&background=FDECEA&color=E8433A&bold=true`;
+    
         let registerDate = "Date not available";
         let postedAgo = "recently";
         if (searcher.created_at) {
@@ -223,10 +225,10 @@ function renderSearcherCards(searchers) {
                     ${wilayaName}
                 </div>
                 <div class="request-box">
-                    <div class="hospital-name">
-                        <img src="images/uil_hospital.svg" alt="" class="hospital-icon">
-                        Hospital in ${wilayaName}
-                    </div>
+<div class="hospital-name">
+    <img src="images/uil_hospital.svg" alt="" class="hospital-icon">
+    ${searcher.Hospital_name ? searcher.Hospital_name : `Hospital in ${wilayaName}`}
+</div>
                     <div class="req-date">${registerDate}</div>
                     <div class="req-meta">
                         <span>

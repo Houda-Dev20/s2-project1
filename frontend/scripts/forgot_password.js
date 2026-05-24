@@ -1,3 +1,22 @@
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: ${type === 'success' ? '#4CAF50' : '#E8433A'};
+        color: white;
+        padding: 14px 24px;
+        border-radius: 10px;
+        font-family: Inter, sans-serif;
+        font-size: 15px;
+        z-index: 99999;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
 
 document.addEventListener("DOMContentLoaded", () => {
     const email = new URLSearchParams(window.location.search).get("email");
@@ -97,10 +116,10 @@ async function validateStep1() {
             showStep(2);
             startTimer();
         } else {
-            alert(data.message || 'Email not found');
+showToast(data.message || 'Email not found', 'error');
         }
     } catch (error) {
-        alert('Network error. Please try again.');
+showToast('Network error. Please try again.', 'error');
     } finally {
         btn.disabled = false;
         btn.textContent = 'Send Reset Code';
@@ -117,8 +136,8 @@ async function validateStep2() {
     });
 
     if (!complete || code.length !== 6) {
-        alert('Please enter the 6-digit code');
-        return;
+showToast('Please enter the 6-digit code', 'error');
+return;
     }
 
     const btn = document.querySelector('#step2 .btn-main');
@@ -137,13 +156,13 @@ async function validateStep2() {
             showStep(3);
         } else {
             const data = await response.json();
-            alert(data.message || 'Invalid code');
+showToast(data.message || 'Invalid code', 'error');
             otpInputs.forEach(i => i.value = '');
             otpInputs[0].focus();
             updateVerifyButtonState();
         }
     } catch (error) {
-        alert('Network error. Please try again.');
+showToast('Network error. Please try again.', 'error');
     } finally {
         btn.disabled = false;
         btn.textContent = 'Verify code';
@@ -175,14 +194,14 @@ async function validateStep3() {
         });
 
         if (response.ok) {
-            alert('Password reset successfully! You can now login.');
-            window.location.href = 'logIn.html';
+showToast('Password reset successfully! You can now login.', 'success');        
+    window.location.href = 'logIn.html';
         } else {
             const data = await response.json();
-            alert(data.message || 'Something went wrong');
-        }
+showToast(data.message || 'Something went wrong', 'error');   
+     }
     } catch (error) {
-        alert('Network error. Please try again.');
+showToast('Network error. Please try again.', 'error');
     } finally {
         btn.disabled = false;
         btn.textContent = 'Reset password';
@@ -220,7 +239,7 @@ resendBtn.addEventListener('click', async function() {
     if (isTimerRunning) return;
     
     if (!currentEmail) {
-        alert('Please enter your email first');
+showToast('Please enter your email first', 'error');
         return;
     }
     
@@ -236,8 +255,7 @@ resendBtn.addEventListener('click', async function() {
         const data = await response.json();
 
         if (response.ok) {
-            alert('✓ New code sent to your email');
-            
+showToast('✓ New code sent to your email', 'success');            
             otpInputs.forEach(i => i.value = '');
             updateVerifyButtonState();
             otpInputs[0].focus();
@@ -260,12 +278,12 @@ resendBtn.addEventListener('click', async function() {
                 }
             }, 1000);
         } else {
-            alert(data.message || 'Failed to resend code');
+showToast(data.message || 'Failed to resend code', 'error');
             resendBtn.innerHTML = "Resend code";
         }
 
     } catch (error) {
-        alert('Network error. Please try again.');
+showToast('Network error. Please try again.', 'error');
         resendBtn.innerHTML = "Resend code";
     }
 });

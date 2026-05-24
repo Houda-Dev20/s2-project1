@@ -158,7 +158,9 @@ function renderDonorCards(donors) {
     let html = "";
     donors.forEach((donor, index) => {
         const wilayaName = getWilayaNameById(donor.location);
-        const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(donor.full_name)}&background=FDECEA&color=E8433A&bold=true`;
+const avatarUrl = donor.profile_picture 
+    ? `http://localhost:3000${donor.profile_picture}`
+    : `https://ui-avatars.com/api/?name=${encodeURIComponent(donor.full_name)}&background=FDECEA&color=E8433A&bold=true`;
 
         let postedAgo = "recently";
         let registerDate = "Date not available";
@@ -174,8 +176,12 @@ function renderDonorCards(donors) {
         html += `
             <div class="card" data-location="${donor.location}" data-wilaya="${wilayaName}">
                 <div class="card-header">
-                    <img src="${avatarUrl}" class="avatar-sm" alt="${donor.full_name}">
-                    <div class="card-meta">
+${donor.profile_picture 
+    ? `<img src="http://localhost:3000${donor.profile_picture}" class="avatar-sm" alt="${donor.full_name}">`
+    : `<div class="avatar-sm" style="background:#FDECEA;display:flex;align-items:center;justify-content:center;font-family:Inter,sans-serif;font-weight:700;font-size:22px;color:#E8433A;">
+        ${donor.full_name.split(' ').map(w => w[0]).join('').toUpperCase().substring(0, 2)}
+       </div>`
+}                    <div class="card-meta">
                         <div class="card-name">
                             ${donor.full_name}
                             <span class="blood-badge">${donor.blood_type}</span>

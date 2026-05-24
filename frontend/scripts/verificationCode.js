@@ -1,3 +1,22 @@
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: ${type === 'success' ? '#4CAF50' : '#E8433A'};
+        color: white;
+        padding: 14px 24px;
+        border-radius: 10px;
+        font-family: Inter, sans-serif;
+        font-size: 15px;
+        z-index: 99999;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
 // verificationCode.js - يدعم التسجيل الجديد وتغيير البريد الإلكتروني
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -136,7 +155,7 @@ verifyBtn.addEventListener('click', async function(e) {
 
         if (isEmailChange) {
             // نجاح تغيير البريد
-            alert("✓ Email updated successfully! You will be redirected to your profile.");
+showToast("✓ Email updated successfully! You will be redirected to your profile.", 'success');
             // تحديث البريد في localStorage إذا وجد
             const session = JSON.parse(localStorage.getItem("currentUserSession"));
             if (session && data.email) {
@@ -174,7 +193,7 @@ verifyBtn.addEventListener('click', async function(e) {
             }, 2000);
         }
     } catch (err) {
-        alert(err.message);
+showToast(err.message, 'error');
         verifyBtn.textContent = 'Verify';
         verifyBtn.disabled = false;
     }
@@ -193,13 +212,13 @@ function addRipple(e, btn) {
 // ── إعادة إرسال الكود (للتسجيل فقط، لتغيير البريد نطلب من المستخدم العودة) ──
 resendBtn.addEventListener('click', async () => {
     if (isResendTimerRunning) {
-        alert(`Please wait ${resendBtn.textContent} before resending`);
+showToast(`Please wait ${resendBtn.textContent} before resending`, 'error');
         return;
     }
 
     const isEmailChange = window.isEmailChange;
     if (isEmailChange) {
-        alert("For email change, please go back to your profile and request a new code again.");
+showToast("For email change, please go back to your profile and request a new code again.", 'error');
         return;
     }
 
@@ -207,7 +226,7 @@ resendBtn.addEventListener('click', async () => {
     const type = window.verifyType;
 
     if (!email || !type) {
-        alert('Email not found. Please go back and try again.');
+showToast('Email not found. Please go back and try again.', 'error');
         return;
     }
 
@@ -225,7 +244,7 @@ resendBtn.addEventListener('click', async () => {
         const data = await response.json();
 
         if (response.ok) {
-            alert('✓ New verification code sent to your email');
+showToast('✓ New verification code sent to your email', 'success');
             inputs.forEach(i => {
                 i.value = '';
                 i.classList.remove('filled');
@@ -248,13 +267,13 @@ resendBtn.addEventListener('click', async () => {
                 }
             }, 1000);
         } else {
-            alert(data.message || 'Failed to resend code');
+showToast(data.message || 'Failed to resend code', 'error');
             resendBtn.textContent = 'Resend code';
             resendBtn.disabled = false;
         }
     } catch (error) {
         console.error('Resend error:', error);
-        alert('Network error. Please try again.');
+showToast('Network error. Please try again.', 'error');
         resendBtn.textContent = 'Resend code';
         resendBtn.disabled = false;
     }

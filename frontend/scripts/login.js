@@ -12,14 +12,12 @@
     const closeBtn = document.getElementById("closeModel");
     const form = document.getElementById("login-form");
 
-    // ✅ إذا كان remember me مفعل، نملأ الإيميل تلقائياً
     const savedEmail = localStorage.getItem("rememberedEmail");
     if (savedEmail) {
         emailInput.value = savedEmail;
         rememberCheckbox.checked = true;
     }
 
-    // 👁 toggle password visibility
     eyeBtn.addEventListener("click", function () {
         if (passwordInput.type === "password") {
             passwordInput.type = "text";
@@ -30,31 +28,17 @@
         }
     });
 
-    // popup logic
-    openBtn.addEventListener("click", () => {
-        modal.classList.add("open");
-    });
+    openBtn.addEventListener("click", () => { modal.classList.add("open"); });
+    donor.addEventListener("click", () => { window.location.href = "donor-signup.html"; });
+    searcher.addEventListener("click", () => { window.location.href = "request-blood.html"; });
+    closeBtn.addEventListener("click", () => { modal.classList.remove("open"); });
 
-    donor.addEventListener("click", () => {
-        window.location.href = "donor-signup.html";
-    });
-
-    searcher.addEventListener("click", () => {
-        window.location.href = "request-blood.html";
-    });
-
-    closeBtn.addEventListener("click", () => {
-        modal.classList.remove("open");
-    });
-
-    // LOGIN
     form.addEventListener("submit", async function (e) {
         e.preventDefault();
 
         const email = emailInput.value;
         const password = passwordInput.value;
 
-        // ✅ remember me
         if (rememberCheckbox.checked) {
             localStorage.setItem("rememberedEmail", email);
         } else {
@@ -62,7 +46,6 @@
         }
 
         try {
-            // جرب donor أولاً
             let response = await fetch("http://localhost:3000/donors/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -71,55 +54,45 @@
 
             let data = await response.json();
 
-// للـ donor
-if (data.is_deactivated && data.userType === "donor") {
-    const confirmReactivate = confirm("Your account is deactivated. Would you like to reactivate it?");
-    if (confirmReactivate) {
-        const res = await fetch(`http://localhost:3000/donors/active/${data.userId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' }
-        });
-        if (res.ok) {
-            // سجّل الدخول تلقائياً بعد إعادة التفعيل
-            localStorage.setItem("currentUserSession", JSON.stringify({
-                userId: data.userId,
-                userType: "donor",
-                is_active: 1
-            }));
-            // اجلب بيانات المستخدم الكاملة
-            const profileRes = await fetch(`http://localhost:3000/donors/profile/${data.userId}`);
-            if (profileRes.ok) {
-                const profileData = await profileRes.json();
+            if (data.is_deactivated && data.userType === "donor") {
+                showConfirm("Your account is deactivated. Would you like to reactivate it?", async () => {
+                    const res = await fetch(`http://localhost:3000/donors/active/${data.userId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    if (res.ok) {
+                        const profileRes = await fetch(`http://localhost:3000/donors/profile/${data.userId}`);
+                        if (profileRes.ok) {
+                            const profileData = await profileRes.json();
+                            localStorage.setItem("currentUserSession", JSON.stringify({
+                                userId: data.userId,
+                                userName: profileData.full_name,
+                                userEmail: profileData.email,
+                                userType: "donor",
+                                is_active: 1
+                            }));
+                        }
+                        showToast('Account reactivated successfully!', 'success');
+                        setTimeout(() => { window.location.href = "donor-profile.html"; }, 1500);
+                    } else {
+                        showToast('Failed to reactivate account.', 'error');
+                    }
+                });
+                return;
+            }
+
+            if (data.success) {
                 localStorage.setItem("currentUserSession", JSON.stringify({
-                    userId: data.userId,
-                    userName: profileData.full_name,
-                    userEmail: profileData.email,
+                    userId: data.donor.id,
+                    userName: data.donor.full_name,
+                    userEmail: data.donor.email,
                     userType: "donor",
                     is_active: 1
                 }));
+                window.location.href = "donor-profile.html";
+                return;
             }
-            alert('Account reactivated successfully!');
-            window.location.href = "donor-profile.html";
-        } else {
-            alert('Failed to reactivate account.');
-        }
-    }
-    return;
-}
 
-if (data.success) {
-    localStorage.setItem("currentUserSession", JSON.stringify({
-        userId: data.donor.id,
-        userName: data.donor.full_name,
-        userEmail: data.donor.email,
-        userType: "donor",
-        is_active: 1
-    }));
-    window.location.href = "donor-profile.html";
-    return;
-}
-
-            // جرب searcher
             response = await fetch("http://localhost:3000/searchers/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -128,52 +101,95 @@ if (data.success) {
 
             data = await response.json();
 
-if (data.is_deactivated && data.userType === "searcher") {
-    const confirmReactivate = confirm("Your account is deactivated. Would you like to reactivate it?");
-    if (confirmReactivate) {
-        const res = await fetch(`http://localhost:3000/searchers/activate-searcher/${data.userId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' }
-        });
-        if (res.ok) {
-            const profileRes = await fetch(`http://localhost:3000/searchers/profile/${data.userId}`);
-            if (profileRes.ok) {
-                const profileData = await profileRes.json();
+            if (data.is_deactivated && data.userType === "searcher") {
+                showConfirm("Your account is deactivated. Would you like to reactivate it?", async () => {
+                    const res = await fetch(`http://localhost:3000/searchers/activate-searcher/${data.userId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    if (res.ok) {
+                        const profileRes = await fetch(`http://localhost:3000/searchers/profile/${data.userId}`);
+                        if (profileRes.ok) {
+                            const profileData = await profileRes.json();
+                            localStorage.setItem("currentUserSession", JSON.stringify({
+                                userId: data.userId,
+                                userName: profileData.full_name,
+                                userEmail: profileData.email,
+                                userType: "searcher",
+                                is_active: 1
+                            }));
+                        }
+                        showToast('Account reactivated successfully!', 'success');
+                        setTimeout(() => { window.location.href = "patient-profile.html"; }, 1500);
+                    } else {
+                        showToast('Failed to reactivate account.', 'error');
+                    }
+                });
+                return;
+            }
+
+            if (data.success) {
                 localStorage.setItem("currentUserSession", JSON.stringify({
-                    userId: data.userId,
-                    userName: profileData.full_name,
-                    userEmail: profileData.email,
+                    userId: data.searcher.id,
+                    userName: data.searcher.full_name,
+                    userEmail: data.searcher.email,
                     userType: "searcher",
                     is_active: 1
                 }));
+                window.location.href = "patient-profile.html";
+                return;
             }
-            alert('Account reactivated successfully!');
-            window.location.href = "patient-profile.html";
-        } else {
-            alert('Failed to reactivate account.');
-        }
-    }
-    return;
-}
 
-if (data.success) {
-    localStorage.setItem("currentUserSession", JSON.stringify({
-        userId: data.searcher.id,
-        userName: data.searcher.full_name,
-        userEmail: data.searcher.email,
-        userType: "searcher",
-        is_active: 1
-    }));
-    window.location.href = "patient-profile.html";
-    return;
-}
-
-            alert("Invalid email or password");
+            showToast("Invalid email or password", 'error');
 
         } catch (err) {
             console.error(err);
-            alert("Server error");
+            showToast("Server error", 'error');
         }
     });
-
 });
+
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed; bottom: 30px; right: 30px;
+        background: ${type === 'success' ? '#4CAF50' : '#E8433A'};
+        color: white; padding: 14px 24px; border-radius: 10px;
+        font-family: Inter, sans-serif; font-size: 15px;
+        z-index: 99999; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+function showConfirm(message, onConfirm) {
+    const existing = document.getElementById('confirmOverlay');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'confirmOverlay';
+    overlay.style.cssText = `
+        position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 999999;
+    `;
+    overlay.innerHTML = `
+        <div style="background: white; border-radius: 16px; padding: 32px 28px;
+            width: 320px; text-align: center; box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            font-family: Inter, sans-serif;">
+            <p style="font-size: 16px; color: #333; margin-bottom: 24px;">${message}</p>
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button id="confirmNo" style="padding: 10px 28px; border-radius: 8px;
+                    border: 1px solid #ddd; background: white; color: #555;
+                    cursor: pointer; font-size: 14px;">Cancel</button>
+                <button id="confirmYes" style="padding: 10px 28px; border-radius: 8px;
+                    border: none; background: #E8433A; color: white;
+                    cursor: pointer; font-size: 14px;">Confirm</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    document.getElementById('confirmYes').onclick = () => { overlay.remove(); onConfirm(); };
+    document.getElementById('confirmNo').onclick = () => { overlay.remove(); };
+}

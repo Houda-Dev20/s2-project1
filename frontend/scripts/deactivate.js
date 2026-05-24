@@ -1,4 +1,23 @@
-// في أعلى DOMContentLoaded مباشرة
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: ${type === 'success' ? '#4CAF50' : '#E8433A'};
+        color: white;
+        padding: 14px 24px;
+        border-radius: 10px;
+        font-family: Inter, sans-serif;
+        font-size: 15px;
+        z-index: 99999;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
 const session = JSON.parse(localStorage.getItem('currentUserSession') || '{}');
 const userId = session.userId;
 const userType = session.userType;
@@ -50,15 +69,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const userEmail = session.userEmail;
 
         if (!userId) {
-            alert('Please login first');
-            modal.style.display = 'none';
+showToast('Please login first', 'error');
+
+modal.style.display = 'none';
             return;
         }
 
         const enteredPassword = passwordInput.value.trim();
 
         if (!enteredPassword) {
-            alert('Please enter your password to confirm');
+showToast('Please enter your password to confirm', 'error');
             return;
         }
 
@@ -78,8 +98,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // ❌ باسوورد غلط — ابقى في الصفحة
             if (!verifyData.success) {
-                alert('Incorrect password. Please try again.');
-                modal.style.display = 'none';
+showToast('Incorrect password. Please try again.', 'error');
+modal.style.display = 'none';
                 return;
             }
 
@@ -96,17 +116,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
 if (response.ok) {
-    localStorage.clear();
-    alert('Account deactivated successfully');
-    window.location.href = 'home.html';
+localStorage.clear();
+showToast('Account deactivated successfully', 'success');
+setTimeout(() => window.location.href = 'home.html', 1500);
 } else {
-                alert(data.message || 'Failed to deactivate account');
+showToast(data.message || 'Failed to deactivate account', 'error');
                 modal.style.display = 'none';
             }
 
         } catch (error) {
             console.error('Error:', error);
-            alert('Network error. Please try again.');
+showToast('Network error. Please try again.', 'error');
             modal.style.display = 'none';
         }
     });

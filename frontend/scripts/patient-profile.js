@@ -1,5 +1,25 @@
 ﻿let currentProfileData = {};
 
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: ${type === 'success' ? '#4CAF50' : '#E8433A'};
+        color: white;
+        padding: 14px 24px;
+        border-radius: 10px;
+        font-family: Inter, sans-serif;
+        font-size: 15px;
+        z-index: 99999;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
 const wilayas = [
     "Adrar","Chlef","Laghouat","Oum El Bouaghi","Batna","Bejaia","Biskra","Bechar",
     "Blida","Bouira","Tamanrasset","Tebessa","Tlemcen","Tiaret","Tizi Ouzou","Algiers",
@@ -51,13 +71,13 @@ async function uploadSearcherProfilePicture(file) {
         // Broadcast update to other pages
         window.dispatchEvent(new CustomEvent('profilePictureUpdated'));
         
-        alert('Profile picture updated!');
+showToast('Profile picture updated!', 'success');
         return true;
         
     } catch (error) {
 
         console.error('Upload error:', error);
-        alert('Failed to upload picture: ' + error.message);
+showToast('Failed to upload picture: ' + error.message, 'error');
         return false;
     }
 }
@@ -154,14 +174,14 @@ async function fetchRequestHistory(searcherId) {
 async function loadSearcherProfile() {
     const user = JSON.parse(localStorage.getItem("currentUserSession"));
     if (user && user.userType !== "searcher") {
-        alert("This page is for patients only. Please log out and log in as a patient.");
+showToast("This page is for patients only. Please log out and log in as a patient.", 'error');
         window.location.href = "login.html";
         return;
     }
 
     if (!user?.userId) {
         console.error("No user session");
-        alert("Please log in again.");
+showToast("Please log in again.", 'error');
         window.location.href = "login.html";
         return;
     }
@@ -171,7 +191,7 @@ async function loadSearcherProfile() {
         if (!response.ok) {
             if (response.status === 404) {
                 console.error("User not found");
-                alert("User not found. Please log in again.");
+showToast("User not found. Please log in again.", 'error');
                 localStorage.removeItem("currentUserSession");
                 window.location.href = "login.html";
                 return;
@@ -181,7 +201,7 @@ async function loadSearcherProfile() {
         const text = await response.text();
         if (!text || text.trim() === "") {
             console.error("Empty response from server");
-            alert("Server returned empty response. Please try again later.");
+showToast("Server returned empty response. Please try again later.", 'error');
             return;
         }
         const data = JSON.parse(text);
@@ -302,16 +322,16 @@ if (currentSession.is_active === 0 && deactivateLink && securityP) {
         if (res.ok) {
             currentSession.is_active = 1;
             localStorage.setItem('currentUserSession', JSON.stringify(currentSession));
-            alert('Account reactivated successfully');
+showToast('Account reactivated successfully', 'success');
             window.location.reload();
         } else {
-            alert('Failed to reactivate account');
+showToast('Failed to reactivate account', 'error');
         }
     });
 }
     } catch (error) {
         console.error("Error loading profile:", error);
-        alert("Failed to load profile data. Please make sure the server is running.");
+showToast("Failed to load profile data. Please make sure the server is running.", 'error');
     }
 }
 
@@ -610,7 +630,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log("Requesting email change...");
             const session = JSON.parse(localStorage.getItem("currentUserSession"));
             const userId = session?.userId;
-            if (!userId) { alert("User ID not found"); return; }
+            if (!userId) { showToast("User ID not found", 'error'); return; }
             const changeUrl = `http://localhost:3000/searchers/request-email-change/${userId}`;
             try {
                 const res = await fetch(changeUrl, {
@@ -620,14 +640,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 if (!res.ok) {
                     const err = await res.text();
-                    alert("Error: " + err);
+showToast("Error: " + err, 'error');
                     return;
                 }
-                alert("Verification code sent to your new email.");
+showToast("Verification code sent to your new email.", 'success');
                 window.location.href = `verificationCode.html?email=${encodeURIComponent(newEmailValue)}&type=email-change&userId=${userId}&role=searcher`;
                 return;
             } catch(err) {
-                alert("Network error: " + err.message);
+showToast("Network error: " + err.message, 'error');
                 return;
             }
         }
@@ -638,7 +658,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const stateText = document.getElementById('state-icon')?.innerText.trim() || "Stable";
         updatedData.is_urgent = (stateText === "Urgent") ? 1 : 0;
         if (updatedData.date_of_birth && !isValidDate(updatedData.date_of_birth)) {
-            alert("Invalid date format (YYYY-MM-DD)");
+showToast("Invalid date format (YYYY-MM-DD)", 'error');
             return;
         }
         console.log("Sending data without email:", updatedData);
@@ -651,7 +671,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         if (!response.ok) {
             const txt = await response.text();
-            alert("Update failed: " + txt);
+showToast("Update failed: " + txt, 'error');
         } else {
             console.log("Update success");
             await loadSearcherProfile();

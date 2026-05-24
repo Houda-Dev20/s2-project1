@@ -10,7 +10,32 @@ if (!user?.userId) {
     if (notifWrapper) notifWrapper.style.display = 'none';
     return;
 }
-    
+
+    setTimeout(async () => {
+        // فقط صورة الهيدر (.profile-img) وليس أي صورة أخرى
+        let profileImg = document.querySelector('.right-section .profile-img');
+        
+        if (!profileImg) return;
+        
+        try {
+            const userType = user.userType || 'donor';
+            const response = await fetch(`http://localhost:3000/get-profile-picture/${user.userId}/${userType}`);
+            
+            if (!response.ok) return;
+            
+            const data = await response.json();
+            
+            if (data.pictureUrl) {
+                const newSrc = 'http://localhost:3000' + data.pictureUrl + '?t=' + Date.now();
+                profileImg.src = newSrc;
+            }
+        } catch (error) {
+            console.error('Failed to load profile picture:', error);
+        }
+    }, 100);
+
+
+
     // Wait a bit for the DOM to be fully ready
     setTimeout(async () => {
         // Find profile image - try multiple selectors
@@ -50,17 +75,17 @@ if (!user?.userId) {
 
 // Also listen for when the profile button is clicked and picture changes
 function watchForProfilePictureChange() {
-    // Listen for storage changes (when picture updates in another tab)
     window.addEventListener('storage', (e) => {
         if (e.key === 'currentUserSession' && e.newValue) {
-            console.log('Session updated, reloading profile picture');
             loadGlobalProfilePicture();
         }
     });
     
-    // Also check periodically for picture changes (for same tab)
     let lastPictureUrl = null;
     setInterval(() => {
+        const currentPage = window.location.pathname.split('/').pop();
+        if (currentPage === 'request.html' || currentPage === 'donate.html') return;
+        
         const user = JSON.parse(localStorage.getItem("currentUserSession"));
         if (user && user.profilePicture && user.profilePicture !== lastPictureUrl) {
             lastPictureUrl = user.profilePicture;

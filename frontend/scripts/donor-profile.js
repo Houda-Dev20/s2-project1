@@ -8,50 +8,35 @@
     "Ain Temouchent","Ghardaia","Relizane","Timimoun","Bordj Badji Mokhtar","Ouled Djellal",
     "Beni Abbes","In Salah","In Guezzam","Touggourt","Djanet","El M'Ghair","El Meniaa"
 ];
-// ========== SERVER PROFILE PICTURE FUNCTIONS ==========
 
 async function uploadProfilePictureToServer(file) {
     const user = JSON.parse(localStorage.getItem("currentUserSession"));
     if (!user?.userId) return false;
-    
     const formData = new FormData();
     formData.append('profilePicture', file);
-    
     try {
         const response = await fetch(`http://localhost:3000/donors/upload-picture/${user.userId}`, {
             method: 'POST',
             body: formData
         });
-        
         if (!response.ok) {
             const error = await response.json();
             throw new Error(error.error || 'Upload failed');
         }
-        
         const data = await response.json();
-        
-        // Update both images with server URL
         const avatarImg = document.querySelector('.main-avatar');
         const headerImg = document.querySelector('.profile-img');
-        
         const newSrc = 'http://localhost:3000' + data.pictureUrl + '?t=' + Date.now();
-        
         if (avatarImg) avatarImg.src = newSrc;
         if (headerImg) headerImg.src = newSrc;
-        
-        // Save to session storage for other pages
         user.profilePicture = data.pictureUrl;
         localStorage.setItem('currentUserSession', JSON.stringify(user));
-        
-        // ✅ MOVED THIS - Broadcast to other tabs/pages
         broadcastProfilePictureUpdate(data.pictureUrl);
-        
         console.log('Profile picture saved to server!');
         return true;
-        
     } catch (error) {
         console.error('Upload error:', error);
-        alert('Failed to upload picture: ' + error.message);
+        showToast('Failed to upload picture: ' + error.message, 'error');
         return false;
     }
 }
@@ -60,42 +45,33 @@ async function loadProfilePictureFromServer() {
     const user = JSON.parse(localStorage.getItem("currentUserSession"));
     const avatarImg = document.querySelector('.main-avatar');
     const headerImg = document.querySelector('.profile-img');
-    
     if (!user?.userId || (!avatarImg && !headerImg)) return;
-    
     try {
         const response = await fetch(`http://localhost:3000/get-profile-picture/${user.userId}/donor`);
         if (!response.ok) return;
-        
         const data = await response.json();
-        
         if (data.pictureUrl) {
-            
-const newSrc = 'http://localhost:3000' + data.pictureUrl + '?t=' + Date.now();
+            const newSrc = 'http://localhost:3000' + data.pictureUrl + '?t=' + Date.now();
             if (avatarImg) avatarImg.src = newSrc;
             if (headerImg) headerImg.src = newSrc;
-            
             user.profilePicture = data.pictureUrl;
             localStorage.setItem('currentUserSession', JSON.stringify(user));
-            console.log('Profile picture loaded from server');
         }
     } catch (error) {
         console.error('Failed to load profile picture:', error);
     }
 }
-// Add this function to broadcast picture changes to other tabs/pages
+
 function broadcastProfilePictureUpdate(pictureUrl) {
-    // Update current session
     const user = JSON.parse(localStorage.getItem("currentUserSession"));
     if (user) {
         user.profilePicture = pictureUrl;
         localStorage.setItem('currentUserSession', JSON.stringify(user));
     }
-    
-    // Trigger storage event for other tabs
     localStorage.setItem('profilePictureUpdated', Date.now().toString());
     setTimeout(() => localStorage.removeItem('profilePictureUpdated'), 100);
 }
+
 function getWilayaNameById(id) {
     if (!id) return "Unknown";
     const index = parseInt(id) - 1;
@@ -112,13 +88,11 @@ function formatDate(dateString) {
     return `${year}-${month}-${day}`;
 }
 
-// ---------- سجل التبرعات (آخر 3 فقط) ----------
 let allDonationsData = [];
 
 function renderDonations() {
     const container = document.getElementById("historyList");
     if (!container) return;
-
     if (allDonationsData.length === 0) {
         container.innerHTML = `<div class="history-item" style="justify-content: center;">
             <div class="history-text">
@@ -128,8 +102,6 @@ function renderDonations() {
         </div>`;
         return;
     }
-
-    // عرض جميع التبرعات (بدون اقتصاص)
     let html = '';
     for (let i = 0; i < allDonationsData.length; i++) {
         let item = allDonationsData[i];
@@ -151,17 +123,15 @@ async function fetchDonationHistory(donorId) {
         const response = await fetch(`http://localhost:3000/donations/donor/${donorId}`);
         if (!response.ok) throw new Error("Failed to fetch donation history");
         const donations = await response.json();
-        console.log("Donations received:", donations);
         allDonationsData = donations.map(d => {
             let formattedDate = "";
             if (d.donation_date) {
                 const dateObj = new Date(d.donation_date);
                 formattedDate = `${dateObj.getDate().toString().padStart(2,"0")}/${(dateObj.getMonth()+1).toString().padStart(2,"0")}/${dateObj.getFullYear()}`;
             }
-            let hospitalName = d.Hospital_name || "Hospital not specified";
             return {
                 date: formattedDate,
-                hospital: hospitalName,
+                hospital: d.Hospital_name || "Hospital not specified",
                 icon: "images/Blur.svg"
             };
         });
@@ -173,13 +143,10 @@ async function fetchDonationHistory(donorId) {
     }
 }
 
-// ---------- دالة تحميل بيانات المتبرع ----------
 async function loadDonorData() {
-    console.log("Loading donor data...");
     const user = JSON.parse(localStorage.getItem("currentUserSession"));
-
     if (user && user.userType !== "donor") {
-        alert("This page is for donors only. Please log out and log in as a donor.");
+        showToast("This page is for donors only. Please log out and log in as a donor.", 'error');
         window.location.href = "login.html";
         return;
     }
@@ -187,34 +154,23 @@ async function loadDonorData() {
         console.error("No user session found or missing userId");
         return;
     }
-
     try {
-        
         const response = await fetch(`http://localhost:3000/donors/profile/${user.userId}`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
-        console.log("Donor Data:", data);
-
         const locationName = getWilayaNameById(data.location);
-
         document.getElementById("topName").innerText = data.full_name;
         document.querySelector(".blood-badge").innerText = data.blood_type;
         document.getElementById("topLocation").innerText = locationName;
-
         document.getElementById("fullName").innerText = data.full_name;
         document.getElementById("birthDate").innerText = formatDate(data.date_of_birth);
         document.getElementById("phone").innerText = data.telephon;
         document.getElementById("email").innerText = data.email;
         document.getElementById("location").innerText = locationName;
         document.getElementById("location").setAttribute("data-wilaya-id", data.location);
-
         const bloodStrong = document.querySelector('.value strong');
         if (bloodStrong) bloodStrong.innerText = data.blood_type;
-
-        // جلب آخر 3 تبرعات
         fetchDonationHistory(user.userId);
-
-        // تحديث آخر تبرع والتبرع القادم
         const lastDonationElem = document.querySelector('.data-row:nth-child(2) .value strong');
         const nextDonationElem = document.querySelector('.data-row:nth-child(3) .value strong');
         if (data.last_donation_date) {
@@ -227,8 +183,6 @@ async function loadDonorData() {
             lastDonationElem.innerText = "No donation yet";
             nextDonationElem.innerText = "After first donation";
         }
-
-        // تحديث زر التفعيل/إلغاء التفعيل
         const donorActive = data.is_active;
         const securityLinks = document.querySelector('.security-list');
         if (securityLinks) {
@@ -245,11 +199,13 @@ async function loadDonorData() {
                         if (user && user.userId) {
                             const res = await fetch(`http://localhost:3000/donors/active/${user.userId}`, { method: 'POST' });
                             if (res.ok) {
-                                alert('Account reactivated. Please log in again.');
-                                localStorage.removeItem('currentUserSession');
-                                window.location.href = 'login.html';
+                                showToast('Account reactivated. Please log in again.', 'success');
+                                setTimeout(() => {
+                                    localStorage.removeItem('currentUserSession');
+                                    window.location.href = 'login.html';
+                                }, 1500);
                             } else {
-                                alert('Failed to reactivate account.');
+                                showToast('Failed to reactivate account.', 'error');
                             }
                         }
                     };
@@ -258,54 +214,43 @@ async function loadDonorData() {
                 }
             }
         }
-        // Add this inside loadDonorData, after getting the data (around line 130):
-if (data.profile_picture) {
-    const avatarImg = document.querySelector('.main-avatar');
-    const headerImg = document.querySelector('.profile-img');
-   const newSrc = 'http://localhost:3000' + data.profile_picture + '?t=' + Date.now();
-    if (avatarImg) avatarImg.src = newSrc;
-    if (headerImg) headerImg.src = newSrc;
-}
+        if (data.profile_picture) {
+            const avatarImg = document.querySelector('.main-avatar');
+            const headerImg = document.querySelector('.profile-img');
+            const newSrc = 'http://localhost:3000' + data.profile_picture + '?t=' + Date.now();
+            if (avatarImg) avatarImg.src = newSrc;
+            if (headerImg) headerImg.src = newSrc;
+        }
     } catch (error) {
         console.error("Error loading donor:", error);
-        alert("Failed to load profile data. Please make sure the server is running.");
+        showToast("Failed to load profile data. Please make sure the server is running.", 'error');
     }
 }
 
-// ---------- باقي الدوال (تعديل الصورة، تسجيل الخروج، إلخ) ----------
 function setupPhotoEdit() {
     const editBtn = document.querySelector('.btn-edit');
     const avatarImg = document.querySelector('.main-avatar');
     const headerImg = document.querySelector('.profile-img');
-    
     if (!editBtn || !avatarImg) return;
-    
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
     fileInput.accept = 'image/jpeg,image/png,image/gif';
     fileInput.style.display = 'none';
     document.body.appendChild(fileInput);
-    
     editBtn.onclick = () => fileInput.click();
-    
     fileInput.onchange = async (e) => {
         const file = e.target.files[0];
         if (file) {
-            // Show loading state
             avatarImg.style.opacity = '0.5';
             if (headerImg) headerImg.style.opacity = '0.5';
-            
-            // Upload to server
             await uploadProfilePictureToServer(file);
-            
-            // Reset opacity
             avatarImg.style.opacity = '1';
             if (headerImg) headerImg.style.opacity = '1';
-            
             fileInput.value = '';
         }
     };
 }
+
 function setupFooterHover() {
     const socialIcons = [
         { class: '.sm1-img', hover: 'images/hoverX.svg' },
@@ -327,17 +272,14 @@ function setupDonorInfoEdit() {
     const editBtn = document.querySelector('.edit-btn-small');
     const personalCard = document.getElementById('personalCard');
     const topName = document.getElementById('topName');
-    const topLocationSpan = document.getElementById('topLocation');
     if (!editBtn || !personalCard) return;
     let isEditing = false;
     editBtn.onclick = async function() {
         const rows = personalCard.querySelectorAll('.data-row');
         if (!isEditing) {
-            // EDIT MODE: تخزين البريد الأصلي
             const originalEmailSpan = document.getElementById('email');
             const originalEmail = originalEmailSpan ? originalEmailSpan.innerText : "";
             editBtn.setAttribute('data-original-email', originalEmail);
-            
             rows.forEach(row => {
                 const valueSpan = row.querySelector('span:last-child');
                 const label = row.querySelector('span:first-child').innerText.toLowerCase();
@@ -357,13 +299,11 @@ function setupDonorInfoEdit() {
             this.innerHTML = "Save";
             isEditing = true;
         } else {
-            // SAVE MODE: جمع البيانات
             const updatedData = {};
             let locationInputValue = "";
             let emailChanged = false;
             let newEmailValue = "";
             const originalEmail = editBtn.getAttribute('data-original-email');
-            
             rows.forEach(row => {
                 const input = row.querySelector('input');
                 const valueSpan = row.querySelector('span:last-child');
@@ -371,45 +311,34 @@ function setupDonorInfoEdit() {
                 if (input) {
                     const newValue = input.value.trim();
                     valueSpan.innerText = newValue;
-                    if (label.includes("name")) {
-                        updatedData.full_name = newValue;
-                        if (topName) topName.innerText = newValue;
-                    }
+                    if (label.includes("name")) { updatedData.full_name = newValue; if (topName) topName.innerText = newValue; }
                     if (label.includes("birth")) updatedData.date_of_birth = newValue;
                     if (label.includes("phone")) updatedData.telephon = newValue;
-                    if (label.includes("email")) {
-                        if (newValue !== originalEmail) {
-                            emailChanged = true;
-                            newEmailValue = newValue;
-                        }
-                    }
+                    if (label.includes("email") && newValue !== originalEmail) { emailChanged = true; newEmailValue = newValue; }
                     if (label.includes("location")) locationInputValue = newValue;
                 }
             });
-            
-            // إذا تغير البريد
             if (emailChanged) {
                 const session = JSON.parse(localStorage.getItem("currentUserSession"));
                 const userId = session?.userId;
-                if (!userId) { alert("User not found"); return; }
-                const changeUrl = `http://localhost:3000/donors/request-email-change/${userId}`;
+                if (!userId) { showToast("User not found", 'error'); return; }
                 try {
-                    const res = await fetch(changeUrl, {
+                    const res = await fetch(`http://localhost:3000/donors/request-email-change/${userId}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ new_email: newEmailValue })
                     });
                     if (!res.ok) throw new Error(await res.text());
-                    alert("Verification code sent to your new email. Please check your inbox.");
-                    window.location.href = `verificationCode.html?email=${encodeURIComponent(newEmailValue)}&type=email-change&userId=${userId}&role=donor`;
+                    showToast("Verification code sent to your new email.", 'success');
+                    setTimeout(() => {
+                        window.location.href = `verificationCode.html?email=${encodeURIComponent(newEmailValue)}&type=email-change&userId=${userId}&role=donor`;
+                    }, 1500);
                     return;
                 } catch(err) {
-                    alert("Error requesting email change: " + err.message);
+                    showToast("Error requesting email change: " + err.message, 'error');
                     return;
                 }
             }
-            
-            // تحويل اسم الولاية إلى رقم
             let wilayaNumber = null;
             if (locationInputValue) {
                 const asNumber = parseInt(locationInputValue, 10);
@@ -418,39 +347,24 @@ function setupDonorInfoEdit() {
                 } else {
                     const index = wilayas.findIndex(w => w.toLowerCase() === locationInputValue.toLowerCase());
                     if (index !== -1) wilayaNumber = index + 1;
-                    else {
-                        alert("Invalid location. Please enter a valid wilaya number (1-58) or name.");
-                        return;
-                    }
+                    else { showToast("Invalid location. Please enter a valid wilaya number (1-58) or name.", 'error'); return; }
                 }
                 updatedData.location = wilayaNumber;
             }
-            
-            // إزالة البريد من البيانات (لأنه لم يتغير أو تمت معالجته)
             delete updatedData.email;
-            
             const session = JSON.parse(localStorage.getItem("currentUserSession"));
             const userId = session?.userId;
-            if (!userId) {
-                alert("User not found, please login again.");
-                return;
-            }
+            if (!userId) { showToast("User not found, please login again.", 'error'); return; }
             try {
                 const response = await fetch(`http://localhost:3000/donors/update/${userId}`, {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(updatedData)
                 });
-                if (!response.ok) {
-                    const errDetails = await response.text();
-                    console.error("Server error:", errDetails);
-                    throw new Error(errDetails);
-                }
-                console.log("Profile updated successfully");
+                if (!response.ok) throw new Error(await response.text());
                 await loadDonorData();
             } catch (err) {
-                console.error("Update error:", err);
-                alert("Failed to update profile: " + err.message);
+                showToast("Failed to update profile: " + err.message, 'error');
                 await loadDonorData();
             }
             this.innerHTML = `<img src="images/VectorPen.svg" class="icon-small"> Edit`;
@@ -476,8 +390,7 @@ function setupLogout() {
                 if(emailSpan) email = emailSpan.innerText;
             }
         });
-        const sessionData = { userId: id, userName: name, userEmail: email, userBlood: bloodType, userPic: profilePic };
-        localStorage.setItem('currentUserSession', JSON.stringify(sessionData));
+        localStorage.setItem('currentUserSession', JSON.stringify({ userId: id, userName: name, userEmail: email, userBlood: bloodType, userPic: profilePic }));
         window.location.href = 'log-out.html';
     });
 }
@@ -511,23 +424,16 @@ function showToast(message, type = 'success') {
     const toast = document.createElement('div');
     toast.textContent = message;
     toast.style.cssText = `
-        position: fixed;
-        bottom: 30px;
-        right: 30px;
+        position: fixed; bottom: 30px; right: 30px;
         background: ${type === 'success' ? '#4CAF50' : '#E8433A'};
-        color: white;
-        padding: 14px 24px;
-        border-radius: 10px;
-        font-family: Inter, sans-serif;
-        font-size: 15px;
-        z-index: 99999;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        color: white; padding: 14px 24px; border-radius: 10px;
+        font-family: Inter, sans-serif; font-size: 15px;
+        z-index: 99999; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     `;
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 3000);
 }
 
-// ---------- القائمة المنسدلة للدم ----------
 document.addEventListener('DOMContentLoaded', function() {
     const penIcon = document.querySelector('.pen-icon');
     const bloodContainer = penIcon ? penIcon.closest('.value') : null;
@@ -573,67 +479,51 @@ document.addEventListener('DOMContentLoaded', function() {
         document.addEventListener('click', (e) => { if (!bloodContainer.contains(e.target)) closeBloodDropdown(); });
     }
 
-
-const readyToggle = document.getElementById('readyToggle');
-const readySub = document.getElementById('readySubtext');
-
-if (readyToggle) {
-    readyToggle.addEventListener('change', async () => {
-        const isReady = readyToggle.checked;
-
-        // إذا أراد التفعيل — تحقق من 90 يوم
-        if (isReady) {
+    const readyToggle = document.getElementById('readyToggle');
+    const readySub = document.getElementById('readySubtext');
+    if (readyToggle) {
+        readyToggle.addEventListener('change', async () => {
+            const isReady = readyToggle.checked;
+            if (isReady) {
+                const user = JSON.parse(localStorage.getItem("currentUserSession"));
+                if (user?.userId) {
+                    try {
+                        const profileRes = await fetch(`http://localhost:3000/donors/profile/${user.userId}`);
+                        const profileData = await profileRes.json();
+                        if (profileData.last_donation_date) {
+                            const lastDonation = new Date(profileData.last_donation_date);
+                            const now = new Date();
+                            const daysDiff = Math.floor((now - lastDonation) / (1000 * 60 * 60 * 24));
+                            if (daysDiff < 90) {
+                                const daysLeft = 90 - daysDiff;
+                                readyToggle.checked = false;
+                                showToast(`You cannot donate yet. ${daysLeft} days remaining until you can donate again.`, 'error');
+                                return;
+                            }
+                        }
+                    } catch (err) { console.error(err); }
+                }
+            }
+            readySub.textContent = isReady ? 'You are visible to patients' : 'You are not visible to patients right now';
             const user = JSON.parse(localStorage.getItem("currentUserSession"));
             if (user?.userId) {
                 try {
-                    const profileRes = await fetch(`http://localhost:3000/donors/profile/${user.userId}`);
-                    const profileData = await profileRes.json();
-
-                    if (profileData.last_donation_date) {
-                        const lastDonation = new Date(profileData.last_donation_date);
-                        const now = new Date();
-                        const daysDiff = Math.floor((now - lastDonation) / (1000 * 60 * 60 * 24));
-
-                        if (daysDiff < 90) {
-                            const daysLeft = 90 - daysDiff;
-                            readyToggle.checked = false;
-                            showToast(`You cannot donate yet. ${daysLeft} days remaining until you can donate again.`, 'error');
-                            return;
-                        }
-                    }
-                } catch (err) {
-                    console.error(err);
-                }
+                    await fetch(`http://localhost:3000/donors/update-availability/${user.userId}`, {
+                        method: "PUT",
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ available: isReady ? 1 : 0 })
+                    });
+                } catch(e) { console.error(e); }
             }
-        }
-
-        readySub.textContent = isReady 
-            ? 'You are visible to patients' 
-            : 'You are not visible to patients right now';
-
-        const user = JSON.parse(localStorage.getItem("currentUserSession"));
-        if (user?.userId) {
-            try {
-                await fetch(`http://localhost:3000/donors/update-availability/${user.userId}`, {
-                    method: "PUT",
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ available: isReady ? 1 : 0 })
-                });
-            } catch(e) { console.error(e); }
-        }
-    });
-}
-
-
+        });
+    }
 });
 
 document.addEventListener('DOMContentLoaded', async () => {
-    await loadProfilePictureFromServer();  // Load saved picture first
+    await loadProfilePictureFromServer();
     setupPhotoEdit();
     setupDonorInfoEdit();
     setupFooterHover();
     setupLogout();
     loadDonorData();
 });
-
-

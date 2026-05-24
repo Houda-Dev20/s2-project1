@@ -200,36 +200,72 @@ if (notifType === 'donation_request' && elements.modal) {
         }
     }
     // ... باقي كود القبول    // هذا الإشعار يصل للمحتاج (طلب من متبرع) -> المحتاج هو من سيقبل
-    elements.modal.style.display = 'flex';
-    if (elements.acceptBtn) {
-        const newAcceptBtn = elements.acceptBtn.cloneNode(true);
-        elements.acceptBtn.parentNode.replaceChild(newAcceptBtn, elements.acceptBtn);
-        elements.acceptBtn = newAcceptBtn;
-        elements.acceptBtn.onclick = async () => {
-            if (donationId) {
+elements.modal.style.display = 'flex';
+
+const existingX = elements.modal.querySelector('.modal-close-x');
+if (!existingX) {
+    const xBtn = document.createElement('button');
+    xBtn.className = 'modal-close-x';
+    xBtn.innerHTML = '✕';
+    xBtn.style.cssText = `
+        position: absolute; top: 12px; right: 16px;
+        background: none; border: none; font-size: 20px;
+        cursor: pointer; color: #888; z-index: 10;
+    `;
+    xBtn.onclick = () => { elements.modal.style.display = 'none'; };
+    elements.modal.querySelector('.frame-33').style.position = 'relative';
+    elements.modal.querySelector('.frame-33').appendChild(xBtn);
+}
+
+// ✅ تغيير زر Cancel إلى Delete
+const cancelBtn = elements.modal.querySelector('.btn-cancel');
+if (cancelBtn) {
+cancelBtn.textContent = 'Delete';
+cancelBtn.style.backgroundColor = 'white';
+cancelBtn.style.color = '#E8433A';
+cancelBtn.style.border = '1px solid #E8433A';
+    cancelBtn.onclick = async () => {
+showConfirm("Are you sure you want to delete this request?", async () => {
                 try {
-                    // استخدم المسار الخاص بقبول المحتاج لطلب المتبرع
-                    const res = await fetch(`http://localhost:3000/donations/accept-by-searcher/${donationId}`, { method: 'POST' });
-                    if (res.ok) {
-                        alert("Donation accepted! The donor has been notified with your phone number.");
-                        elements.modal.style.display = 'none';
-                        fetchNotifications(); // تحديث الإشعارات
-                    } else {
-                        alert("Failed to accept donation.");
-                    }
-                } catch(e) { alert("Error"); }
-            } else alert("Donation ID missing.");
-            elements.modal.style.display = 'none';
-        };
-    }
+                const res = await fetch(`http://localhost:3000/donations/${donationId}/cancel`, { method: 'POST' });
+                if (res.ok) {
+                    elements.modal.style.display = 'none';
+                    fetchNotifications();
+                } else {
+                    showToast("Failed to delete request.", 'error');
+                }
+            } catch(e) { showToast("Something went wrong.", 'error'); }
+        })
+    };
+}
+
+if (elements.acceptBtn) {
+    const newAcceptBtn = elements.acceptBtn.cloneNode(true);
+    elements.acceptBtn.parentNode.replaceChild(newAcceptBtn, elements.acceptBtn);
+    elements.acceptBtn = newAcceptBtn;
+    elements.acceptBtn.onclick = async () => {
+        if (donationId) {
+            try {
+                const res = await fetch(`http://localhost:3000/donations/accept-by-searcher/${donationId}`, { method: 'POST' });
+                if (res.ok) {
+showToast("Donation accepted! The donor has been notified with your phone number.", 'success');
+                    elements.modal.style.display = 'none';
+                    fetchNotifications();
+                } else {
+                    showToast("Failed to accept donation.", 'error');
+                }
+            } catch(e) { showToast("Something went wrong.", 'error') }
+        } else showToast("Donation ID missing.", 'error')
+        elements.modal.style.display = 'none';
+    };
+}
 } else if (notifType === 'donor_help_request') {
     // هذا الإشعار يصل للمتبرع (طلب من محتاج) -> المتبرع هو من سيقبل
     let donationId = item.dataset.donationId;
     console.log("donationId from dataset:", donationId);
     if (!donationId) {
         console.warn("donationId missing, trying to fetch from notification details...");
-        alert("Invalid donation request: missing donation ID. Please contact support.");
-        return;
+showToast("Invalid donation request: missing donation ID. Please contact support.", 'error');        return;
     }
     try {
         const donationRes = await fetch(`http://localhost:3000/donations/${donationId}`);
@@ -243,6 +279,45 @@ if (notifType === 'donation_request' && elements.modal) {
 
         if (elements.modal) {
             elements.modal.style.display = 'flex';
+            // ✅ زر X
+const existingX2 = elements.modal.querySelector('.modal-close-x');
+if (!existingX2) {
+    const xBtn2 = document.createElement('button');
+    xBtn2.className = 'modal-close-x';
+    xBtn2.innerHTML = '✕';
+    xBtn2.style.cssText = `
+        position: absolute; top: 12px; right: 16px;
+        background: none; border: none; font-size: 20px;
+        cursor: pointer; color: #888; z-index: 10;
+    `;
+    xBtn2.onclick = () => { elements.modal.style.display = 'none'; };
+    elements.modal.querySelector('.frame-33').style.position = 'relative';
+    elements.modal.querySelector('.frame-33').appendChild(xBtn2);
+}
+
+// ✅ زر Delete للمتبرع (يحذف الطلب ويبقى available = 0)
+const cancelBtn2 = elements.modal.querySelector('.btn-cancel');
+if (cancelBtn2) {
+cancelBtn2.textContent = 'Delete';
+cancelBtn2.style.backgroundColor = 'white';
+cancelBtn2.style.color = '#E8433A';
+cancelBtn2.style.border = '1px solid #E8433A';
+    cancelBtn2.onclick = async () => {
+showConfirm("Are you sure you want to delete this request?", async () => {
+            try {
+                const res = await fetch(`http://localhost:3000/donations/${donationId}/cancel`, { method: 'POST' });
+                if (res.ok) {
+                    elements.modal.style.display = 'none';
+                    fetchNotifications();
+                    // ✅ available يبقى 0 — لا نغيره هنا
+                } else {
+                    showToast("Failed to delete request.", 'error');
+                }
+            } catch(e) { showToast("Something went wrong.", 'error'); }
+           })
+        }
+    };
+
             if (elements.modalTitle) elements.modalTitle.innerText = "PATIENT WANTS YOUR HELP!";
             if (elements.modalName) elements.modalName.innerText = searcher.full_name;
             if (elements.modalLocation) elements.modalLocation.innerText = getWilayaNameById(searcher.location) || "Unknown";
@@ -264,36 +339,39 @@ if (modalImg) {
                         // استخدم المسار الخاص بقبول المتبرع لطلب المحتاج
                         const acceptRes = await fetch(`http://localhost:3000/donations/accept-by-donor/${donationId}`, { method: 'POST' });
                         if (acceptRes.ok) {
-                            alert("Donation accepted. Patient has been notified with your phone number.");
-                            elements.modal.style.display = 'none';
+showToast("Donation accepted! Patient has been notified with your phone number.", 'success');                 
+         elements.modal.style.display = 'none';
                             fetchNotifications(); // تحديث القائمة
                         } else {
-                            alert("Failed to accept donation.");
+                            showToast("Failed to accept donation.", 'error')
                         }
-                    } catch(e) { alert("Error accepting donation."); }
+                    } catch(e) { showToast("Something went wrong.", 'error'); }
                 };
             }
         }
     } catch (err) {
         console.error("Error loading patient details:", err);
-        alert("Could not load patient details.");
+        showToast("Could not load patient details.", 'error');
     }
 
 
-        } else if (notifType === 'eligibility') {
-            if (confirm("90 days have passed. Do you want to reactivate your account?")) {
+} else if (notifType === 'eligibility') {
+            showConfirm("90 days have passed. Do you want to reactivate your account?", async () => {
                 const user = getCurrentUser();
                 if (user?.userId) {
                     const res = await fetch(`http://localhost:3000/donors/active/${user.userId}`, { method: 'POST' });
                     if (res.ok) {
-                        alert("Account reactivated. You can now donate again.");
+                        showToast("Account reactivated successfully!", 'success');
                         fetchNotifications();
-                    } else alert("Failed to reactivate.");
+                    } else {
+                        showToast("Failed to reactivate account.", 'error');
+                    }
                 }
-            }
+            });
         }
     });
 }
+
 
 if (elements.notifBtn) elements.notifBtn.addEventListener('click', toggleDropdown);
 if (elements.markBtn) elements.markBtn.addEventListener('click', markAllAsRead);
@@ -306,6 +384,73 @@ if (document.getElementById('closeModal')) {
     document.getElementById('closeModal').onclick = () => { if (elements.modal) elements.modal.style.display = 'none'; };
 }
 
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: ${type === 'success' ? '#4CAF50' : '#E8433A'};
+        color: white;
+        padding: 14px 24px;
+        border-radius: 10px;
+        font-family: Inter, sans-serif;
+        font-size: 15px;
+        z-index: 99999;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+function showConfirm(message, onConfirm) {
+    // إزالة أي confirm موجود
+    const existing = document.getElementById('confirmOverlay');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'confirmOverlay';
+    overlay.style.cssText = `
+        position: fixed; inset: 0;
+        background: rgba(0,0,0,0.4);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 999999;
+    `;
+
+    overlay.innerHTML = `
+        <div style="
+            background: white; border-radius: 16px;
+            padding: 32px 28px; width: 320px;
+            text-align: center; box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            font-family: Inter, sans-serif;
+        ">
+            <p style="font-size: 16px; color: #333; margin-bottom: 24px;">${message}</p>
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button id="confirmNo" style="
+                    padding: 10px 28px; border-radius: 8px;
+                    border: 1px solid #ddd; background: white;
+                    color: #555; cursor: pointer; font-size: 14px;
+                ">Cancel</button>
+                <button id="confirmYes" style="
+                    padding: 10px 28px; border-radius: 8px;
+                    border: none; background: #E8433A;
+                    color: white; cursor: pointer; font-size: 14px;
+                ">Delete</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    document.getElementById('confirmYes').onclick = () => {
+        overlay.remove();
+        onConfirm();
+    };
+    document.getElementById('confirmNo').onclick = () => {
+        overlay.remove();
+    };
+}
 // تحديث الروابط عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', updateSearchLinks);
 

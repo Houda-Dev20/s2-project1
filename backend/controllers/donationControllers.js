@@ -27,6 +27,21 @@ const handleDonation = async (req, res) => {
 
     const initiator = (initiatedBy === 'searcher') ? 'searcher' : 'donor';
 
+        if (initiator === 'donor') {
+        const donorAvailable = await new Promise((resolve, reject) => {
+            db.query("SELECT available FROM donors WHERE id = ?", [id_donor], (err, rows) => {
+                if (err) return reject(err);
+                resolve(rows[0]?.available);
+            });
+        });
+        if (donorAvailable === 0) {
+            return res.status(403).json({ 
+                message: "You are not available to donate right now. Please enable 'Ready to Donate' first.",
+                code: "NOT_AVAILABLE"
+            });
+        }
+    }
+
     // التحقق من وجود طلب معلق
     try {
         const existing = await checkPendingDonation(id_donor, id_searcher);
@@ -67,22 +82,30 @@ const handleDonation = async (req, res) => {
 
             const today = new Date().toISOString().split('T')[0];
             db.query(
-                "INSERT INTO donations (id_donor, id_searcher, donation_date, status, initiated_by) VALUES (?, ?, ?, 'pending', ?)",
-                [id_donor, id_searcher, today, initiator],
-                (err, result) => {
-                    if (err) {
-                        console.error(err);
-                        return res.status(500).json({ message: "Error saving donations" });
-                    }
-                    const donationId = result.insertId;
-                    if (initiator === 'searcher') {
-                        createDonorHelpRequestNotification(id_donor, searcher.full_name, searcher.blood_type_research, donationId);
-                    } else {
-                        createDonationRequestNotification(id_searcher, donor.full_name, donor.blood_type, donationId);
-                    }
-                    res.json({ message: "Donation request successful", donationId: donationId });
-                }
-            );
+    "INSERT INTO donations (id_donor, id_searcher, donation_date, status, initiated_by) VALUES (?, ?, ?, 'pending', ?)",
+    [id_donor, id_searcher, today, initiator],
+    (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ message: "Error saving donations" });
+        }
+        const donationId = result.insertId;
+
+        // ← أضف هذا: اجعل المتبرع غير متاح عند إرسال الطلب
+        if (initiator === 'donor') {
+            db.query("UPDATE donors SET available = 0 WHERE id = ?", [id_donor], (updateErr) => {
+                if (updateErr) console.error("Error updating donor availability:", updateErr);
+            });
+        }
+
+        if (initiator === 'searcher') {
+            createDonorHelpRequestNotification(id_donor, searcher.full_name, searcher.blood_type_research, donationId);
+        } else {
+            createDonationRequestNotification(id_searcher, donor.full_name, donor.blood_type, donationId);
+        }
+        res.json({ message: "Donation request successful", donationId: donationId });
+    }
+);
         });
     });
 };
@@ -117,29 +140,18 @@ const getDonationStatus = (req, res) => {
 
 const cancelDonation = (req, res) => {
     const { id } = req.params;
-    
-    // أولاً: حذف الإشعارات المرتبطة بهذا الطلب
+
     db.query("DELETE FROM notifications WHERE donation_id = ?", [id], (deleteErr) => {
-        if (deleteErr) {
-            console.error("Error deleting notifications:", deleteErr);
-            // لا نوقف التنفيذ، فقط نسجل الخطأ
-        }
-        
-        // ثانياً: تحديث حالة الطلب إلى cancelled
+        if (deleteErr) console.error("Error deleting notifications:", deleteErr);
+
         db.query(
             "UPDATE donations SET status = 'cancelled' WHERE id = ? AND status = 'pending'",
             [id],
             (err, result) => {
-                if (err) {
-                    console.error(err);
-                    return res.status(500).json({ message: "Database error" });
-                }
-                if (result.affectedRows === 0) {
-                    return res.status(404).json({ message: "No pending donation found to cancel" });
-                }
-                // حذف الإشعارات مرة أخرى للتأكد (إذا فشلت الأولى)
-                db.query("DELETE FROM notifications WHERE donation_id = ?", [id], () => {});
-                res.json({ message: "Donation request cancelled successfully and notifications removed" });
+                if (err) return res.status(500).json({ message: "Database error" });
+                if (result.affectedRows === 0) return res.status(404).json({ message: "No pending donation found to cancel" });
+
+                res.json({ message: "Donation request cancelled successfully" });
             }
         );
     });
@@ -282,7 +294,19 @@ const getDonationById = (req, res) => {
     });
 };
 
- module.exports = {checkPendingDonation, getDonationStatus,cancelDonation,getDonorDonations, handleDonation, acceptDonationBySearcher, acceptDonationByDonor, getSearcherDonations, getDonationById  };
+const getDonorPendingStatus = (req, res) => {
+    const { donorId } = req.params;
+    db.query(
+        "SELECT id FROM donations WHERE id_donor = ? AND status = 'pending' LIMIT 1",
+        [donorId],
+        (err, rows) => {
+            if (err) return res.status(500).json({ message: "Database error" });
+            res.json({ hasPending: rows.length > 0 });
+        }
+    );
+};
+
+ module.exports = {checkPendingDonation, getDonationStatus,cancelDonation,getDonorDonations, handleDonation, acceptDonationBySearcher, acceptDonationByDonor, getSearcherDonations, getDonationById, getDonorPendingStatus  };
 
 
 

@@ -7,14 +7,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.log("searcherId:", searcherId);
 
     if (!searcherId || searcherId === "undefined") {
-        alert("No valid searcher specified.");
+showToast("No valid searcher specified.", 'error');
         return;
     }
 
     // جلسة المستخدم الحالي (المتبرع)
     const donorSession = JSON.parse(localStorage.getItem("currentUserSession"));
     if (!donorSession || !donorSession.userId) {
-        alert("You must be logged in as a donor.");
+showToast("You must be logged in as a donor.", 'error');
         window.location.href = "login.html";
         return;
     }
@@ -40,11 +40,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         const searcher = await response.json();
         console.log("Searcher data:", searcher);
 
-        const profileImg = document.querySelector(".profile-img-container img");
-        if (profileImg) {
-            profileImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(searcher.full_name)}&background=FDECEA&color=E8433A&size=128`;
-            profileImg.alt = searcher.full_name;
-        }
+const profileImg = document.querySelector(".profile-img-container img");
+if (profileImg) {
+    if (searcher.profile_picture) {
+        profileImg.src = `http://localhost:3000${searcher.profile_picture}`;
+    } else {
+        profileImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(searcher.full_name)}&background=FDECEA&color=E8433A&size=128`;
+    }
+    profileImg.alt = searcher.full_name;
+}
 
         const nameEl = document.querySelector(".card-header h2");
         if (nameEl) nameEl.innerText = searcher.full_name;
@@ -55,8 +59,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const infoFields = document.querySelectorAll(".info-field");
         if (infoFields.length >= 4) {
             infoFields[0].querySelector("p").innerText = "Available after acceptance";
-            infoFields[1].querySelector("p").innerText = "Available after acceptance";
-            let locationName = getWilayaNameById(searcher.location);
+infoFields[1].style.display = "none";            let locationName = getWilayaNameById(searcher.location);
             infoFields[2].querySelector("p").innerHTML = `${locationName} — Algeria`;
             infoFields[3].querySelector("p").innerText = searcher.Hospital_name || "Not specified";
         }
@@ -78,22 +81,22 @@ document.addEventListener("DOMContentLoaded", async () => {
                 donateBtn.textContent = "Cancel Request";
                 donateBtn.style.backgroundColor = "#888";
                 donateBtn.onclick = async () => {
-                    if (confirm("Cancel this donation request?")) {
-                        try {
-                            const cancelRes = await fetch(`http://localhost:3000/donations/${existingDonationId}/cancel`, {
-                                method: "POST"
-                            });
-                            if (cancelRes.ok) {
-                                alert("Request cancelled.");
-                                window.location.reload();
-                            } else {
-                                const err = await cancelRes.text();
-                                alert("Cancel failed: " + err);
-                            }
-                        } catch (err) {
-                            alert("Error: " + err.message);
-                        }
-                    }
+showConfirm("Cancel this donation request?", async () => {
+    try {
+        const cancelRes = await fetch(`http://localhost:3000/donations/${existingDonationId}/cancel`, {
+            method: "POST"
+        });
+        if (cancelRes.ok) {
+            showToast("Request cancelled.", 'success');
+            setTimeout(() => window.location.reload(), 1500);
+        } else {
+            const err = await cancelRes.text();
+            showToast("Cancel failed: " + err, 'error');
+        }
+    } catch (err) {
+        showToast("Error: " + err.message, 'error');
+    }
+});
                 }
             } else {
                 donateBtn.textContent = "Donate Blood Now";
@@ -118,10 +121,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         // تحقق من available
-        if (donorProfile.available === 0) {
-            showToast('You are currently marked as unavailable. Please activate yourself in your profile first.', 'error');
-            return;
-        }
+if (donorProfile.available === 0) {
+    // تحقق إذا كان السبب طلب pending موجود
+    const pendingCheck = await fetch(`http://localhost:3000/donations/donor-pending/${donorId}`);
+    const pendingData = await pendingCheck.json();
+    
+    if (pendingData.hasPending) {
+        showToast("You already have a pending donation request. Please wait for a response or cancel it before sending a new one.", 'error');
+    } else {
+        showToast('You are currently not available to donate. Please enable "Ready to Donate" in your profile first.', 'error');
+    }
+    return;
+}
 
         // إرسال طلب التبرع
         const donationRes = await fetch("http://localhost:3000/donations", {
@@ -145,7 +156,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     } catch (error) {
         console.error("Error loading donation details:", error);
-        alert("Error loading donation details: " + error.message);
+showToast("Error loading donation details: " + error.message, 'error');
     }
 });
 
@@ -200,4 +211,44 @@ function showToast(message, type = 'success') {
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 3000);
 }
+
+function showConfirm(message, onConfirm) {
+    const existing = document.getElementById('confirmOverlay');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'confirmOverlay';
+    overlay.style.cssText = `
+        position: fixed; inset: 0;
+        background: rgba(0,0,0,0.4);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 999999;
+    `;
+    overlay.innerHTML = `
+        <div style="
+            background: white; border-radius: 16px;
+            padding: 32px 28px; width: 320px;
+            text-align: center; box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            font-family: Inter, sans-serif;
+        ">
+            <p style="font-size: 16px; color: #333; margin-bottom: 24px;">${message}</p>
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button id="confirmNo" style="
+                    padding: 10px 28px; border-radius: 8px;
+                    border: 1px solid #ddd; background: white;
+                    color: #555; cursor: pointer; font-size: 14px;
+                ">Cancel</button>
+                <button id="confirmYes" style="
+                    padding: 10px 28px; border-radius: 8px;
+                    border: none; background: #E8433A;
+                    color: white; cursor: pointer; font-size: 14px;
+                ">Confirm</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    document.getElementById('confirmYes').onclick = () => { overlay.remove(); onConfirm(); };
+    document.getElementById('confirmNo').onclick = () => overlay.remove();
+}
+
 document.addEventListener('DOMContentLoaded', setupFooterHover);

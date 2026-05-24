@@ -103,8 +103,8 @@ if (donorForm) {
         e.preventDefault();
 
     if (!document.getElementById("location").value) {
-        alert("Please select a location");
-        return;
+ showToast("Please select a location", 'error');
+         return;
     }
 
         const donorData = {
@@ -130,7 +130,7 @@ if (searcherForm) {
 const loc = document.getElementById("location_s");
 
 if (!loc || !loc.value) {
-    alert("Please select a location");
+            showToast("Please select a location", 'error');
     return;
 }
 
@@ -165,7 +165,7 @@ async function sendData(url, dataObject) {
             throw new Error(result.message || `Server error: ${response.status}`);
         }
 
-        alert(result.message);
+          showToast(result.message, 'success');
 
         if (result.id) {
         localStorage.setItem("currentUserSession", JSON.stringify({
@@ -178,10 +178,30 @@ async function sendData(url, dataObject) {
 
         const type = url.includes("donors") ? "donor" : "searcher";
 
-        window.location.href = `verificationCode.html?email=${encodeURIComponent(dataObject.email)}&type=${type}`;
-
+        setTimeout(() => {
+            window.location.href = `verificationCode.html?email=${encodeURIComponent(dataObject.email)}&type=${type}`;
+        }, 1500);
     } catch (error) {
         console.error("Error:", error);
-        alert(error.message || "Error connecting to server");
+ showToast(error.message || "Error connecting to server", 'error');
     }
+}
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: ${type === 'success' ? '#4CAF50' : '#E8433A'};
+        color: white;
+        padding: 14px 24px;
+        border-radius: 10px;
+        font-family: Inter, sans-serif;
+        font-size: 15px;
+        z-index: 99999;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
 }
