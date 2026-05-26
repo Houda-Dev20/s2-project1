@@ -23,7 +23,6 @@
     <link rel="stylesheet" href="styles/footer.css">
     <style>
    
-    #main-header::after { display: none !important; }
     
     /* Reset layout bounding boxes */
     .notif-content {
@@ -126,6 +125,13 @@ document.addEventListener("DOMContentLoaded", () => {
         document.body.appendChild(modalContainer);
 
         // 8. Run your existing notifications interactivity logic sheet safely
+        const oldHeaderCss = document.querySelector(
+    'link[href="styles/header.css"]'
+);
+
+if (oldHeaderCss) {
+    oldHeaderCss.remove();
+}
         const script = document.createElement('script');
         script.src = 'scripts/notifications.js';
         document.body.appendChild(script);
