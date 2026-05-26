@@ -28,7 +28,7 @@
 .close-modal {
     position: absolute;
     top: 35px;
-    right: -20px;
+    right: 35px;
     width: 40px;
     height: 40px;
     cursor: pointer;
@@ -47,6 +47,7 @@
     background-color: white;;
 }
 .jointext{
+    font-family: 'inter';
     color: black;
     width: 310px;
     height: 29px;
