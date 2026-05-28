@@ -230,33 +230,64 @@ async function loadSearchersOnMap() {
                 buttonHtml = `<div class="no-action-msg" style="text-align:center; color:#888; padding:8px;">You cannot request from another patient</div>`;
             }
 
-            const popupContent = `
-                <div class="donor-card-popup">
-                    <div class="card-header">
-                        <img src="images/Rectangle.svg" class="card-avatar">
-                        <div class="card-title-group">
-                            <div class="name-row">
-                                <span class="card-name">${escapeHtml(searcher.full_name) || 'Unknown'}</span>
-                                <span class="blood-badge">${escapeHtml(searcher.blood_type_research) || ''}</span>
-                            </div>
-                            ${searcher.is_urgent ? '<div class="urgency-badge">High Urgency</div>' : ''}
-                        </div>
-                    </div>
-                    <div class="card-details">
-                        <div class="detail-row">
-                            <span class="text-main">Nearby Location</span>
-                            <span class="text-sub">${distance} km away</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="text-main">${escapeHtml(searcher.Hospital_name) || 'Hospital'}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="text-sub">Posted: ${dateStr}</span>
-                        </div>
-                    </div>
-                    ${buttonHtml}
+            const profileImage = searcher.profile_picture
+    ? `http://localhost:3000${searcher.profile_picture}`
+    : null;
+
+const initials = searcher.full_name
+    ? searcher.full_name
+        .split(' ')
+        .map(word => word[0])
+        .join('')
+        .substring(0, 2)
+        .toUpperCase()
+    : '?';
+
+const popupContent = `
+    <div class="donor-card-popup">
+
+        <div class="card-header">
+
+            ${
+                profileImage
+                ? `<img src="${profileImage}" class="card-avatar">`
+                : `<div class="card-avatar initials-avatar">${initials}</div>`
+            }
+
+            <div class="card-title-group">
+                <div class="name-row">
+                    <span class="card-name">${escapeHtml(searcher.full_name) || 'Unknown'}</span>
+                    <span class="blood-badge">${escapeHtml(searcher.blood_type_research) || ''}</span>
                 </div>
-            `;
+
+                ${searcher.is_urgent ? '<div class="urgency-badge">High Urgency</div>' : ''}
+            </div>
+
+        </div>
+
+        <div class="card-details">
+
+            <div class="detail-row">
+                <span class="text-main">Nearby Location</span>
+                <span class="text-sub">${distance} km away</span>
+            </div>
+
+            <div class="detail-row">
+                <span class="text-main">
+                    ${escapeHtml(searcher.Hospital_name) || 'Hospital'}
+                </span>
+            </div>
+
+            <div class="detail-row">
+                <span class="text-sub">Posted: ${dateStr}</span>
+            </div>
+
+        </div>
+
+        ${buttonHtml}
+
+    </div>
+`;
 
 if (!isLoggedIn) {
     // لا يستطيع رؤية المعلومات
