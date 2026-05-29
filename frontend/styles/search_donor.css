@@ -3,7 +3,7 @@
 :root {
   --red:       #E8433A;
   --red-light: #FDECEA;
-  --red-mid:   #F4A59F;
+  --red-mid:   #f4a59f;
   --amber:     #F0A04B;
   --bg:        #F5F0EE;
   --card:      #FFFFFF;
@@ -102,26 +102,28 @@ main {
   flex: 1;
   max-width: 1272px;
   margin: 0 auto;
-  width: 100%;
 }
 
 /* ── FILTERS ── */
 .filters {
-  height: auto;
-  background: rgba(255, 255, 255, 1);
+  width: fit-content;
+  background: #fff;
   border-radius: 20px;
-  padding: 20px 20px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  margin: 30px 60px;
-  align-items: center;
+  padding: 20px 30px;
+
+  display: flex;
   justify-content: center;
-  box-shadow: 0 4px 2px 0px rgba(0,0,0,0.05);
+  align-items: center;
+  gap: 40px;
+
+  margin: 30px auto;
+
+  box-shadow: 0 4px 2px rgba(0,0,0,0.05);
 }
 
 .filter-group:not(:last-child) {
-    border-right: 1px solid #f0f0f0;
+  padding-right: 40px;
+  border-right: 1px solid #f0f0f0;
 }
 
 .filter-group label {
@@ -139,7 +141,7 @@ main {
     height: 62px;            
     border: 1px solid rgba(238, 232, 234, 1);
     border-radius: 5px;
-    background-color: rgba(238, 232, 234, 0.2) ; 
+    background-color:rgba(238, 232, 234, 0.2) ; 
     display: flex;
     align-items: center;
     padding: 0 15px;
@@ -218,43 +220,58 @@ main {
     color:rgba(82, 81, 81, 1);
 }
 
-/* DROPDOWN MENU */
+/* ── DROPDOWN MENU (المعدل والمحسّن) ── */
 .blood-dropdown {
     position: absolute;
-    top: 70px;
+    top: 75px; /* هبطناه شوية باش يخلي مسافة جمالية */
     left: 0;
-    width: 100%;
-    background: rgba(238, 232, 234, 0.2);
-    border-radius: 12px;
-    box-shadow: 0px 10px 30px rgba(0,0,0,0.1);
-    padding: 15px;
+    width: 280px;
+    background: #FFFFFF;
+    border-radius: 16px; /* حواف أنعم وأجمل */
+    /* ظل احترافي ناعم وطاير */
+    box-shadow: 0px 12px 30px rgba(0, 0, 0, 0.08), 0px 4px 12px rgba(0, 0, 0, 0.03); 
+    border: 1px solid rgba(232, 224, 220, 0.6);
+    padding: 15px; /* مساحة داخلية أكبر مريحة للعين */
     z-index: 100;
     display: none; 
 }
 
+/* شبكة توزيع فصائل الدم */
 .blood-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
+    gap: 12px; /* مسافة متناسقة بين الأزرار */
 }
 
+/* الأزرار داخل الجدول */
 .blood-btn {
-    padding: 10px;
-    border: 1px solid #eee;
-    background: #f9f9f9;
-    border-radius: 8px;
+    padding: 11px 8px;
+    border: 1px solid #EFE2E2;
+    background: white;
+    border-radius: 10px; /* حواف دائرية متناسقة */
     cursor: pointer;
     font-family: 'Inter', sans-serif;
+    font-size: 15px;
     font-weight: 600;
-    transition: 0.2s;
-    color: #D94444;
+    color: red; /* يبدأ بلون غامق واضح */
+    transition: all 0.25s ease-in-out; /* حركة ناعمة عند التحويم */
+    text-align: center;
 }
 
-
+/* تأثير التحويم الاحترافي (Hover) */
 .blood-btn:hover {
-    background: #D94444;
-    color: #fff;
-    border-color: #D94444;
+    background-color: var(--red);
+    color: white;
+    border-color: var(--red);
+    transform: translateY(-2px); /* رفعة خفيفة تعطيك إحساس التفاعل */
+}
+
+/* كلاس تزيدو بالـ JavaScript كي يضغط المستخدم على الفصيلة (Selected) */
+.blood-btn.active {
+    background-color: var(--red);;
+    color: #FFFFFF;
+    border-color: var(--red);
+    box-shadow: 0px 4px 10px rgba(232, 67, 58, 0.3);
 }
 
 .show {
@@ -366,12 +383,13 @@ main {
 
 
 .request-box {
-  width: 340px;
-  height: 400px;
+  width: 100%;          /* بدل 340px */
+  height: auto;
   border: 1px solid rgba(238, 232, 234, 1);
   border-radius: 10px;
   overflow: hidden;
   box-shadow: -4px 4px 20px 0px rgba(0, 0, 0, 0.2);
+  padding-bottom: 14px;
 }
 
 .hospital-name {
@@ -389,6 +407,7 @@ main {
   padding-bottom: 5px;
   
 }
+
 .req-date {
   font-family: 'inter',sans-serif;
   font-weight: 200;
@@ -397,9 +416,10 @@ main {
   letter-spacing: 0%;
   color: rgba(0, 0, 0, 1);
   padding-left: 19px;
+  padding-top: 14px;     /* أضف هذا */
   padding-bottom: 15px;
   opacity: 60%;
-   }
+}
 
 .req-meta {
   display: flex;
@@ -420,16 +440,14 @@ main {
 /* ── MAP ── */
 
 .map-preview {
-    width: 90%;
-    height: 60px;
-    border-radius: 8px;    
-    overflow: hidden;        
-    border: 1px solid rgba(0, 0, 0, 0.06); 
-    position: relative;
-    margin: 10px 0;
-    z-index: 1; 
-    margin-left: 15px; 
-    margin-bottom: 10px;  
+  width: calc(100% - 30px);   /* بدل 90% */
+  height: 80px;    
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  position: relative;
+  margin: 10px 15px;
+  z-index: 1;
 }
 
 .map-preview > div { 
@@ -473,21 +491,22 @@ main {
 
 .btn-view {
   display: block;
-  width: 128px;
-  margin-left: 100px;
+  width: 160px;
+  margin: 10px auto 0 auto;   /* بدل margin-left: 100px */
   height: 35px;
   background: rgba(241, 146, 138, 1);
   color: rgba(255, 255, 255, 1);
   border: none;
   border-radius: 20px;
   font-family: 'Inter', sans-serif;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 400;
   cursor: pointer;
   text-align: center;
-  
+  line-height: 35px;
   transition: background .2s, color .2s;
 }
+
 .btn-view:hover { background: var(--red); }
 
 /* ── FOOTER ── */
