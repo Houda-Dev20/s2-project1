@@ -287,3 +287,12 @@ const avatarUrl = searcher.profile_picture
         setTimeout(() => map.invalidateSize(), 100);
     });
 }
+document.addEventListener('DOMContentLoaded', function () {
+    const currentPage = window.location.pathname.split('/').pop();
+
+    document.querySelectorAll('.taps').forEach(link => {
+        if (link.getAttribute('href') === currentPage) {
+            link.classList.add('active');
+        }
+    });
+});
