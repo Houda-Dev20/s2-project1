@@ -10,7 +10,23 @@ const WILAYAS_LIST = [
     "Ain Temouchent","Ghardaia","Relizane","Timimoun","Bordj Badji Mokhtar","Ouled Djellal",
     "Beni Abbes","In Salah","In Guezzam","Touggourt","Djanet","El M'Ghair","El Meniaa"
 ];
-
+function createBloodIcon(type) {
+    return L.divIcon({
+        className: 'custom-marker-wrapper',
+        iconSize: [55, 75],
+        iconAnchor: [27.5, 75],
+        html: `
+            <div class="marker-container">
+                <div class="ripple">
+                    <div class="ring ring-1"></div>
+                    <div class="ring ring-2"></div>
+                    <div class="ring ring-3"></div>
+                </div>
+                <div class="blood-marker"><span>${type}</span></div>
+            </div>
+        `,
+    });
+}
 const wilayaOptions = WILAYAS_LIST.map((name, idx) => ({ value: idx + 1, name }));
 
 function getWilayaNameById(id) {
@@ -273,17 +289,21 @@ const avatarUrl = searcher.profile_picture
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-        const icon = L.divIcon({
-            className: '',
-            html: `<div style="background:#E8433A;width:12px;height:12px;border-radius:50%;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.4)"></div>`,
-            iconSize: [12, 12],
-            iconAnchor: [6, 6]
-        });
+        const icon = createBloodIcon(searcher.blood_type_research || 'O+');
 
-        L.marker([coords.lat, coords.lng], { icon })
+    L.marker([coords.lat, coords.lng], { icon })
             .addTo(map)
-            .bindTooltip(wilayaName, { permanent: true, direction: 'right', className: 'marker-text' });
+           // .bindTooltip(wilayaName, { permanent: true, direction: 'right', className: 'marker-text' });
 
         setTimeout(() => map.invalidateSize(), 100);
     });
 }
+document.addEventListener('DOMContentLoaded', function () {
+    const currentPage = window.location.pathname.split('/').pop();
+
+    document.querySelectorAll('.taps').forEach(link => {
+        if (link.getAttribute('href') === currentPage) {
+            link.classList.add('active');
+        }
+    });
+});

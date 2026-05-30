@@ -6,10 +6,14 @@
     <title>Document</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link href="https://fonPts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@200;300;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles/header.css">
     <link rel="stylesheet" href="styles/body.css">
     <link rel="stylesheet" href="styles/popup.css">
@@ -17,25 +21,126 @@
     <link rel="stylesheet" href="styles/body3.css">
     <link rel="stylesheet" href="styles/general.css">
     <link rel="stylesheet" href="styles/footer.css">
-    <script>
-  
- const sessionData = localStorage.getItem('currentUserSession');
-if (sessionData) {
+    <style>
+   
     
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = 'styles/notifications.css';
-    document.head.appendChild(link);
+    /* Reset layout bounding boxes */
+    .notif-content {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        justify-content: center !important;
+        padding-left: 0 !important;
+        margin: 0 !important;
+        width: auto !important;
+        height: auto !important;
+    }
+
+    /* FORCES TITLES AND ALL INTERNAL SPANS TO STOP USING THE 96px ITALIC RED FONT */
+    .notif-title, .notif-title span {
+        font-family: 'DM Sans', sans-serif !important;
+        font-weight: 600 !important;
+        font-style: normal !important;
+        font-size: 13px !important;
+        line-height: 100% !important;
+        letter-spacing: 0.013em !important;
+        color: #000000 !important;
+        text-align: left !important;
+        margin: 6px 0 0 0 !important;
+        display: inline !important;
+        width: auto !important;
+        height: auto !important;
+    }
+
+    .notif-desc, .notif-desc span {
+        font-family: 'DM Sans', sans-serif !important;
+        font-weight: 300 !important; 
+        font-style: normal !important;
+        font-size: 13px !important;
+        line-height: 100% !important;
+        letter-spacing: 0.013em !important;
+        color: #000000 !important;
+        text-align: left !important;
+        margin: 9px 0 4px 0 !important;
+        display: inline !important;
+        width: auto !important;
+        height: auto !important;
+    }
+
+    .notif-time {
+        font-family: 'DM Sans', sans-serif !important;
+        font-weight: 200 !important;
+        font-style: normal !important;
+        font-size: 10px !important;
+        line-height: 100% !important;
+        color: black !important;
+        text-align: left !important;
+        margin: 0 !important;
+        width: auto !important;
+        height: auto !important;
+    }
+
+   
+</style>
+   <script>
+document.addEventListener("DOMContentLoaded", () => {
+    // 1. Check if a user session exists
+    const sessionData = localStorage.getItem('currentUserSession');
+    const header = document.getElementById('main-header');
     
-    
-    const script = document.createElement('script');
-    script.src = 'scripts/notifications.js';
-    document.head.appendChild(script);
+    if (sessionData && header) {
+        // 2. Inject the Notification Stylesheet dynamically (Leaves files untouched)
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'styles/notifications.css';
+        document.head.appendChild(link);
+        // 7. Inject the Match Found Popup Modal to the DOM root
+        const modalContainer = document.createElement('div');
+        modalContainer.id = 'notifModal';
+        modalContainer.className = 'modal-overlay';
+        modalContainer.innerHTML = `
+            <div class="frame-33">
+                <div class="vector-circle">
+                    <img src="images/Vector-heart.svg" alt="heart"> 
+                </div>
+                
+                <h2 class="modal-title">DONOR MATCH FOUND!</h2>
+
+                <div class="donor-info">
+                    <img src="" id="modalImg" class="donor-img">
+                    <div class="donor-text">
+                        <span id="modalName" class="donor-name">Abd El-Malek Zerarga</span>
+                        <span id="modalLocation" class="donor-loc">El-Eulma, Sétif</span>
+                    </div>
+                </div>
+
+                <p class="modal-msg">Hello, I am nearby and I can be at EPSP</p>
+
+                <div class="modal-buttons">
+                    <button class="btn-accept">Accept Request</button>
+                    <button class="btn-cancel" id="closeModal">Cancel</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modalContainer);
+
+        // 8. Run your existing notifications interactivity logic sheet safely
+        const oldHeaderCss = document.querySelector(
+    'link[href="styles/header.css"]'
+);
+
+if (oldHeaderCss) {
+    oldHeaderCss.remove();
 }
+        const script = document.createElement('script');
+        script.src = 'scripts/notifications.js';
+        document.body.appendChild(script);
+    }
+});
 </script>
 </head>
 <body>
-    <div class="header">
+    <div class="header" id="main-header">
         <div class="left-section">
             <img class="logo" src="images/Blur.svg" alt="logo">
             <img class="logo1" src="images/LifeDrop.svg" alt="logo1">
@@ -287,7 +392,6 @@ if (sessionData) {
 </body>
 <script src="scripts/home.js"></script>
 <script src="scripts/header.js"></script>
-
 <script src="scripts/global-profile.js"></script>
 </html>
 

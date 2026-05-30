@@ -211,14 +211,36 @@ font-weight: 600;
     font-family: 'inter';
     font-weight: 400;
     font-size: 13px;
+    margin-left: 18px;
 }
-
-
-
 
 
 
 /* Completely removes the triangle from the DOM */
 .custom-leaflet-popup .leaflet-popup-tip-container {
     display: none;
+}
+
+.initials-avatar{
+    width: 60px;
+    height:60px;
+    border-radius:50%;
+    background:#FDECEA;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:18px;
+    font-weight:700;
+    color:#E8433A;
+    text-transform:uppercase;
+    overflow:hidden;
+}
+/* Hide all default Leaflet blue markers */
+.leaflet-marker-icon:not(.custom-marker-wrapper):not([src*="VectorLoc"]) {
+    display: none !important;
+}
+
+/* But keep user location marker visible */
+.leaflet-marker-icon[src*="VectorLoc"] {
+    display: block !important;
 }

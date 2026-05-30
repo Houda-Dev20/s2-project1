@@ -105,7 +105,8 @@ body {
 
 
 .icon-circle1 {
-    width: 28px;        
+    width: 28px;  
+    height: 28px;      
     border-radius: 100%;
     background: #FDF8F8;
     border: 0.5px solid #F0DADA;
@@ -115,20 +116,22 @@ body {
     color: #F5A0A0;
     transition: 0.3s;
     position: absolute;
-    right: 0px;
-    top:5px;           
+    right: 15px;
+    top:18px;           
 }
 
-.icon-circle i {
-    font-size: 14px;
-}
 
-.accordion-item.active .icon-circle {
+.icon-circle1 i,
+.icon-circle1 .fa-plus,
+.icon-circle1 .fa-solid.fa-plus {
+    font-size: 10px;
+}
+.accordion-item.active .icon-circle1 {
     background: #E74C3C;
     color: #FFFFFF;
     transform: rotate(45deg); 
     border: none;
-    top: 12px;                
+               
 }
 
 .accordion-content {

@@ -312,6 +312,7 @@ showToast("Invalid donation request: missing donation ID. Please contact support
         if (elements.modal) {
             elements.modal.style.display = 'flex';
             // ✅ زر X
+            syncModalWithHeaderImage(); 
 const existingX2 = elements.modal.querySelector('.modal-close-x');
 if (!existingX2) {
     const xBtn2 = document.createElement('button');
@@ -653,6 +654,28 @@ function showConfirm(message, onConfirm) {
 // تحديث الروابط عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', updateSearchLinks);
 
+// دالة لمزامنة صورة المودال مع صورة الهيدر
+function syncModalWithHeaderImage() {
+    // الحصول على صورة البروفايل من الهيدر
+    const headerProfileImg = document.querySelector('.profile-img');
+    if (headerProfileImg && headerProfileImg.src && headerProfileImg.src !== '') {
+        // تحديث صورة المودال لتكون نفس صورة الهيدر
+        const modalImg = document.getElementById('modalImg');
+        if (modalImg) {
+            modalImg.src = headerProfileImg.src;
+            modalImg.style.display = 'block';
+            
+            // إخفاء أي دائرة أحرف أولية موجودة في المودال
+            const donorInfo = document.querySelector('.donor-info');
+            if (donorInfo) {
+                const initialsCircle = donorInfo.querySelector('.initials-circle');
+                if (initialsCircle) {
+                    initialsCircle.style.display = 'none';
+                }
+            }
+        }
+    }
+}
 
 
 
