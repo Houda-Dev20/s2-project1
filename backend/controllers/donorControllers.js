@@ -617,14 +617,45 @@ const getMapDonors = (req, res) => {
 
 const updateDonorAvailability = (req, res) => {
     const { available } = req.body;
-    db.query(
-        "UPDATE donors SET available = ? WHERE id = ?",
-        [available, req.params.id],
-        (err, result) => {
-            if (err) return res.status(500).json({ message: "Error updating availability" });
-            res.json({ success: true, message: "Availability updated" });
-        }
-    );
+    const donorId = req.params.id;
+
+    // إذا يريد تغيير الحالة إلى available=1، تحقق من الطلبات المعلقة أولاً
+    if (parseInt(available) === 1) {
+        db.query(
+            "SELECT id FROM donations WHERE id_donor = ? AND status = 'pending' LIMIT 1",
+            [donorId],
+            (err, rows) => {
+                if (err) return res.status(500).json({ message: "Database error" });
+                
+                if (rows.length > 0) {
+                    return res.status(403).json({ 
+                        message: "You have a pending donation request. Please wait for a response or cancel it first.",
+                        hasPending: true
+                    });
+                }
+
+                // لا يوجد طلب معلق — اسمح بالتغيير
+                db.query(
+                    "UPDATE donors SET available = 1 WHERE id = ?",
+                    [donorId],
+                    (err) => {
+                        if (err) return res.status(500).json({ message: "Error updating availability" });
+                        res.json({ success: true, message: "Availability updated" });
+                    }
+                );
+            }
+        );
+    } else {
+        // available=0 — لا يحتاج تحقق
+        db.query(
+            "UPDATE donors SET available = 0 WHERE id = ?",
+            [donorId],
+            (err) => {
+                if (err) return res.status(500).json({ message: "Error updating availability" });
+                res.json({ success: true, message: "Availability updated" });
+            }
+        );
+    }
 };
 
 module.exports = {

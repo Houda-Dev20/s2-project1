@@ -191,7 +191,7 @@ const acceptDonationByDonor = (req, res) => {
 
                 // إشعار للمتبرع (الذي قبل) - "You accepted a help request from PATIENT_NAME. Contact them at: PHONE"
                 const { createDonorAcceptedNotification } = require('./notificationController');
-                createDonorAcceptedNotification(donorId, searcherName, searcherPhone);
+                createDonorAcceptedNotification(donorId, searcherName, searcherPhone, id);
 
                 const { createPatientRequestAcceptedNotification } = require('./notificationController');
                 createPatientRequestAcceptedNotification(searcherId, donorName, donorPhone);
@@ -241,7 +241,7 @@ const acceptDonationBySearcher = (req, res) => {
 
                 // إشعار للمتبرع (صاحب العرض) - "Your offer was accepted by PATIENT_NAME. Contact them at: PHONE"
                 const { createDonationOfferAcceptedNotification } = require('./notificationController');
-                createDonationOfferAcceptedNotification(donorId, searcherName, searcherPhone);
+                createDonationOfferAcceptedNotification(donorId, searcherName, searcherPhone, id);
 
                 db.query("DELETE FROM notifications WHERE donation_id = ? AND type = 'donation_request'", [id], () => {});
 
@@ -256,7 +256,7 @@ const getDonorDonations = (req, res) => {
         SELECT d.donation_date, d.status, s.full_name AS searcher_name, s.Hospital_name
         FROM donations d
         JOIN searchers s ON d.id_searcher = s.id
-        WHERE d.id_donor = ? AND d.status = 'accepted'
+        WHERE d.id_donor = ? AND d.status = 'completed'
         ORDER BY d.donation_date DESC
     `;
     db.query(sql, [donorId], (err, results) => {
@@ -272,7 +272,7 @@ const getSearcherDonations = (req, res) => {
         SELECT d.donation_date, s.Hospital_name
         FROM donations d
         JOIN searchers s ON d.id_searcher = s.id
-        WHERE d.id_searcher = ? AND d.status = 'accepted'
+        WHERE d.id_searcher = ? AND d.status = 'completed'
         ORDER BY d.donation_date DESC
     `;
     db.query(sql, [searcherId], (err, results) => {
@@ -287,7 +287,7 @@ const getSearcherDonations = (req, res) => {
 
 const getDonationById = (req, res) => {
     const { id } = req.params;
-    db.query("SELECT id_donor, id_searcher FROM donations WHERE id = ?", [id], (err, results) => {
+    db.query("SELECT id_donor, id_searcher, status FROM donations WHERE id = ?", [id], (err, results) => {
         if (err) return res.status(500).json({ message: "Database error" });
         if (results.length === 0) return res.status(404).json({ message: "Donation not found" });
         res.json(results[0]);
@@ -306,7 +306,80 @@ const getDonorPendingStatus = (req, res) => {
     );
 };
 
- module.exports = {checkPendingDonation, getDonationStatus,cancelDonation,getDonorDonations, handleDonation, acceptDonationBySearcher, acceptDonationByDonor, getSearcherDonations, getDonationById, getDonorPendingStatus  };
+const completeDonation = (req, res) => {
+    const { id } = req.params;
+    const today = new Date().toISOString().split('T')[0];
+
+    db.query("UPDATE donations SET status = 'completed' WHERE id = ?", [id], (err, result) => {
+        if (err) return res.status(500).json({ message: "Database error" });
+        if (result.affectedRows === 0) return res.status(404).json({ message: "Donation not found" });
+
+        db.query(
+            `SELECT d.id_donor, d.id_searcher,
+                    s.full_name AS searcher_name,
+                    do.full_name AS donor_name
+             FROM donations d
+             JOIN searchers s ON d.id_searcher = s.id
+             JOIN donors do ON d.id_donor = do.id
+             WHERE d.id = ?`,
+            [id],
+            (err, rows) => {
+                if (err) return res.status(500).json({ message: "Error fetching details" });
+                if (rows.length === 0) return res.status(404).json({ message: "Details not found" });
+
+                const { id_donor, id_searcher, donor_name, searcher_name } = rows[0];
+
+                // تحديث last_donation_date
+                db.query("UPDATE donors SET last_donation_date = ? WHERE id = ?", [today, id_donor], (err) => {
+                    if (err) console.error("Error updating last_donation_date:", err);
+                });
+
+                // إشعار للمتبرع
+                const { createNotification } = require('./notificationController');
+                createNotification(id_donor, "Donation Completed", `Thank you! Your donation to ${searcher_name} has been recorded.`, "donation_completed");
+
+                // إشعار للمحتاج
+                createNotification(id_searcher, "Donation Completed", `${donor_name} has confirmed that the donation took place. Thank you!`, "donation_completed");
+
+                res.json({ message: "Donation marked as completed" });
+            }
+        );
+    });
+};
+
+const failDonation = (req, res) => {
+    const { id } = req.params;
+
+    db.query("UPDATE donations SET status = 'failed' WHERE id = ?", [id], (err, result) => {
+        if (err) return res.status(500).json({ message: "Database error" });
+        if (result.affectedRows === 0) return res.status(404).json({ message: "Donation not found" });
+
+        db.query(
+            `SELECT d.id_donor, d.id_searcher,
+                    s.full_name AS searcher_name,
+                    do.full_name AS donor_name
+             FROM donations d
+             JOIN searchers s ON d.id_searcher = s.id
+             JOIN donors do ON d.id_donor = do.id
+             WHERE d.id = ?`,
+            [id],
+            (err, rows) => {
+                if (err) return res.status(500).json({ message: "Error fetching details" });
+                if (rows.length === 0) return res.status(404).json({ message: "Details not found" });
+
+                const { id_donor, id_searcher, donor_name, searcher_name } = rows[0];
+
+                const { createNotification } = require('./notificationController');
+                createNotification(id_donor, "Donation Did Not Happen", `You reported that the donation with ${searcher_name} did not take place.`, "donation_failed");
+                createNotification(id_searcher, "Donation Did Not Happen", `${donor_name} reported that the donation did not take place.`, "donation_failed");
+
+                res.json({ message: "Donation marked as failed" });
+            }
+        );
+    });
+};
+
+ module.exports = {checkPendingDonation, getDonationStatus,cancelDonation,getDonorDonations, handleDonation, acceptDonationBySearcher, acceptDonationByDonor, getSearcherDonations, getDonationById, getDonorPendingStatus, failDonation, completeDonation  };
 
 
 

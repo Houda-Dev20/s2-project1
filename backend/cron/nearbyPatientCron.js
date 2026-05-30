@@ -3,7 +3,9 @@ const db = require("../config/db");
 const { createNearbyPatientNotification } = require("../controllers/notificationController");
 
 const checkNearbyPatients = () => {
-    // استعلام يستخدم جدول التوافق بدلاً من المساواة المباشرة
+    console.log("🔍 Checking nearby patients...");
+
+    // ← دمج الاستعلامين في واحد بدل استعلام داخل forEach
     const sql = `
         SELECT DISTINCT d.id AS donorId
         FROM donors d
@@ -19,32 +21,26 @@ const checkNearbyPatients = () => {
               (d.blood_type = 'AB-' AND s.blood_type_research IN ('AB-', 'AB+', 'A-', 'B-', 'O-')) OR
               (d.blood_type = 'AB+' AND s.blood_type_research IN ('AB+'))
           )
+          AND d.id NOT IN (
+              SELECT user_id FROM notifications WHERE type = 'nearby_patient'
+          )
     `;
 
     db.query(sql, (err, results) => {
-        if (err) return console.log(err);
+        if (err) return console.error("Nearby check error:", err);
 
-        results.forEach(row => {
-            const checkSql = `
-                SELECT id FROM notifications
-                WHERE user_id = ? AND type = 'nearby_patient'
-            `;
-            db.query(checkSql, [row.donorId], (err, res) => {
-                if (err) return console.log(err);
-                if (res.length === 0) {
-                    createNearbyPatientNotification(row.donorId);
-                    console.log(`✅ Notificatie aangemaakt voor donor ${row.donorId}`);
-                }
-            });
-        });
+        // معالجة واحدة بعد واحدة
+        const processNext = (index) => {
+            if (index >= results.length) return;
+            createNearbyPatientNotification(results[index].donorId);
+            console.log(`✅ Notification created for donor ${results[index].donorId}`);
+            setTimeout(() => processNext(index + 1), 100);
+        };
+        processNext(0);
     });
 };
 
-// Cron elke 10 minuten voor test, later terugzetten naar elk uur
-cron.schedule("*/10 * * * *", () => {
-    console.log("🔍 Checking nearby patients...");
-    checkNearbyPatients();
-});
+// غيّر من كل 10 دقائق إلى كل ساعة لتقليل الضغط
+cron.schedule("0 * * * *", checkNearbyPatients);
 
-// Exporteer voor handmatige test
 module.exports = { checkNearbyPatients };

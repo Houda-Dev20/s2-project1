@@ -33,43 +33,42 @@
     searcher.addEventListener("click", () => { window.location.href = "request-blood.html"; });
     closeBtn.addEventListener("click", () => { modal.classList.remove("open"); });
 
-    form.addEventListener("submit", async function (e) {
-        e.preventDefault();
+form.addEventListener("submit", async function (e) {
+    e.preventDefault();
 
-        const email = emailInput.value;
-        const password = passwordInput.value;
+    const email = emailInput.value;
+    const password = passwordInput.value;
 
-        if (rememberCheckbox.checked) {
-            localStorage.setItem("rememberedEmail", email);
-        } else {
-            localStorage.removeItem("rememberedEmail");
-        }
+    if (rememberCheckbox.checked) {
+        localStorage.setItem("rememberedEmail", email);
+    } else {
+        localStorage.removeItem("rememberedEmail");
+    }
 
-        try {
-            let response = await fetch("http://localhost:3000/donors/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password })
-            });
+    try {
+        // جرب donor أولاً
+        let response = await fetch("http://localhost:3000/donors/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+        });
+        let data = await response.json();
 
-            let data = await response.json();
-
+        // إذا الإيميل موجود عند donor (سواء نجح أو فشل الباسوورد)
+        if (response.status !== 404) {
+            // هو donor — تعامل معه كـ donor فقط
             if (data.is_deactivated && data.userType === "donor") {
                 showConfirm("Your account is deactivated. Would you like to reactivate it?", async () => {
                     const res = await fetch(`http://localhost:3000/donors/active/${data.userId}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' }
+                        method: 'PUT', headers: { 'Content-Type': 'application/json' }
                     });
                     if (res.ok) {
                         const profileRes = await fetch(`http://localhost:3000/donors/profile/${data.userId}`);
                         if (profileRes.ok) {
                             const profileData = await profileRes.json();
                             localStorage.setItem("currentUserSession", JSON.stringify({
-                                userId: data.userId,
-                                userName: profileData.full_name,
-                                userEmail: profileData.email,
-                                userType: "donor",
-                                is_active: 1
+                                userId: data.userId, userName: profileData.full_name,
+                                userEmail: profileData.email, userType: "donor", is_active: 1
                             }));
                         }
                         showToast('Account reactivated successfully!', 'success');
@@ -80,43 +79,41 @@
                 });
                 return;
             }
-
             if (data.success) {
                 localStorage.setItem("currentUserSession", JSON.stringify({
-                    userId: data.donor.id,
-                    userName: data.donor.full_name,
-                    userEmail: data.donor.email,
-                    userType: "donor",
-                    is_active: 1
+                    userId: data.donor.id, userName: data.donor.full_name,
+                    userEmail: data.donor.email, userType: "donor", is_active: 1
                 }));
                 window.location.href = "donor-profile.html";
                 return;
             }
+            // إيميل صح لكن باسوورد غلط
+            showToast("Invalid email or password", 'error');
+            return;
+        }
 
-            response = await fetch("http://localhost:3000/searchers/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password })
-            });
+        // إيميل مش موجود عند donor — جرب searcher
+        response = await fetch("http://localhost:3000/searchers/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+        });
+        data = await response.json();
 
-            data = await response.json();
-
+        if (response.status !== 404) {
+            // هو searcher
             if (data.is_deactivated && data.userType === "searcher") {
                 showConfirm("Your account is deactivated. Would you like to reactivate it?", async () => {
                     const res = await fetch(`http://localhost:3000/searchers/activate-searcher/${data.userId}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' }
+                        method: 'PUT', headers: { 'Content-Type': 'application/json' }
                     });
                     if (res.ok) {
                         const profileRes = await fetch(`http://localhost:3000/searchers/profile/${data.userId}`);
                         if (profileRes.ok) {
                             const profileData = await profileRes.json();
                             localStorage.setItem("currentUserSession", JSON.stringify({
-                                userId: data.userId,
-                                userName: profileData.full_name,
-                                userEmail: profileData.email,
-                                userType: "searcher",
-                                is_active: 1
+                                userId: data.userId, userName: profileData.full_name,
+                                userEmail: profileData.email, userType: "searcher", is_active: 1
                             }));
                         }
                         showToast('Account reactivated successfully!', 'success');
@@ -127,26 +124,26 @@
                 });
                 return;
             }
-
             if (data.success) {
                 localStorage.setItem("currentUserSession", JSON.stringify({
-                    userId: data.searcher.id,
-                    userName: data.searcher.full_name,
-                    userEmail: data.searcher.email,
-                    userType: "searcher",
-                    is_active: 1
+                    userId: data.searcher.id, userName: data.searcher.full_name,
+                    userEmail: data.searcher.email, userType: "searcher", is_active: 1
                 }));
                 window.location.href = "patient-profile.html";
                 return;
             }
-
             showToast("Invalid email or password", 'error');
-
-        } catch (err) {
-            console.error(err);
-            showToast("Server error", 'error');
+            return;
         }
-    });
+
+        // مش موجود في أي جدول
+        showToast("No account found with this email", 'error');
+
+    } catch (err) {
+        console.error(err);
+        showToast("Server error", 'error');
+    }
+});
 });
 
 function showToast(message, type = 'success') {

@@ -2,25 +2,23 @@ const cron = require("node-cron");
 const db = require("../config/db");
 const { createEligibilityNotification } = require("../controllers/notificationController");
 
-cron.schedule("0 0 * * *", () => {
+const runEligibilityCheck = () => {
     console.log("🔄 Running eligibility check...");
 
+    // جلب كل المتبرعين في استعلام واحد بدل forEach
     db.query("SELECT * FROM donors", (err, donors) => {
-        if (err) return console.log(err);
+        if (err) return console.error("Eligibility check error:", err);
 
-        donors.forEach(donor => {
-            createEligibilityNotification(donor);
-        });
+        // معالجة واحدة بعد واحدة بدل فتح كل اتصالات دفعة واحدة
+        const processNext = (index) => {
+            if (index >= donors.length) return;
+            createEligibilityNotification(donors[index]);
+            setTimeout(() => processNext(index + 1), 100);
+        };
+        processNext(0);
     });
+};
 
-});
+cron.schedule("0 0 * * *", runEligibilityCheck);
 
-setTimeout(() => {
-    console.log("🔄 Running eligibility check manually for testing...");
-    db.query("SELECT * FROM donors", (err, donors) => {
-        if (err) return console.log(err);
-        donors.forEach(donor => {
-            createEligibilityNotification(donor);
-        });
-    });
-}, 5000); 
+module.exports = { runEligibilityCheck };

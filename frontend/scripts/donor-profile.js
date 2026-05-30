@@ -160,6 +160,8 @@ async function loadDonorData() {
         const data = await response.json();
         const locationName = getWilayaNameById(data.location);
         document.getElementById("topName").innerText = data.full_name;
+        const joinDateElem = document.getElementById("join-date");
+if (joinDateElem) joinDateElem.innerText = data.created_at ? new Date(data.created_at).getFullYear() : "2026";
         document.querySelector(".blood-badge").innerText = data.blood_type;
         document.getElementById("topLocation").innerText = locationName;
         document.getElementById("fullName").innerText = data.full_name;
@@ -507,13 +509,19 @@ document.addEventListener('DOMContentLoaded', function() {
             readySub.textContent = isReady ? 'You are visible to patients' : 'You are not visible to patients right now';
             const user = JSON.parse(localStorage.getItem("currentUserSession"));
             if (user?.userId) {
-                try {
-                    await fetch(`http://localhost:3000/donors/update-availability/${user.userId}`, {
-                        method: "PUT",
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ available: isReady ? 1 : 0 })
-                    });
-                } catch(e) { console.error(e); }
+            try {
+                const res = await fetch(`http://localhost:3000/donors/update-availability/${user.userId}`, {
+                    method: "PUT",
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ available: isReady ? 1 : 0 })
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    readyToggle.checked = false;
+                    readySub.textContent = 'You are not visible to patients right now';
+showToast(data.message, 'error');
+                }
+            } catch(e) { console.error(e); }
             }
         });
     }

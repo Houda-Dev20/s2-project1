@@ -22,17 +22,19 @@ showToast("You must be logged in as a donor.", 'error');
 
     let existingDonationId = null;
 
-    // 1️⃣ التحقق من وجود طلب معلق بين هذا المتبرع وهذا المحتاج
-    try {
-        const statusRes = await fetch(`http://localhost:3000/donations/status?donorId=${donorId}&searcherId=${searcherId}`);
-        const statusData = await statusRes.json();
-        if (statusData.hasRequest && statusData.status === 'pending') {
-            existingDonationId = statusData.donationId;
-            console.log("Existing pending donation found, ID:", existingDonationId);
-        }
-    } catch (err) {
-        console.error("Error checking donation status:", err);
+let initiatedBy = null;
+
+try {
+    const statusRes = await fetch(`http://localhost:3000/donations/status?donorId=${donorId}&searcherId=${searcherId}`);
+    const statusData = await statusRes.json();
+    if (statusData.hasRequest && statusData.status === 'pending') {
+        existingDonationId = statusData.donationId;
+        initiatedBy = statusData.initiatedBy;
+        console.log("Existing pending donation found, ID:", existingDonationId, "initiatedBy:", initiatedBy);
     }
+} catch (err) {
+    console.error("Error checking donation status:", err);
+}
 
     try {
         const response = await fetch(`http://localhost:3000/searchers/profile/${searcherId}`);
@@ -75,29 +77,80 @@ infoFields[1].style.display = "none";            let locationName = getWilayaNam
             }
         }
 
-        const donateBtn = document.querySelector(".btn-donate");
+const donateBtn = document.querySelector(".btn-donate");
         if (donateBtn) {
-            if (existingDonationId) {
+            if (existingDonationId && initiatedBy === 'searcher') {
+                // الطلب بدأ من المحتاج — المتبرع يقبل أو يرفض
+                donateBtn.textContent = "Accept Request";
+                donateBtn.style.backgroundColor = "#4CAF50";
+                donateBtn.onclick = async () => {
+                    showConfirm("Accept this donation request?", async () => {
+                        try {
+                            const acceptRes = await fetch(`http://localhost:3000/donations/${existingDonationId}/accept-by-donor`, {
+                                method: "POST"
+                            });
+                            if (acceptRes.ok) {
+                                showToast("Request accepted! Both parties will be notified.", 'success');
+                                setTimeout(() => window.location.reload(), 1500);
+                            } else {
+                                const err = await acceptRes.text();
+                                showToast("Accept failed: " + err, 'error');
+                            }
+                        } catch (err) {
+                            showToast("Error: " + err.message, 'error');
+                        }
+                    });
+                };
+
+                // زر الرفض
+                const rejectBtn = document.createElement("button");
+                rejectBtn.textContent = "Reject Request";
+                rejectBtn.className = donateBtn.className;
+                rejectBtn.style.backgroundColor = "#888";
+                rejectBtn.style.marginTop = "10px";
+                donateBtn.parentNode.insertBefore(rejectBtn, donateBtn.nextSibling);
+
+                rejectBtn.onclick = async () => {
+                    showConfirm("Reject this donation request?", async () => {
+                        try {
+                            const cancelRes = await fetch(`http://localhost:3000/donations/${existingDonationId}/cancel`, {
+                                method: "POST"
+                            });
+                            if (cancelRes.ok) {
+                                showToast("Request rejected.", 'success');
+                                setTimeout(() => window.location.reload(), 1500);
+                            } else {
+                                const err = await cancelRes.text();
+                                showToast("Reject failed: " + err, 'error');
+                            }
+                        } catch (err) {
+                            showToast("Error: " + err.message, 'error');
+                        }
+                    });
+                };
+
+            } else if (existingDonationId && initiatedBy === 'donor') {
+                // الطلب بدأ من المتبرع — يرى Cancel فقط
                 donateBtn.textContent = "Cancel Request";
                 donateBtn.style.backgroundColor = "#888";
                 donateBtn.onclick = async () => {
-showConfirm("Cancel this donation request?", async () => {
-    try {
-        const cancelRes = await fetch(`http://localhost:3000/donations/${existingDonationId}/cancel`, {
-            method: "POST"
-        });
-        if (cancelRes.ok) {
-            showToast("Request cancelled.", 'success');
-            setTimeout(() => window.location.reload(), 1500);
-        } else {
-            const err = await cancelRes.text();
-            showToast("Cancel failed: " + err, 'error');
-        }
-    } catch (err) {
-        showToast("Error: " + err.message, 'error');
-    }
-});
-                }
+                    showConfirm("Cancel this donation request?", async () => {
+                        try {
+                            const cancelRes = await fetch(`http://localhost:3000/donations/${existingDonationId}/cancel`, {
+                                method: "POST"
+                            });
+                            if (cancelRes.ok) {
+                                showToast("Request cancelled.", 'success');
+                                setTimeout(() => window.location.reload(), 1500);
+                            } else {
+                                const err = await cancelRes.text();
+                                showToast("Cancel failed: " + err, 'error');
+                            }
+                        } catch (err) {
+                            showToast("Error: " + err.message, 'error');
+                        }
+                    });
+                };
             } else {
                 donateBtn.textContent = "Donate Blood Now";
                 donateBtn.style.backgroundColor = "";

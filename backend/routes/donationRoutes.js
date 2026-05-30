@@ -9,14 +9,18 @@ const {
     getDonorDonations, 
     getSearcherDonations, 
     getDonationById,
-    getDonorPendingStatus
+    getDonorPendingStatus,
+    completeDonation,
+    failDonation
 } = require('../controllers/donationControllers');
 
 // 1️⃣ المسارات الثابتة (POST)
 router.post("/", handleDonation);
-router.post('/accept-by-donor/:id', acceptDonationByDonor);
-router.post('/accept-by-searcher/:id', acceptDonationBySearcher);
+router.post('/:id/accept-by-donor', acceptDonationByDonor);
+router.post('/:id/accept-by-searcher', acceptDonationBySearcher);
 router.post('/:id/cancel', cancelDonation);
+router.post('/:id/complete', completeDonation);
+router.post('/:id/fail', failDonation);
 
 // 2️⃣ المسارات الثابتة (GET) - كلها قبل /:id
 router.get('/status', getDonationStatus);            // ⭐ مهم جداً قبل /:id

@@ -93,12 +93,24 @@ function renderNotifications(notifications) {
     if (!elements.list) return;
     const user = getCurrentUser();
     const isDonor = user?.userType === 'donor';
-    let filtered = notifications; // عرض كل الإشعارات (المقروء وغير المقروء)
-    if (isDonor) {
-        filtered = filtered.filter(n => n.type === 'request_accepted' || n.type === 'eligibility' || n.type === 'donor_help_request');
-    } else if (user?.userType === 'searcher') {
-        filtered = filtered.filter(n => n.type === 'donation_request' || n.type === 'patient_accepted');
-    }
+let filtered = notifications;
+if (isDonor) {
+    filtered = filtered.filter(n => 
+        n.type === 'request_accepted' || 
+        n.type === 'donation_offer_accepted' || 
+        n.type === 'eligibility' || 
+        n.type === 'donor_help_request' ||
+        n.type === 'donation_completed' ||
+        n.type === 'donation_failed'
+    );
+} else if (user?.userType === 'searcher') {
+    filtered = filtered.filter(n => 
+        n.type === 'donation_request' || 
+        n.type === 'patient_accepted' ||
+        n.type === 'donation_completed' ||
+        n.type === 'donation_failed'
+    );
+}
 
     if (!filtered.length) {
         elements.list.innerHTML = "";
@@ -108,10 +120,29 @@ function renderNotifications(notifications) {
     }
     elements.empty.style.display = 'none';
     elements.markBtn.style.display = 'block';
-    elements.list.innerHTML = filtered.map(notif => `
-        <div class="notif-item" data-id="${notif.id}" data-type="${notif.type}" data-donation-id="${notif.donation_id || ''}" data-read="${notif.is_read}">
-            <div class="icon-circle ${notif.type === 'donation_request' ? 'red-bg' : 'green-bg'}">
-                <img src="images/${notif.type === 'donation_request' ? 'Frame 170.svg' : 'Frame 171.svg'}" alt="icon">
+elements.list.innerHTML = filtered.map(notif => {
+    let iconBg = 'green-bg';
+    let iconImg = 'Frame 171.svg';
+
+    if (notif.type === 'donation_request' || notif.type === 'donor_help_request') {
+        iconBg = 'red-bg';
+        iconImg = 'Frame 170.svg';
+    } else if (notif.type === 'donation_completed') {
+        iconBg = 'green-bg';
+        iconImg = 'Frame 171.svg';
+    } else if (notif.type === 'donation_failed') {
+        iconBg = '';
+        iconImg = 'Frame 170.svg';
+    }
+
+    return `
+        <div class="notif-item ${notif.is_read ? 'read' : 'unread'}" 
+             data-id="${notif.id}" 
+             data-type="${notif.type}" 
+             data-donation-id="${notif.donation_id || ''}" 
+             data-read="${notif.is_read}">
+            <div class="icon-circle ${iconBg}" ${notif.type === 'donation_failed' ? 'style="background-color:#888;"' : ''}>
+                <img src="images/${iconImg}" alt="icon">
             </div>
             <div class="notif-content">
                 <span class="notif-title">${escapeHtml(notif.title)}</span>
@@ -119,7 +150,8 @@ function renderNotifications(notifications) {
                 <span class="notif-time">${getTimeAgo(notif.created_at)}</span>
             </div>
         </div>
-    `).join('');
+    `;
+}).join('');
 }
 
 function escapeHtml(str) { return str?.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])) || ''; }
@@ -246,7 +278,7 @@ if (elements.acceptBtn) {
     elements.acceptBtn.onclick = async () => {
         if (donationId) {
             try {
-                const res = await fetch(`http://localhost:3000/donations/accept-by-searcher/${donationId}`, { method: 'POST' });
+                const res = await fetch(`http://localhost:3000/donations/${donationId}/accept-by-searcher`, { method: 'POST' });
                 if (res.ok) {
 showToast("Donation accepted! The donor has been notified with your phone number.", 'success');
                     elements.modal.style.display = 'none';
@@ -353,8 +385,175 @@ showToast("Donation accepted! Patient has been notified with your phone number."
         console.error("Error loading patient details:", err);
         showToast("Could not load patient details.", 'error');
     }
+} else if (notifType === 'donation_offer_accepted') {
+    const donationId = item.dataset.donationId;
+    if (!donationId) { showToast("Donation ID missing.", 'error'); return; }
 
+   try {
+        const checkRes = await fetch(`http://localhost:3000/donations/${donationId}`);
+        const checkData = await checkRes.json();
+        if (checkData.status === 'completed') {
+            showToast("This donation has already been confirmed as completed.", 'success');
+            return;
+        }
+        if (checkData.status === 'failed') {
+            showToast("This donation was already reported as not completed.", 'error');
+            return;
+        }
+    } catch(e) { console.error(e); }
 
+    const existing = document.getElementById('completionOverlay');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'completionOverlay';
+    overlay.style.cssText = `
+        position: fixed; inset: 0;
+        background: rgba(0,0,0,0.4);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 999999;
+    `;
+    overlay.innerHTML = `
+        <div style="
+            background: white; border-radius: 16px;
+            padding: 32px 28px; width: 340px;
+            text-align: center; box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            font-family: Inter, sans-serif;
+        ">
+            <h3 style="font-size: 18px; color: #1A1A1A; margin-bottom: 10px;">Did the donation happen?</h3>
+            <p style="font-size: 14px; color: #7A7A7A; margin-bottom: 24px;">Please confirm whether the donation took place.</p>
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button id="btnFailed" style="
+                    padding: 10px 20px; border-radius: 8px;
+                    border: 1px solid #ddd; background: white;
+                    color: #555; cursor: pointer; font-size: 14px;
+                ">Did Not Happen</button>
+                <button id="btnCompleted" style="
+                    padding: 10px 20px; border-radius: 8px;
+                    border: none; background: #4CAF50;
+                    color: white; cursor: pointer; font-size: 14px;
+                ">Donation Completed</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+
+    document.getElementById('btnCompleted').onclick = async () => {
+        try {
+            const res = await fetch(`http://localhost:3000/donations/${donationId}/complete`, { method: 'POST' });
+            if (res.ok) {
+                overlay.remove();
+                showToast("Donation confirmed! Thank you for saving a life.", 'success');
+                fetchNotifications();
+            } else { showToast("Failed to confirm donation.", 'error'); }
+        } catch(e) { showToast("Something went wrong.", 'error'); }
+    };
+
+    document.getElementById('btnFailed').onclick = async () => {
+        try {
+            const res = await fetch(`http://localhost:3000/donations/${donationId}/fail`, { method: 'POST' });
+            if (res.ok) {
+                overlay.remove();
+                showToast("Recorded. The patient will be notified.", 'success');
+                fetchNotifications();
+            } else { showToast("Failed to record.", 'error'); }
+        } catch(e) { showToast("Something went wrong.", 'error'); }
+    };
+
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+} else if (notifType === 'request_accepted') {
+    // يصل فقط للمتبرع — هو من يؤكد إتمام التبرع
+    const donationId = item.dataset.donationId;
+    if (!donationId) {
+        showToast("Donation ID missing.", 'error');
+        return;
+    }
+
+        try {
+        const checkRes = await fetch(`http://localhost:3000/donations/${donationId}`);
+        const checkData = await checkRes.json();
+        if (checkData.status === 'completed') {
+            showToast("This donation has already been confirmed as completed.", 'success');
+            return;
+        }
+        if (checkData.status === 'failed') {
+            showToast("This donation was already reported as not completed.", 'error');
+            return;
+        }
+    } catch(e) { console.error(e); }
+
+    const existing = document.getElementById('completionOverlay');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'completionOverlay';
+    overlay.style.cssText = `
+        position: fixed; inset: 0;
+        background: rgba(0,0,0,0.4);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 999999;
+    `;
+    overlay.innerHTML = `
+        <div style="
+            background: white; border-radius: 16px;
+            padding: 32px 28px; width: 340px;
+            text-align: center; box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            font-family: Inter, sans-serif;
+        ">
+            <h3 style="font-size: 18px; color: #1A1A1A; margin-bottom: 10px;">Did the donation happen?</h3>
+            <p style="font-size: 14px; color: #7A7A7A; margin-bottom: 24px;">Please confirm whether the donation took place.</p>
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button id="btnFailed" style="
+                    padding: 10px 20px; border-radius: 8px;
+                    border: 1px solid #ddd; background: white;
+                    color: #555; cursor: pointer; font-size: 14px;
+                ">Did Not Happen</button>
+                <button id="btnCompleted" style="
+                    padding: 10px 20px; border-radius: 8px;
+                    border: none; background: #4CAF50;
+                    color: white; cursor: pointer; font-size: 14px;
+                ">Donation Completed</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+
+    document.getElementById('btnCompleted').onclick = async () => {
+        try {
+            const res = await fetch(`http://localhost:3000/donations/${donationId}/complete`, { method: 'POST' });
+            if (res.ok) {
+                overlay.remove();
+                showToast("Donation confirmed! Thank you for saving a life.", 'success');
+                fetchNotifications();
+            } else {
+                showToast("Failed to confirm donation.", 'error');
+            }
+        } catch(e) { showToast("Something went wrong.", 'error'); }
+    };
+
+    document.getElementById('btnFailed').onclick = async () => {
+        try {
+            const res = await fetch(`http://localhost:3000/donations/${donationId}/fail`, { method: 'POST' });
+            if (res.ok) {
+                overlay.remove();
+                showToast("Recorded. The patient will be notified.", 'success');
+                fetchNotifications();
+            } else {
+                showToast("Failed to record.", 'error');
+            }
+        } catch(e) { showToast("Something went wrong.", 'error'); }
+    };
+
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) overlay.remove();
+    });
+    } else if (notifType === 'donation_completed' || notifType === 'donation_failed') {
+    showToast(
+        notifType === 'donation_completed' 
+            ? "This donation has been marked as completed." 
+            : "This donation was reported as not completed.",
+        notifType === 'donation_completed' ? 'success' : 'error'
+    );
 } else if (notifType === 'eligibility') {
             showConfirm("90 days have passed. Do you want to reactivate your account?", async () => {
                 const user = getCurrentUser();
