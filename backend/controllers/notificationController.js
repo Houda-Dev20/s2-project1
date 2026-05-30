@@ -17,15 +17,28 @@ const createNotification = (user_id, title, message, type, donationId = null) =>
 };
 
 const createEligibilityNotification = (donor) => {
+    if (!donor.last_donation_date) return; // لا يوجد تبرع سابق
+
     const lastDate = new Date(donor.last_donation_date);
     const now = new Date();
     const diffDays = (now - lastDate) / (1000 * 60 * 60 * 24);
-    if (diffDays >= 90 && donor.is_active == 0) {
-        const checkSql = "SELECT id FROM notifications WHERE user_id = ? AND type = 'eligibility'";
+
+    // تحقق من مرور 90 يوم والمتبرع غير متاح
+    if (diffDays >= 90 && donor.available == 0) {
+        const checkSql = `
+            SELECT id FROM notifications 
+            WHERE user_id = ? AND type = 'eligibility'
+            AND created_at >= DATE_SUB(NOW(), INTERVAL 90 DAY)
+        `;
         db.query(checkSql, [donor.id], (err, result) => {
             if (err) return console.log(err);
             if (result.length === 0) {
-                createNotification(donor.id, "You're eligible to donate now", "90 days have passed. Do you want to reactivate your account?", "eligibility");
+                createNotification(
+                    donor.id,
+                    "You're eligible to donate now",
+                    "90 days have passed since your last donation. You can now reactivate your availability.",
+                    "eligibility"
+                );
             }
         });
     }
@@ -40,8 +53,8 @@ const createRequestAcceptedNotification = (donorId, searcherName, searcherPhone,
     createNotification(donorId, "Request Accepted", message, "request_accepted", donationId);
 };
 
-const createNearbyPatientNotification = (donorId) => {
-    createNotification(donorId, "Nearby patient found", "Someone you can donate to is near you", "nearby_patient");
+const createNearbyPatientNotification = (donorId, searcherId) => {
+    createNotification(donorId, "Nearby patient found", "Someone you can donate to is near you", "nearby_patient", searcherId);
 };
 
 const markAsRead = (req, res) => {

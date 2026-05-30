@@ -159,6 +159,16 @@ async function loadDonorData() {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         const locationName = getWilayaNameById(data.location);
+       const readyToggle = document.getElementById('readyToggle');
+const readySub = document.getElementById('readySubtext');
+if (readyToggle) {
+    readyToggle.checked = data.available === 1;
+    if (readySub) {
+        readySub.textContent = data.available === 1 
+            ? 'You are visible to patients' 
+            : 'You are not visible to patients right now';
+    }
+}
         document.getElementById("topName").innerText = data.full_name;
         const joinDateElem = document.getElementById("join-date");
 if (joinDateElem) joinDateElem.innerText = data.created_at ? new Date(data.created_at).getFullYear() : "2026";

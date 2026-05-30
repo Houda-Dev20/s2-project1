@@ -485,7 +485,10 @@ box-shadow: 0px 4px 20px 0px #00000040;
 }
 
 
-/* ������ ����� �������� nearby_patient */
-.notif-item .icon-circle.nearby-bg {
-    background-color: #FFA500; /* ������� */
+.icon-circle.nearby-bg {
+    background-color: #FEF3E2;
+}
+
+.icon-circle.eligibility-bg {
+    background-color: #FDECEA;
 }

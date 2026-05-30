@@ -7,7 +7,7 @@ const checkNearbyPatients = () => {
 
     // ← دمج الاستعلامين في واحد بدل استعلام داخل forEach
     const sql = `
-        SELECT DISTINCT d.id AS donorId
+SELECT d.id AS donorId, s.id AS searcherId, s.location AS searcherLocation
         FROM donors d
         JOIN searchers s ON d.location = s.location
         WHERE d.available = 1
@@ -21,9 +21,11 @@ const checkNearbyPatients = () => {
               (d.blood_type = 'AB-' AND s.blood_type_research IN ('AB-', 'AB+', 'A-', 'B-', 'O-')) OR
               (d.blood_type = 'AB+' AND s.blood_type_research IN ('AB+'))
           )
-          AND d.id NOT IN (
-              SELECT user_id FROM notifications WHERE type = 'nearby_patient'
-          )
+AND d.id NOT IN (
+    SELECT user_id FROM notifications 
+    WHERE type = 'nearby_patient' 
+    AND created_at >= DATE_SUB(NOW(), INTERVAL 1 DAY)
+)
     `;
 
     db.query(sql, (err, results) => {
@@ -32,15 +34,13 @@ const checkNearbyPatients = () => {
         // معالجة واحدة بعد واحدة
         const processNext = (index) => {
             if (index >= results.length) return;
-            createNearbyPatientNotification(results[index].donorId);
-            console.log(`✅ Notification created for donor ${results[index].donorId}`);
+createNearbyPatientNotification(results[index].donorId, results[index].searcherId);            console.log(`✅ Notification created for donor ${results[index].donorId}`);
             setTimeout(() => processNext(index + 1), 100);
         };
         processNext(0);
     });
 };
 
-// غيّر من كل 10 دقائق إلى كل ساعة لتقليل الضغط
-cron.schedule("0 * * * *", checkNearbyPatients);
+cron.schedule("* * * * *", checkNearbyPatients);
 
 module.exports = { checkNearbyPatients };

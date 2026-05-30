@@ -22,7 +22,7 @@ const getStats = (req, res) => {
                 db.query(`
                     SELECT COUNT(*) AS livesSavedWeek 
                     FROM donations 
-                    WHERE status = 'accepted' 
+                    WHERE status = 'completed' 
                     AND donation_date >= CURDATE() - INTERVAL 7 DAY
                 `, (err, result4) => {
                     if (err) return res.status(500).json({ message: "Database error" });
@@ -32,7 +32,7 @@ const getStats = (req, res) => {
                     db.query(`
                         SELECT COUNT(*) AS livesSavedMonth 
                         FROM donations 
-                        WHERE status = 'accepted' 
+                        WHERE status = 'completed' 
                         AND donation_date >= CURDATE() - INTERVAL 30 DAY
                     `, (err, result5) => {
                         if (err) return res.status(500).json({ message: "Database error" });

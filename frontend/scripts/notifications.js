@@ -101,7 +101,8 @@ if (isDonor) {
         n.type === 'eligibility' || 
         n.type === 'donor_help_request' ||
         n.type === 'donation_completed' ||
-        n.type === 'donation_failed'
+        n.type === 'donation_failed' ||
+        n.type === 'nearby_patient'
     );
 } else if (user?.userType === 'searcher') {
     filtered = filtered.filter(n => 
@@ -121,19 +122,25 @@ if (isDonor) {
     elements.empty.style.display = 'none';
     elements.markBtn.style.display = 'block';
 elements.list.innerHTML = filtered.map(notif => {
-    let iconBg = 'green-bg';
-    let iconImg = 'Frame 171.svg';
+let iconBg = 'green-bg';
+let iconImg = 'Frame 171.svg';
 
-    if (notif.type === 'donation_request' || notif.type === 'donor_help_request') {
-        iconBg = 'red-bg';
-        iconImg = 'Frame 170.svg';
-    } else if (notif.type === 'donation_completed') {
-        iconBg = 'green-bg';
-        iconImg = 'Frame 171.svg';
-    } else if (notif.type === 'donation_failed') {
-        iconBg = '';
-        iconImg = 'Frame 170.svg';
-    }
+if (notif.type === 'donation_request' || notif.type === 'donor_help_request') {
+    iconBg = 'red-bg';
+    iconImg = 'Frame 170.svg';
+} else if (notif.type === 'donation_completed') {
+    iconBg = 'green-bg';
+    iconImg = 'Frame 171.svg';
+} else if (notif.type === 'donation_failed') {
+    iconBg = '';
+    iconImg = 'Frame 170.svg';
+} else if (notif.type === 'nearby_patient') {
+    iconBg = 'nearby-bg';
+    iconImg = 'Frame 172.svg'; 
+} else if (notif.type === 'eligibility') {
+    iconBg = 'eligibility-bg';
+    iconImg = 'Frame 173.svg'; 
+}
 
     return `
         <div class="notif-item ${notif.is_read ? 'read' : 'unread'}" 
@@ -548,7 +555,24 @@ showToast("Donation accepted! Patient has been notified with your phone number."
     overlay.addEventListener('click', (e) => {
         if (e.target === overlay) overlay.remove();
     });
-    } else if (notifType === 'donation_completed' || notifType === 'donation_failed') {
+} else if (notifType === 'nearby_patient') {
+    const donationId = item.dataset.donationId; // هنا يحمل searcherId
+    if (donationId) {
+        try {
+            const res = await fetch(`http://localhost:3000/searchers/profile/${donationId}`);
+            const searcher = await res.json();
+            if (searcher.latitude && searcher.longitude) {
+                window.location.href = `map.html?lat=${searcher.latitude}&lng=${searcher.longitude}&searcherId=${donationId}`;
+            } else {
+                window.location.href = 'map.html';
+            }
+        } catch(e) {
+            window.location.href = 'map.html';
+        }
+    } else {
+        window.location.href = 'map.html';
+    }
+}else if (notifType === 'donation_completed' || notifType === 'donation_failed') {
     showToast(
         notifType === 'donation_completed' 
             ? "This donation has been marked as completed." 
@@ -556,22 +580,41 @@ showToast("Donation accepted! Patient has been notified with your phone number."
         notifType === 'donation_completed' ? 'success' : 'error'
     );
 } else if (notifType === 'eligibility') {
-            showConfirm("90 days have passed. Do you want to reactivate your account?", async () => {
-                const user = getCurrentUser();
-                if (user?.userId) {
-                    const res = await fetch(`http://localhost:3000/donors/active/${user.userId}`, { method: 'POST' });
-                    if (res.ok) {
-                        showToast("Account reactivated successfully!", 'success');
-                        fetchNotifications();
-                    } else {
-                        showToast("Failed to reactivate account.", 'error');
-                    }
-                }
-            });
+        const user = getCurrentUser();
+    if (user?.userId) {
+        const profileRes = await fetch(`http://localhost:3000/donors/profile/${user.userId}`);
+        const profileData = await profileRes.json();
+        if (profileData.available === 1) {
+            showToast("You are already available for donation.", 'success');
+            return;
         }
+    }
+    showConfirm("90 days have passed. Do you want to be available for donation again?", async () => {
+        const user = getCurrentUser();
+        if (user?.userId) {
+            // ← تحديث available = 1 بدل is_active
+            const res = await fetch(`http://localhost:3000/donors/update-availability/${user.userId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ available: 1 })
+            });
+            if (res.ok) {
+                showToast("You are now available for donation!", 'success');
+                fetchNotifications();
+    const readyToggle = document.getElementById('readyToggle');
+    const readySub = document.getElementById('readySubtext');
+    if (readyToggle) readyToggle.checked = true;
+    if (readySub) readySub.textContent = 'You are visible to patients';
+    
+    if (typeof loadDonorData === 'function') loadDonorData();
+            } else {
+                showToast("Failed to update availability.", 'error');
+            }
+        }
+    }, 'Yes, I am Ready');
+};
     });
 }
-
 
 if (elements.notifBtn) elements.notifBtn.addEventListener('click', toggleDropdown);
 if (elements.markBtn) elements.markBtn.addEventListener('click', markAllAsRead);
@@ -604,7 +647,7 @@ function showToast(message, type = 'success') {
     setTimeout(() => toast.remove(), 3000);
 }
 
-function showConfirm(message, onConfirm) {
+function showConfirm(message, onConfirm, confirmText = 'Confirm') {
     // إزالة أي confirm موجود
     const existing = document.getElementById('confirmOverlay');
     if (existing) existing.remove();
@@ -636,7 +679,7 @@ function showConfirm(message, onConfirm) {
                     padding: 10px 28px; border-radius: 8px;
                     border: none; background: #E8433A;
                     color: white; cursor: pointer; font-size: 14px;
-                ">Delete</button>
+                ">${confirmText}</button>
             </div>
         </div>
     `;

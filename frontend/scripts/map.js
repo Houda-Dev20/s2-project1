@@ -45,12 +45,15 @@ const targetWilaya = urlParams.get('wilaya');
 const targetLat = parseFloat(urlParams.get('lat'));
 const targetLng = parseFloat(urlParams.get('lng'));
 
+let locationRetrieved = false;
+
 if (targetLat && targetLng && !isNaN(targetLat) && !isNaN(targetLng)) {
     // إذا تم تمرير إحداثيات، انتقل إلى هذا الموقع
     setTimeout(() => {
         map.setView([targetLat, targetLng], 12);
         L.marker([targetLat, targetLng]).addTo(map).bindPopup(targetWilaya || "Location").openPopup();
     }, 500);
+        locationRetrieved = true;
 }
 
 // طبقة الخريطة
@@ -65,8 +68,6 @@ setTimeout(() => { map.invalidateSize(); }, 300);
 // =========================
 // 3. تحديد الموقع (مرة واحدة فقط، وسيتم تحديث الخريطة إذا نجح)
 // =========================
-let locationRetrieved = false;
-
 function getAndSetUserLocation() {
     if (locationRetrieved) return;
     if (!navigator.geolocation) {
@@ -299,7 +300,7 @@ if (!isLoggedIn) {
             .setContent(`
                 <div style="text-align:center; padding: 20px; font-family: Inter, sans-serif;">
                     <p style="font-size:14px; color:#7A7A7A;">Login to view patient details</p>
-                    <a href="login.html" style="color:#E8433A; font-weight:600; text-decoration:none;">Login / Sign Up</a>
+                    <a href="login.html" style="color:#E8433A; font-weight:600; text-decoration:none;">Login</a>
                 </div>
             `)
             .openOn(map);
@@ -311,10 +312,17 @@ if (!isLoggedIn) {
         minWidth: 300,
         maxWidth: 300
     });
+    // ← أضيفي هذا بعد marker.bindPopup
+const targetSearcherId = new URLSearchParams(window.location.search).get('searcherId');
+if (targetSearcherId && searcher.id == targetSearcherId) {
+    setTimeout(() => {
+        map.setView([parseFloat(searcher.latitude), parseFloat(searcher.longitude)], 15);
+        marker.openPopup();
+    }, 800);
 }
-
-
-        });
+}
+ }
+);
     } catch (err) {
         console.error('Error loading searchers:', err);
 showToast('Failed to load patients on map.', 'error');
