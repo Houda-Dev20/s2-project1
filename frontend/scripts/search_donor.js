@@ -146,6 +146,19 @@ async function performSearch() {
     }
 }
 
+
+// مثال بسيط كيفاش تمشيها في الـ JS تاعك
+document.querySelectorAll('.blood-btn').forEach(button => {
+    button.addEventListener('click', () => {
+        // تنحي الـ active من قاع الأزرار الأخرى
+        document.querySelectorAll('.blood-btn').forEach(btn => btn.classList.remove('active'));
+        // تزيدها للزر لي تكليكا عليه
+        button.classList.add('active');
+        
+        // هنا دير الكود تاعك باه تبدل النص الفوقاني وتقفل القائمة
+    });
+});
+
 // ── دالة بناء البطاقات (مشتركة بين loadAllDonors و performSearch) ──
 function renderDonorCards(donors) {
     const cardsGrid = document.querySelector(".cards-grid");
@@ -251,12 +264,3 @@ ${donor.profile_picture
         setTimeout(() => map.invalidateSize(), 100);
     });
 }
-document.addEventListener('DOMContentLoaded', function () {
-    const currentPage = window.location.pathname.split('/').pop();
-
-    document.querySelectorAll('.taps').forEach(link => {
-        if (link.getAttribute('href') === currentPage) {
-            link.classList.add('active');
-        }
-    });
-});
