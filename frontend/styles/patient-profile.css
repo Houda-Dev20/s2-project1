@@ -388,7 +388,7 @@ span{
 #arrow-icon {
     position: relative;
 }
-.dropdown {
+.bloodDropdown {
     display: none;
     position: absolute;
     width: 293px;
@@ -402,7 +402,7 @@ span{
 }
 
 
-.dropdown table {
+.bloodDropdown table {
     width: 100%;
     margin: 0px;
     padding: 0px;
@@ -410,7 +410,7 @@ span{
     border-spacing: 0;
 }
 
-.dropdown td {
+.bloodDropdown td {
     width: 140px;
     height: 36px;
     text-align: center;
@@ -427,34 +427,34 @@ span{
 }
 
 
-.dropdown td:last-child {
+.bloodDropdown  td:last-child {
     border-right: 0.25px solid black;
 }
 
 /* Add bottom border only to last row */
-.dropdown tr:last-child td {
+.bloodDropdown  tr:last-child td {
     border-bottom: 0.25px solid black;
 }
 
 /* Top row radius */
-.dropdown tr:first-child  {
+.bloodDropdown tr:first-child  {
     border-top-left-radius: 10px;
 }
 
-.dropdown tr:last-child {
+.bloodDropdown  tr:last-child {
     border-top-right-radius: 10px;
 }
 
 /* Bottom row radius */
-.dropdown tr:last-child td:first-child {
+.bloodDropdown  tr:last-child td:first-child {
     border-bottom-left-radius: 10px;
 }
 
-.dropdown tr:last-child td:last-child {
+.bloodDropdown  tr:last-child td:last-child {
     border-bottom-right-radius: 10px;
 }
 
-.dropdown td:hover {
+.bloodDropdown  td:hover {
     background-color: #D97775;
     color: white;
 }
@@ -920,23 +920,7 @@ margin-top: 2px;
     color: white;
 }
 
-/* تنسيق القائمة المنسدلة لفصيلة الدم */
-#bloodDropdown table {
-    width: 100%;
-    border-collapse: collapse;
-}
-#bloodDropdown td {
-    padding: 12px 10px;
-    text-align: center;
-    color: #D97775;
-    font-weight: bold;
-    cursor: pointer;
-    border: 1px solid #ddd;
-}
-#bloodDropdown td:hover {
-    background-color: #D97775;
-    color: white;
-}
+
 
 /* جعل Request History قابلة للتمرير */
 
@@ -1072,4 +1056,10 @@ margin-top: 2px;
 }
 .history::-webkit-scrollbar-thumb:hover {
     background: #b55a58;
+}
+.third-div {
+    overflow: visible;
+}
+html {
+    scrollbar-gutter: stable;
 }
