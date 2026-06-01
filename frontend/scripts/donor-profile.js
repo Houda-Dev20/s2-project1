@@ -183,6 +183,13 @@ if (joinDateElem) joinDateElem.innerText = data.created_at ? new Date(data.creat
         const bloodStrong = document.querySelector('.value strong');
         if (bloodStrong) bloodStrong.innerText = data.blood_type;
         fetchDonationHistory(user.userId);
+fetch(`http://localhost:3000/donations/donor/${user.userId}`)
+    .then(res => res.json())
+    .then(donations => {
+        const fulfilledElem = document.getElementById('fulfilled-requests');
+        if (fulfilledElem) fulfilledElem.innerText = donations.length;
+    })
+    .catch(err => console.error(err));
         const lastDonationElem = document.querySelector('.data-row:nth-child(2) .value strong');
         const nextDonationElem = document.querySelector('.data-row:nth-child(3) .value strong');
         if (data.last_donation_date) {
