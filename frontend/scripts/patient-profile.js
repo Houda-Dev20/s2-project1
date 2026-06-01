@@ -367,17 +367,15 @@ document.addEventListener('DOMContentLoaded', function() {
         bloodContainer.style.position = 'relative';
         let bloodDropdown = document.createElement('div');
         bloodDropdown.id = 'bloodDropdown';
-        bloodDropdown.style.cssText = `display: none; position: absolute; top: 100%; left: -1px; width: calc(100% + 2px); background: white; border: 1px solid black; border-radius: 0 0 10px 10px; box-shadow: 0px 4px 10px rgba(0,0,0,0.1); z-index: 10000; overflow: hidden; box-sizing: border-box;`;
-        bloodDropdown.innerHTML = `<table style="width:100%; border-collapse: collapse; border-style: hidden;">
-                <tr style="cursor: pointer;"><td class="blood-item" style="padding: 18px 10px; text-align: center; color:#D97775; font-weight:bold; border-right:1px solid black; border-bottom:1px solid black;">O+</td>
-                <td class="blood-item" style="padding:18px 10px; text-align:center; color:#D97775; font-weight:bold; border-bottom:1px solid black;">O-</td></tr>
-                <tr style="cursor: pointer;"><td class="blood-item" style="padding:18px 10px; text-align:center; color:#D97775; font-weight:bold; border-right:1px solid black; border-bottom:1px solid black;">A+</td>
-                <td class="blood-item" style="padding:18px 10px; text-align:center; color:#D97775; font-weight:bold; border-bottom:1px solid black;">A-</td></tr>
-                <tr style="cursor: pointer;"><td class="blood-item" style="padding:18px 10px; text-align:center; color:#D97775; font-weight:bold; border-right:1px solid black; border-bottom:1px solid black;">B+</td>
-                <td class="blood-item" style="padding:18px 10px; text-align:center; color:#D97775; font-weight:bold; border-bottom:1px solid black;">B-</td></tr>
-                <tr style="cursor: pointer;"><td class="blood-item" style="padding:18px 10px; text-align:center; color:#D97775; font-weight:bold; border-right:1px solid black;">AB+</td>
-                <td class="blood-item" style="padding:18px 10px; text-align:center; color:#D97775; font-weight:bold;">AB-</td></tr>
-            </table>`;
+        bloodDropdown.className = 'bloodDropdown';
+          bloodDropdown.innerHTML = `
+        <table>
+            <tr><td onclick="selectBlood(this,'O+')">O+</td><td onclick="selectBlood(this,'O-')">O-</td></tr>
+            <tr><td onclick="selectBlood(this,'A+')">A+</td><td onclick="selectBlood(this,'A-')">A-</td></tr>
+            <tr><td onclick="selectBlood(this,'B+')">B+</td><td onclick="selectBlood(this,'B-')">B-</td></tr>
+            <tr><td onclick="selectBlood(this,'AB+')">AB+</td><td onclick="selectBlood(this,'AB-')">AB-</td></tr>
+         </table>
+    `;
         bloodContainer.appendChild(bloodDropdown);
         const items = bloodDropdown.querySelectorAll('.blood-item');
         items.forEach(item => {
@@ -418,8 +416,14 @@ document.addEventListener('DOMContentLoaded', function() {
     stateDropdown.id = 'stateDropdown';
     stateDropdown.className = 'state-dropdown';
     stateDropdown.style.display = 'none';
-    stateDropdown.innerHTML = `<table style="width:100%;"><tr><td class="urgent-option" onclick="selectState(this,'Urgent')" style="color:#E33E3E;">Urgent</td>
-        <td class="stable-option" onclick="selectState(this,'Stable')" style="color:#EA9A60;">Stable</td></tr></table>`;
+    stateDropdown.innerHTML =`
+        <table>
+            <tr>
+                <td class="urgent-option" onclick="selectState(this,'Urgent')" style="color: #E33E3E;">Urgent</td>
+                <td class="stable-option" onclick="selectState(this,'Stable')" style="color: #EA9A60;">Stable</td>
+            </tr>
+        </table>
+    `;
     document.body.appendChild(stateDropdown);
 });
 
@@ -433,8 +437,8 @@ function toggleStateDropdown() {
     else {
         const rect = stateIcon.getBoundingClientRect();
         const zoom = getZoomLevel();
-        dropdown.style.position = 'absolute';
-        dropdown.style.top = (rect.bottom + window.scrollY) / zoom + 'px';
+       
+        dropdown.style.top = (rect.bottom + window.scrollY) / zoom-1 + 'px';
         dropdown.style.left = (rect.left + window.scrollX) / zoom + 'px';
         dropdown.style.display = "block";
     }
@@ -501,7 +505,7 @@ async function saveState(newState) {
 }
 
 document.addEventListener('click', function(e) {
-    const bloodDropdown = document.getElementById('bloodDropdown');
+    
     const stateDropdown = document.getElementById('stateDropdown');
     const bloodIcon = document.getElementById('arrow-icon');
     const stateIcon = document.getElementById('state-icon');
@@ -691,16 +695,14 @@ window.toggleBloodDropdown = function(e) {
     const isVisible = dropdown.style.display === 'block';
     if (!isVisible) {
         dropdown.style.display = 'block';
-        container.style.border = "1px solid black";
-        container.style.borderBottom = "none";
-        container.style.borderRadius = "10px 10px 0 0";
-        container.style.backgroundColor = "white";
+       
+       
         document.body.classList.add('dropdown-open');
     } else {
         dropdown.style.display = 'none';
-        container.style.border = "none";
-        container.style.borderRadius = "0";
-        container.style.backgroundColor = "transparent";
+        
+       
+       
         document.body.classList.remove('dropdown-open');
     }
 };
