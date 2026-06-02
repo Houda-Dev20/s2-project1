@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const sendVerificationEmail = require("../utils/sendEmail");
 const { ALGERIA_WILAYAS } = require('../utils/constants');
 const { createEligibilityNotification } = require("./notificationController");
+const { checkNearbyPatientsForDonor } = require("../cron/nearbyPatientCron");
 
 const pendingDonors = new Map();
 const resetPasswordRequests = new Map();
@@ -393,6 +394,7 @@ const loginDonor = (req, res) => {
             },
 
         });
+                checkNearbyPatientsForDonor(donor.id);
     });
 };
 
@@ -641,6 +643,9 @@ const updateDonorAvailability = (req, res) => {
                     (err) => {
                         if (err) return res.status(500).json({ message: "Error updating availability" });
                         res.json({ success: true, message: "Availability updated" });
+
+                        const { checkNearbyPatientsForDonor } = require('../cron/nearbyPatientCron');
+                        checkNearbyPatientsForDonor(donorId);
                     }
                 );
             }
