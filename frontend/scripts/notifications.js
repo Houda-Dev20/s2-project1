@@ -377,7 +377,7 @@ if (modalImg) {
                 elements.acceptBtn.onclick = async () => {
                     try {
                         // استخدم المسار الخاص بقبول المتبرع لطلب المحتاج
-                        const acceptRes = await fetch(`http://localhost:3000/donations/accept-by-donor/${donationId}`, { method: 'POST' });
+                        const acceptRes = await fetch(`http://localhost:3000/donations/${donationId}/accept-by-donor`, { method: 'POST' });
                         if (acceptRes.ok) {
 showToast("Donation accepted! Patient has been notified with your phone number.", 'success');                 
          elements.modal.style.display = 'none';
